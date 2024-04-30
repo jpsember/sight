@@ -1,32 +1,40 @@
 
+zebra = \relative   {
 
-
-
-zoo = \relative c'' {
-  \omit Staff.Clef
   \clef treble
-  \key c \major
+  \key e \major
   \time 4/4
 
-  a4 b c d
+  % Omit the base or treble clef
+  % \omit Staff.Clef
+
+  % Hide the time signature (e.g. 4/4)
+  \omit Staff.TimeSignature
+
+  % Hide the bar lines
+  % \omit Score.BarLine
+
+
+  % Have some things rendered high and low, to try to ensure a consistent
+  % location
+
+  <e' g b>2 <cis e g>
+
+
+  e4   fis gis a b cis dis e fis e dis
+
+  % <c, e g>2 <f bes c>
+  % <f c' e g>1
 }
 
-lower = \relative c {
-  \clef bass
-  \key c \major
-  \time 4/4
-
-  a2 c
-}
 
 \score {
-  \new PianoStaff \with { instrumentName = "Piano" }
+  \new PianoStaff \with {
+  % instrumentName = "Piano"
+  }
   <<
-    \new Staff = "upper" \zoo
-    \new Staff = "lower" \lower
+    \new Staff \zebra
   >>
   \layout { }
 
-  % This generates a midi file:
-  % \midi { }
 }
