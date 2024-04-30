@@ -1,5 +1,12 @@
 #!/usr/bin/env bash
 set -eu
 
-lilypond --silent --format=png -dresolution=600 --output=out "$@"
+RES=300
+
+
+lilypond\
+ --silent\
+ --format=png\
+ -dresolution=$RES\
+ --output=out "$@"
 
