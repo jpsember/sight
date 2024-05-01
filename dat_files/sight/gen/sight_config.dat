@@ -1,3 +1,5 @@
 fields {
-  string not_used_yet;
+  enum KeySig key_sig;
+  enum Hand hand;
+  string notes;
 }

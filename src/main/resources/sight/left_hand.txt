@@ -1,4 +1,4 @@
-rh = {
+rh = \relative {
   \key [!key]
   \clef bass
 

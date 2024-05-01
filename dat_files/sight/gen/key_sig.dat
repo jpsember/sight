@@ -1,0 +1,3 @@
+enum {
+  c, d, e, f, g, a, b, e_flat, b_flat,
+}

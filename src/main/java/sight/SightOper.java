@@ -6,7 +6,6 @@ import java.io.File;
 
 import js.app.AppOper;
 import js.base.BasePrinter;
-import js.base.DateTimeTools;
 import js.base.SystemCall;
 import js.file.FileException;
 import js.file.Files;
@@ -50,18 +49,42 @@ public class SightOper extends AppOper {
 
   private SightConfig mConfig;
 
+  private String compileKey() {
+    var k = config().keySig();
+    var s = k.toString().toLowerCase();
+    var s2 = chomp(s, "_flat");
+    if (s2 != s) {
+      s = s2 + "es";
+    }
+    s = s + " \\major";
+    return s;
+  }
+
   @Override
   public void perform() {
-    loadTools();
 
-    var f = frag("left_hand.txt");
+    var notes = config().notes();
+    checkNonEmpty(notes, "no notes given!");
+
+    String handFragName;
+    switch (config().hand()) {
+    default:
+      throw notFinished("not yet supported:", config().hand());
+    case RIGHT:
+      handFragName = "right_hand.txt";
+      break;
+    case LEFT:
+      handFragName = "left_hand.txt";
+      break;
+    }
+    var template = frag(handFragName);
 
     var m = map();
-    m.put("key", "e \\major");
-    m.put("notes", "e,, f,, g,, a,, b,, c, d, e, f, g, a, b, c d e f g a b c' d' e' f' g' a' b'");
+    m.put("key", compileKey());
+    m.put("notes", notes); //"e,, f,, g,, a,, b,, c, d, e, f, g, a, b, c d e f g a b c' d' e' f' g' a' b'");
 
     MacroParser parser = new MacroParser();
-    parser.withTemplate(f).withMapper(m);
+    parser.withTemplate(template).withMapper(m);
     String script = parser.content();
 
     // Create work directory

@@ -5,8 +5,16 @@ import js.json.JSMap;
 
 public class SightConfig implements AbstractData {
 
-  public String notUsedYet() {
-    return mNotUsedYet;
+  public KeySig keySig() {
+    return mKeySig;
+  }
+
+  public Hand hand() {
+    return mHand;
+  }
+
+  public String notes() {
+    return mNotes;
   }
 
   @Override
@@ -14,7 +22,9 @@ public class SightConfig implements AbstractData {
     return new Builder(this);
   }
 
-  protected static final String _0 = "not_used_yet";
+  protected static final String _0 = "key_sig";
+  protected static final String _1 = "hand";
+  protected static final String _2 = "notes";
 
   @Override
   public String toString() {
@@ -24,7 +34,9 @@ public class SightConfig implements AbstractData {
   @Override
   public JSMap toJson() {
     JSMap m = new JSMap();
-    m.putUnsafe(_0, mNotUsedYet);
+    m.putUnsafe(_0, mKeySig.toString().toLowerCase());
+    m.putUnsafe(_1, mHand.toString().toLowerCase());
+    m.putUnsafe(_2, mNotes);
     return m;
   }
 
@@ -39,7 +51,15 @@ public class SightConfig implements AbstractData {
   }
 
   private SightConfig(JSMap m) {
-    mNotUsedYet = m.opt(_0, "");
+    {
+      String x = m.opt(_0, "");
+      mKeySig = x.isEmpty() ? KeySig.DEFAULT_INSTANCE : KeySig.valueOf(x.toUpperCase());
+    }
+    {
+      String x = m.opt(_1, "");
+      mHand = x.isEmpty() ? Hand.DEFAULT_INSTANCE : Hand.valueOf(x.toUpperCase());
+    }
+    mNotes = m.opt(_2, "");
   }
 
   public static Builder newBuilder() {
@@ -55,7 +75,11 @@ public class SightConfig implements AbstractData {
     SightConfig other = (SightConfig) object;
     if (other.hashCode() != hashCode())
       return false;
-    if (!(mNotUsedYet.equals(other.mNotUsedYet)))
+    if (!(mKeySig.equals(other.mKeySig)))
+      return false;
+    if (!(mHand.equals(other.mHand)))
+      return false;
+    if (!(mNotes.equals(other.mNotes)))
       return false;
     return true;
   }
@@ -65,19 +89,25 @@ public class SightConfig implements AbstractData {
     int r = m__hashcode;
     if (r == 0) {
       r = 1;
-      r = r * 37 + mNotUsedYet.hashCode();
+      r = r * 37 + mKeySig.ordinal();
+      r = r * 37 + mHand.ordinal();
+      r = r * 37 + mNotes.hashCode();
       m__hashcode = r;
     }
     return r;
   }
 
-  protected String mNotUsedYet;
+  protected KeySig mKeySig;
+  protected Hand mHand;
+  protected String mNotes;
   protected int m__hashcode;
 
   public static final class Builder extends SightConfig {
 
     private Builder(SightConfig m) {
-      mNotUsedYet = m.mNotUsedYet;
+      mKeySig = m.mKeySig;
+      mHand = m.mHand;
+      mNotes = m.mNotes;
     }
 
     @Override
@@ -94,12 +124,24 @@ public class SightConfig implements AbstractData {
     @Override
     public SightConfig build() {
       SightConfig r = new SightConfig();
-      r.mNotUsedYet = mNotUsedYet;
+      r.mKeySig = mKeySig;
+      r.mHand = mHand;
+      r.mNotes = mNotes;
       return r;
     }
 
-    public Builder notUsedYet(String x) {
-      mNotUsedYet = (x == null) ? "" : x;
+    public Builder keySig(KeySig x) {
+      mKeySig = (x == null) ? KeySig.DEFAULT_INSTANCE : x;
+      return this;
+    }
+
+    public Builder hand(Hand x) {
+      mHand = (x == null) ? Hand.DEFAULT_INSTANCE : x;
+      return this;
+    }
+
+    public Builder notes(String x) {
+      mNotes = (x == null) ? "" : x;
       return this;
     }
 
@@ -108,7 +150,9 @@ public class SightConfig implements AbstractData {
   public static final SightConfig DEFAULT_INSTANCE = new SightConfig();
 
   private SightConfig() {
-    mNotUsedYet = "";
+    mKeySig = KeySig.DEFAULT_INSTANCE;
+    mHand = Hand.DEFAULT_INSTANCE;
+    mNotes = "";
   }
 
 }
