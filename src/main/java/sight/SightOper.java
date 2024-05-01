@@ -2,8 +2,15 @@ package sight;
 
 import static js.base.Tools.*;
 
+import java.io.File;
+
 import js.app.AppOper;
 import js.base.BasePrinter;
+import js.base.DateTimeTools;
+import js.base.SystemCall;
+import js.file.FileException;
+import js.file.Files;
+import js.parsing.MacroParser;
 import sight.gen.SightConfig;
 
 public class SightOper extends AppOper {
@@ -46,7 +53,59 @@ public class SightOper extends AppOper {
   @Override
   public void perform() {
     loadTools();
-    todo("No implementation yet");
+
+    var f = frag("left_hand.txt");
+
+    var m = map();
+    m.put("key", "e \\major");
+    m.put("notes", "e,, f,, g,, a,, b,, c, d, e, f, g, a, b, c d e f g a b c' d' e' f' g' a' b'");
+
+    MacroParser parser = new MacroParser();
+    parser.withTemplate(f).withMapper(m);
+    String script = parser.content();
+
+    // Create work directory
+
+    var workDir = new File(Files.currentDirectory(), "_SKIP_work");
+    files().deleteDirectory(workDir, "_SKIP_");
+    files().mkdirs(workDir);
+
+    String name = "hello";
+    var sourceFile = new File(workDir, name + ".ly");
+    var targetFile = Files.setExtension(sourceFile, "png");
+
+    files().writeString(sourceFile, script);
+
+    {
+
+      var s = new SystemCall();
+      s.setVerbose(verbose() || alert("verbose"));
+
+      s.directory(workDir);
+      s.arg("/opt/local/bin/lilypond", "--format=png", "-dresolution=300");
+      s.arg(name + ".ly");
+      s.call();
+
+      if (!targetFile.exists()) {
+        pr("target file doesn't exist?", targetFile);
+        alert("problem compiling:", sourceFile, INDENT, s.systemErr());
+        pr("targetFile:", Files.infoMap(targetFile));
+        badState("trouble compiling");
+      }
+    }
+
+  }
+
+  public String frag(String resourceName) {
+    try {
+      return Files.readString(getClass(), resourceName);
+    } catch (FileException e) {
+      // In case we're running in an IDE, look for it in other ways
+      var pkg = "sight";
+      var dir = new File(Files.homeDirectory(), "github_projects/sight/src/main/resources/" + pkg);
+      var f = new File(dir, resourceName);
+      return Files.readString(f);
+    }
   }
 
 }

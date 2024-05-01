@@ -1,29 +1,20 @@
 
 rh = {
-
-  \clef treble
   \key e \major
+  \clef treble
 
-  %\time 4/4
-
-  % Omit the base or treble clef
+  %\time 4/4          % Specify time sig
   % \omit Staff.Clef
-
-  % hide the time signature (e.g. 4/4)
   \omit Staff.TimeSignature
 
-  % Hide the bar lines
-  % \omit Score.BarLine
+  % \omit Score.BarLine  % hide the bar lines
 
   % the highest and lowest notes in the right hand are e''' and f
 
   f4 g a  b  c' d' e' f' g' a' b' c'' d'' e'' f'' g'' a'' b'' c''' d''' e'''
 
-
   % to draw chords, place in single angle brackets:
-
   <e g b>2 <cis' e' g'>
-
 }
 
 
@@ -31,15 +22,10 @@ rh = {
 
 
 
-
-
-
-
 lh = {
+  \key e \major
 
   \clef bass
-  \key c \major
-  %\time 4/4
 
   \omit Staff.TimeSignature
 
@@ -47,6 +33,10 @@ lh = {
    b'4  e,,
 
    e,, f,, g,, a,, b,, c, d, e, f, g, a, b, c d e f g a b c' d' e' f' g' a' b'
+
+   \relative {
+   e,, f g a b c d
+   }
 }
 
 

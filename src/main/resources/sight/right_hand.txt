@@ -1,0 +1,29 @@
+rh = {
+  \key [!key]
+  \clef treble
+
+  %\time 4/4          % Specify time sig
+  % \omit Staff.Clef
+  \omit Staff.TimeSignature
+
+  % \omit Score.BarLine  % hide the bar lines
+
+  [!notes]
+
+}
+
+
+\score {
+  %\new PianoStaff <<
+    \new Staff   <<
+      \rh
+    >>
+  %  \new Staff  <<
+  %    \lh
+  %  >>
+  %>>
+}
+
+\header {
+  tagline = ""  % removed
+}

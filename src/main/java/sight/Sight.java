@@ -9,7 +9,7 @@ public class Sight extends App {
   public static void main(String[] args) {
     loadTools();
     Sight app = new Sight();
-    app.setCustomArgs("-h");
+    //app.setCustomArgs("-h");
     app.startApplication(args);
     app.exitWithReturnCode();
   }
