@@ -35,9 +35,5 @@ zebra = \relative   {
 \score {
 
   \new Staff \zebra
-  \new Staff \zebra
-  \new Staff \zebra
-  \new Staff \zebra
-  \new Staff \zebra
-
+  
 }
