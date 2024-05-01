@@ -28,13 +28,16 @@ zebra = \relative   {
 }
 
 
+\header {
+  tagline = ""  % removed
+}
+
 \score {
-  \new PianoStaff \with {
-  % instrumentName = "Piano"
-  }
-  <<
-    \new Staff \zebra
-  >>
-  \layout { }
+
+  \new Staff \zebra
+  \new Staff \zebra
+  \new Staff \zebra
+  \new Staff \zebra
+  \new Staff \zebra
 
 }
