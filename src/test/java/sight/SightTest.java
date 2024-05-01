@@ -1,8 +1,9 @@
 package sight;
 
+import static js.base.Tools.*;
+
 import org.junit.Test;
 
-import static js.base.Tools.*;
 import js.testutil.MyTestCase;
 
 public class SightTest extends MyTestCase {
