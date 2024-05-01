@@ -1,14 +1,15 @@
 
-right_hand = {
+rh = {
 
   \clef treble
-  \key c \major
-  \time 4/4
+  \key e \major
+
+  %\time 4/4
 
   % Omit the base or treble clef
   % \omit Staff.Clef
 
-  % Hide the time signature (e.g. 4/4)
+  % hide the time signature (e.g. 4/4)
   \omit Staff.TimeSignature
 
   % Hide the bar lines
@@ -16,22 +17,13 @@ right_hand = {
 
   % the highest and lowest notes in the right hand are e''' and f
 
-  % the highest note in the treble clef is e'''
-  % the lowest is f
-  f g a  b  c' d' e' f' g' a' b' c'' d'' e'' f'' g'' a'' b'' c''' d''' e'''
+  f4 g a  b  c' d' e' f' g' a' b' c'' d'' e'' f'' g'' a'' b'' c''' d''' e'''
 
 
+  % to draw chords, place in single angle brackets:
 
-  % Below middle c
   <e g b>2 <cis' e' g'>
 
-  <e' g' b'>2 <cis'' e'' g''>
-
-
-  e4   fis gis a b cis dis e fis e dis
-
-  % <c, e g>2 <f bes c>
-  % <f c' e g>1
 }
 
 
@@ -43,17 +35,18 @@ right_hand = {
 
 
 
-left_hand = {
+lh = {
 
   \clef bass
   \key c \major
-  \time 4/4
+  %\time 4/4
 
   \omit Staff.TimeSignature
 
    % the highest and lowest notes in the base are b' and e,,
-   b'  e,,
+   b'4  e,,
 
+   e,, f,, g,, a,, b,, c, d, e, f, g, a, b, c d e f g a b c' d' e' f' g' a' b'
 }
 
 
@@ -61,14 +54,21 @@ left_hand = {
 
 
 
+% << and >> represent simultaneous music
+%
+%
+% as opposed to
+%
+% { }
+
 
 \score {
   \new PianoStaff <<
-    \new Staff = "RH"  <<
-      \right_hand
+    \new Staff   <<
+      \rh
     >>
-    \new Staff = "LH" <<
-      \left_hand
+    \new Staff  <<
+      \lh
     >>
   >>
 }
