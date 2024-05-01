@@ -1,5 +1,5 @@
 
-left_hand = {
+right_hand = {
 
   \clef treble
   \key c \major
@@ -13,6 +13,8 @@ left_hand = {
 
   % Hide the bar lines
   % \omit Score.BarLine
+
+  % the highest and lowest notes in the right hand are e''' and f
 
   % the highest note in the treble clef is e'''
   % the lowest is f
@@ -33,11 +35,55 @@ left_hand = {
 }
 
 
-\score {
 
-  \new Staff \left_hand
+
+
+
+
+
+
+
+left_hand = {
+
+  \clef bass
+  \key c \major
+  \time 4/4
+
+  \omit Staff.TimeSignature
+
+   % the highest and lowest notes in the base are b' and e,,
+   b'  e,,
 
 }
+
+
+
+
+
+
+
+\score {
+  \new PianoStaff <<
+    \new Staff = "RH"  <<
+      \right_hand
+    >>
+    \new Staff = "LH" <<
+      \left_hand
+    >>
+  >>
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 \header {
