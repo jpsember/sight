@@ -1,4 +1,17 @@
+#(set-default-paper-size '(cons (* 75 mm) (* 22 mm)))
+
+\paper {
+  horizontal-shift = -2.0\mm
+}
+
 rh = \relative {
+
+  % This seems to make the notes appear at specific horizontal intervals;
+  % See https://lilypond.org/doc/v2.23/Documentation/snippets/spacing
+  %
+  \override Score.SpacingSpanner.strict-note-spacing = ##t
+  \set Score.proportionalNotationDuration = #(ly:make-moment 1/16)
+
   \key [!key]
   \clef treble
 
@@ -6,7 +19,7 @@ rh = \relative {
   % \omit Staff.Clef
   \omit Staff.TimeSignature
 
-  % \omit Score.BarLine  % hide the bar lines
+    \omit Score.BarLine  % hide the bar lines
 
   [!notes]
 
@@ -14,14 +27,14 @@ rh = \relative {
 
 
 \score {
-  %\new PianoStaff <<
+   \new PianoStaff <<
     \new Staff   <<
       \rh
     >>
   %  \new Staff  <<
   %    \lh
   %  >>
-  %>>
+   >>
 }
 
 \header {

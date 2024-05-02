@@ -17,6 +17,10 @@ public class SightConfig implements AbstractData {
     return mNotes;
   }
 
+  public int resolution() {
+    return mResolution;
+  }
+
   @Override
   public Builder toBuilder() {
     return new Builder(this);
@@ -25,6 +29,7 @@ public class SightConfig implements AbstractData {
   protected static final String _0 = "key_sig";
   protected static final String _1 = "hand";
   protected static final String _2 = "notes";
+  protected static final String _3 = "resolution";
 
   @Override
   public String toString() {
@@ -37,6 +42,7 @@ public class SightConfig implements AbstractData {
     m.putUnsafe(_0, mKeySig.toString().toLowerCase());
     m.putUnsafe(_1, mHand.toString().toLowerCase());
     m.putUnsafe(_2, mNotes);
+    m.putUnsafe(_3, mResolution);
     return m;
   }
 
@@ -60,6 +66,7 @@ public class SightConfig implements AbstractData {
       mHand = x.isEmpty() ? Hand.DEFAULT_INSTANCE : Hand.valueOf(x.toUpperCase());
     }
     mNotes = m.opt(_2, "");
+    mResolution = m.opt(_3, 110);
   }
 
   public static Builder newBuilder() {
@@ -81,6 +88,8 @@ public class SightConfig implements AbstractData {
       return false;
     if (!(mNotes.equals(other.mNotes)))
       return false;
+    if (!(mResolution == other.mResolution))
+      return false;
     return true;
   }
 
@@ -92,6 +101,7 @@ public class SightConfig implements AbstractData {
       r = r * 37 + mKeySig.ordinal();
       r = r * 37 + mHand.ordinal();
       r = r * 37 + mNotes.hashCode();
+      r = r * 37 + mResolution;
       m__hashcode = r;
     }
     return r;
@@ -100,6 +110,7 @@ public class SightConfig implements AbstractData {
   protected KeySig mKeySig;
   protected Hand mHand;
   protected String mNotes;
+  protected int mResolution;
   protected int m__hashcode;
 
   public static final class Builder extends SightConfig {
@@ -108,6 +119,7 @@ public class SightConfig implements AbstractData {
       mKeySig = m.mKeySig;
       mHand = m.mHand;
       mNotes = m.mNotes;
+      mResolution = m.mResolution;
     }
 
     @Override
@@ -127,6 +139,7 @@ public class SightConfig implements AbstractData {
       r.mKeySig = mKeySig;
       r.mHand = mHand;
       r.mNotes = mNotes;
+      r.mResolution = mResolution;
       return r;
     }
 
@@ -145,6 +158,11 @@ public class SightConfig implements AbstractData {
       return this;
     }
 
+    public Builder resolution(int x) {
+      mResolution = x;
+      return this;
+    }
+
   }
 
   public static final SightConfig DEFAULT_INSTANCE = new SightConfig();
@@ -153,6 +171,7 @@ public class SightConfig implements AbstractData {
     mKeySig = KeySig.DEFAULT_INSTANCE;
     mHand = Hand.DEFAULT_INSTANCE;
     mNotes = "";
+    mResolution = 110;
   }
 
 }

@@ -102,7 +102,7 @@ public class SightOper extends AppOper {
       s.setVerbose(verbose());
 
       s.directory(workDir);
-      s.arg("/opt/local/bin/lilypond", "--format=png", "-dresolution=300");
+      s.arg("/opt/local/bin/lilypond", "--format=png", "-dresolution="+config().resolution());
       s.arg(name + ".ly");
       s.call();
 
@@ -130,28 +130,6 @@ public class SightOper extends AppOper {
 
   private String compileNotes(String notesExpr) {
     checkNonEmpty(notesExpr, "no notes given!");
-
-    // Semicolons will be an alternate syntax to < ... >
-
-    if (notesExpr.indexOf('<') < 0) {
-      var sb = new StringBuilder();
-      int i = 0;
-
-      pr("notesExpr:", quote(notesExpr));
-      while (i < notesExpr.length()) {
-        var j = notesExpr.indexOf(';', i);
-        pr("i:", i, "j:", j, "suffix:", notesExpr.substring(i));
-        if (j < 0)
-          j = notesExpr.length();
-        var substr = notesExpr.substring(i, j).trim();
-        checkNonEmpty(substr, "problem compiling notes expression:", quote(notesExpr), "i:", i, "j:", j);
-        sb.append(" < ");
-        sb.append(substr);
-        sb.append(" >");
-        i = j + 1;
-      }
-      notesExpr = sb.toString();
-    }
     return notesExpr.trim();
   }
 
