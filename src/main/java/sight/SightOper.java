@@ -102,7 +102,7 @@ public class SightOper extends AppOper {
     {
 
       var s = new SystemCall();
-      s.setVerbose(verbose() || alert("verbose"));
+      s.setVerbose(verbose());
 
       s.directory(workDir);
       s.arg("/opt/local/bin/lilypond", "--format=png", "-dresolution=300");
