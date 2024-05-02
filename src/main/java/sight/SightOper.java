@@ -85,37 +85,45 @@ public class SightOper extends AppOper {
     parser.withTemplate(template).withMapper(m);
     String script = parser.content();
 
-    // Create work directory
+    File targetFile;
 
-    var workDir = new File(Files.currentDirectory(), "_SKIP_work");
-    files().deleteDirectory(workDir, "_SKIP_");
-    files().mkdirs(workDir);
+    if (alert("skipping the system call")) {
+      targetFile = new File("/Users/home/github_projects/sight/_SKIP_work/hello.png");
 
-    String name = "hello";
-    var sourceFile = new File(workDir, name + ".ly");
-    var targetFile = Files.setExtension(sourceFile, "png");
+    } else {
+      // Create work directory
 
-    files().writeString(sourceFile, script);
+      var workDir = new File(Files.currentDirectory(), "_SKIP_work");
+      files().deleteDirectory(workDir, "_SKIP_");
+      files().mkdirs(workDir);
 
-    {
+      String name = "hello";
+      var sourceFile = new File(workDir, name + ".ly");
+      targetFile = Files.setExtension(sourceFile, "png");
 
-      var s = new SystemCall();
-      s.setVerbose(verbose());
+      files().writeString(sourceFile, script);
 
-      s.directory(workDir);
-      s.arg("/opt/local/bin/lilypond", "--format=png", "-dresolution=" + config().resolution());
-      s.arg(name + ".ly");
-      s.call();
+      {
 
-      if (!targetFile.exists()) {
-        pr("target file doesn't exist?", targetFile);
-        alert("problem compiling:", sourceFile, INDENT, s.systemErr());
-        pr("targetFile:", Files.infoMap(targetFile));
-        badState("trouble compiling");
+        var s = new SystemCall();
+        s.setVerbose(verbose());
+
+        s.directory(workDir);
+        s.arg("/opt/local/bin/lilypond", "--format=png", "-dresolution=" + config().resolution());
+        s.arg(name + ".ly");
+        s.call();
+
+        if (!targetFile.exists()) {
+          pr("target file doesn't exist?", targetFile);
+          alert("problem compiling:", sourceFile, INDENT, s.systemErr());
+          pr("targetFile:", Files.infoMap(targetFile));
+          badState("trouble compiling");
+        }
       }
-    }
 
+    }
     var bi = ImgUtil.read(targetFile);
+    pr("targetFile:", targetFile);
 
     var ext = new ImgExtractor();
     ext.alertVerbose();
