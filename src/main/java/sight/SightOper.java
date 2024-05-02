@@ -9,6 +9,7 @@ import js.base.BasePrinter;
 import js.base.SystemCall;
 import js.file.FileException;
 import js.file.Files;
+import js.graphics.ImgUtil;
 import js.parsing.MacroParser;
 import sight.gen.SightConfig;
 
@@ -102,7 +103,7 @@ public class SightOper extends AppOper {
       s.setVerbose(verbose());
 
       s.directory(workDir);
-      s.arg("/opt/local/bin/lilypond", "--format=png", "-dresolution="+config().resolution());
+      s.arg("/opt/local/bin/lilypond", "--format=png", "-dresolution=" + config().resolution());
       s.arg(name + ".ly");
       s.call();
 
@@ -114,6 +115,12 @@ public class SightOper extends AppOper {
       }
     }
 
+    var bi = ImgUtil.read(targetFile);
+
+    var ext = new ImgExtractor();
+    ext.alertVerbose();
+    ext.setSource(bi);
+    ext.extract();
   }
 
   public String frag(String resourceName) {
