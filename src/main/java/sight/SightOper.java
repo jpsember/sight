@@ -63,9 +63,6 @@ public class SightOper extends AppOper {
   @Override
   public void perform() {
 
-    var notes = config().notes();
-    checkNonEmpty(notes, "no notes given!");
-
     String handFragName;
     switch (config().hand()) {
     default:
@@ -81,7 +78,7 @@ public class SightOper extends AppOper {
 
     var m = map();
     m.put("key", compileKey());
-    m.put("notes", notes); //"e,, f,, g,, a,, b,, c, d, e, f, g, a, b, c d e f g a b c' d' e' f' g' a' b'");
+    m.put("notes", compileNotes(config().notes()));
 
     MacroParser parser = new MacroParser();
     parser.withTemplate(template).withMapper(m);
@@ -129,6 +126,33 @@ public class SightOper extends AppOper {
       var f = new File(dir, resourceName);
       return Files.readString(f);
     }
+  }
+
+  private String compileNotes(String notesExpr) {
+    checkNonEmpty(notesExpr, "no notes given!");
+
+    // Semicolons will be an alternate syntax to < ... >
+
+    if (notesExpr.indexOf('<') < 0) {
+      var sb = new StringBuilder();
+      int i = 0;
+
+      pr("notesExpr:", quote(notesExpr));
+      while (i < notesExpr.length()) {
+        var j = notesExpr.indexOf(';', i);
+        pr("i:", i, "j:", j, "suffix:", notesExpr.substring(i));
+        if (j < 0)
+          j = notesExpr.length();
+        var substr = notesExpr.substring(i, j).trim();
+        checkNonEmpty(substr, "problem compiling notes expression:", quote(notesExpr), "i:", i, "j:", j);
+        sb.append(" < ");
+        sb.append(substr);
+        sb.append(" >");
+        i = j + 1;
+      }
+      notesExpr = sb.toString();
+    }
+    return notesExpr.trim();
   }
 
 }
