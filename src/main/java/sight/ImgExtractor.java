@@ -9,7 +9,6 @@ import js.base.BaseObject;
 import js.base.BasePrinter;
 import js.geometry.IPoint;
 import js.geometry.IRect;
-import js.geometry.MyMath;
 import js.graphics.ImgUtil;
 
 public class ImgExtractor extends BaseObject {
@@ -19,12 +18,12 @@ public class ImgExtractor extends BaseObject {
   private static final int PAD_DIST = MERGE_DIST / 2;
 
   public void setSource(BufferedImage img) {
-    loadTools();
+    checkState(mSource == null);
     mSource = img;
   }
 
-  public List<BufferedImage> extract() {
-    if (mExtracted == null) {
+  public List<IRect> extract() {
+    if (mSubImages == null) {
       BufferedImage image = mSource;
       if (verbose())
         log("extracting pixels from:", INDENT, ImgUtil.toJson(image));
@@ -37,7 +36,7 @@ public class ImgExtractor extends BaseObject {
 
       mSubImages = extractSubImages();
     }
-    return mExtracted;
+    return mSubImages;
   }
 
   private List<Integer> findStaffLines() {
@@ -52,7 +51,6 @@ public class ImgExtractor extends BaseObject {
       x--;
     }
     checkState(x >= 0, "can't find any non-white pixels");
-    //log("found non-white pixels at x:", x);
 
     List<Integer> lineRows = arrayList();
     int lastLineY = -1;
@@ -82,9 +80,6 @@ public class ImgExtractor extends BaseObject {
     var r = p[offset + 2];
     if (b == -1 && g == -1 && r == -1)
       return false;
-    if (false && count++ < 20) {
-      pr("read x,y:", x, y, "got:", b, g, r);
-    }
     return true;
   }
 
@@ -115,7 +110,6 @@ public class ImgExtractor extends BaseObject {
       xloop: for (int x = 0; x < mWidth; x++) {
         if (!readPixel(x, y))
           continue;
-        // log("...pixel found at:", x);
         // Add pixel to an active rect, if possible
         for (var ar : active) {
           if (ar.expandFor(x, y))
@@ -152,7 +146,6 @@ public class ImgExtractor extends BaseObject {
             active = merged;
             continue outer;
           }
-        //        if (origSize == active.size())
         break;
       }
     }
@@ -164,20 +157,13 @@ public class ImgExtractor extends BaseObject {
       var rect = IRect.rectContainingPoints(IPoint.with(ar.x0, ar.y0), IPoint.with(ar.x1, ar.y1));
       rect = rect.withInset(-PAD_DIST);
       rect = IRect.intersection(rect, bounds);
-//      log("subImage found at:", rect);
       r.add(rect);
     }
     r.sort((a, b) -> Integer.compare(a.x, b.x));
-    for (var rd : r) log("subImage at:",rd);
+    for (var rd : r)
+      log("subImage at:", rd);
     return r;
   }
-
-  private BufferedImage mSource;
-  private List<BufferedImage> mExtracted;
-  private int mWidth, mHeight;
-  private byte[] mPixels;
-  private List<Integer> mStaffLines;
-  private List<IRect> mSubImages;
 
   private static class ActiveRect {
 
@@ -208,8 +194,6 @@ public class ImgExtractor extends BaseObject {
     boolean expandFor(int x, int y) {
       if (x < x0 - MERGE_DIST || x > x1 + MERGE_DIST)
         return false;
-      // pr("expanding:", this, "for:", x, y);
-      checkState(x != 814, "attempt to expand for:", x, y);
       x0 = Math.min(x0, x);
       x1 = Math.max(x1, x);
       y1 = y;
@@ -218,5 +202,11 @@ public class ImgExtractor extends BaseObject {
 
     int x0, x1, y0, y1;
   }
+
+  private BufferedImage mSource;
+  private int mWidth, mHeight;
+  private byte[] mPixels;
+  private List<Integer> mStaffLines;
+  private List<IRect> mSubImages;
 
 }

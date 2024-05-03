@@ -66,7 +66,7 @@ public class SightConfig implements AbstractData {
       mHand = x.isEmpty() ? Hand.DEFAULT_INSTANCE : Hand.valueOf(x.toUpperCase());
     }
     mNotes = m.opt(_2, "");
-    mResolution = m.opt(_3, 110);
+    mResolution = m.opt(_3, 300);
   }
 
   public static Builder newBuilder() {
@@ -171,7 +171,7 @@ public class SightConfig implements AbstractData {
     mKeySig = KeySig.DEFAULT_INSTANCE;
     mHand = Hand.DEFAULT_INSTANCE;
     mNotes = "";
-    mResolution = 110;
+    mResolution = 300;
   }
 
 }

@@ -1,0 +1,6 @@
+fields {
+  * int key_numbers;
+
+  // duration is omitted until it is needed,
+  // and I figure out how to represent quarter notes, tuplets, etc
+}

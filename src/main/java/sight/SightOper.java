@@ -123,12 +123,13 @@ public class SightOper extends AppOper {
 
     }
     var bi = ImgUtil.read(targetFile);
-    pr("targetFile:", targetFile);
 
     var ext = new ImgExtractor();
-    ext.alertVerbose();
+    //    ext.alertVerbose();
     ext.setSource(bi);
     ext.extract();
+
+    mark("do something with rectangles and the note expressions that generated them");
   }
 
   public String frag(String resourceName) {
@@ -145,6 +146,8 @@ public class SightOper extends AppOper {
 
   private String compileNotes(String notesExpr) {
     checkNonEmpty(notesExpr, "no notes given!");
+    
+    // Ensure that 
     return notesExpr.trim();
   }
 
