@@ -30,24 +30,17 @@ public class NoteParser extends BaseObject {
       var keynum = IntArray.newBuilder();
 
       mStartPitch = -1;
-      
+
       if (readIf('<')) {
-        log("entered chord");
-        pushState();
-        var nt = readNote();
-        keynum.add(nt.keyNumbers()[0]);
-
+        var chord = readNote();
+        keynum.add(singleKeyNumber(chord));
         while (!readIf('>')) {
-          nt = readNote();
-          keynum.add(nt.keyNumbers()[0]);
+          chord = readNote();
+          keynum.add(singleKeyNumber(chord));
         }
-
-        log("exited chord");
-
-        popState();
       } else {
-        var nt = readNote();
-        keynum.add(nt.keyNumbers()[0]);
+        var chord = readNote();
+        keynum.add(singleKeyNumber(chord));
       }
 
       // read duration (if present)
@@ -59,6 +52,11 @@ public class NoteParser extends BaseObject {
       nb.keyNumbers(keynum.array());
       mChords.add(nb.build());
     }
+  }
+
+  private int singleKeyNumber(Chord c) {
+    ensure(c.keyNumbers().length == 1, "expected single key number in chord:", c);
+    return c.keyNumbers()[0];
   }
 
   public List<Chord> chords() {
@@ -195,7 +193,11 @@ public class NoteParser extends BaseObject {
 
   // "<gis b dis>4 <gis' b dis gis> <fis, a cis e> <fis a c dis>"
 
+  /**
+   * Read a single note, e.g. "gis", "dis''"; return wrapped in a chord;
+   */
   private Chord readNote() {
+    todo("refactor to return just a note number");
     todo("assume relative pitch, except if no start pitch defined");
     log("readNote");
     var sb = new StringBuilder();
@@ -234,14 +236,6 @@ public class NoteParser extends BaseObject {
     var b = cb.build();
     log("note read:", word, b);
     return b;
-  }
-
-  // "<gis b dis>4 <gis' b dis gis> <fis, a cis e> <fis a c dis>"
-
-  private void pushState() {
-  }
-
-  private void popState() {
   }
 
   static {
