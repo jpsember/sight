@@ -32,15 +32,12 @@ public class NoteParser extends BaseObject {
       mStartPitch = -1;
 
       if (readIf('<')) {
-        var chord = readNote();
-        keynum.add(singleKeyNumber(chord));
+        keynum.add(readNote());
         while (!readIf('>')) {
-          chord = readNote();
-          keynum.add(singleKeyNumber(chord));
+          keynum.add(readNote());
         }
       } else {
-        var chord = readNote();
-        keynum.add(singleKeyNumber(chord));
+        keynum.add(readNote());
       }
 
       // read duration (if present)
@@ -52,11 +49,6 @@ public class NoteParser extends BaseObject {
       nb.keyNumbers(keynum.array());
       mChords.add(nb.build());
     }
-  }
-
-  private int singleKeyNumber(Chord c) {
-    ensure(c.keyNumbers().length == 1, "expected single key number in chord:", c);
-    return c.keyNumbers()[0];
   }
 
   public List<Chord> chords() {
@@ -194,10 +186,9 @@ public class NoteParser extends BaseObject {
   // "<gis b dis>4 <gis' b dis gis> <fis, a cis e> <fis a c dis>"
 
   /**
-   * Read a single note, e.g. "gis", "dis''"; return wrapped in a chord;
+   * Read a single note, e.g. "gis", "dis''"; return its number
    */
-  private Chord readNote() {
-    todo("refactor to return just a note number");
+  private int readNote() {
     todo("assume relative pitch, except if no start pitch defined");
     log("readNote");
     var sb = new StringBuilder();
@@ -227,15 +218,10 @@ public class NoteParser extends BaseObject {
       else
         break;
     }
-    var note2 = note + octaveAdj * 12;
-    ensure(note2 >= 0 && note2 < 88, "note is out of range of 88-key piano", note2);
-    var cb = Chord.newBuilder();
-    int[] singleKeyArray = new int[1];
-    singleKeyArray[0] = note2;
-    cb.keyNumbers(singleKeyArray);
-    var b = cb.build();
-    log("note read:", word, b);
-    return b;
+    note += octaveAdj * 12;
+    ensure(note >= 0 && note < 88, "note is out of range of 88-key piano", note);
+    log("note read:", word, note);
+    return note;
   }
 
   static {
