@@ -61,6 +61,8 @@ public class SightOper extends AppOper {
     return s;
   }
 
+  private static final boolean SKIP_SYSTEM_CALL = false && alert("skipping the call to lilypond");
+
   @Override
   public void perform() {
 
@@ -87,9 +89,8 @@ public class SightOper extends AppOper {
 
     File targetFile;
 
-    if (alert("skipping the system call")) {
+    if (SKIP_SYSTEM_CALL) {
       targetFile = new File("/Users/home/github_projects/sight/_SKIP_work/hello.png");
-
     } else {
       // Create work directory
 
@@ -146,7 +147,7 @@ public class SightOper extends AppOper {
 
   private String compileNotes(String notesExpr) {
     checkNonEmpty(notesExpr, "no notes given!");
-    
+
     // Ensure that 
     return notesExpr.trim();
   }

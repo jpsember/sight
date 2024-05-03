@@ -251,10 +251,10 @@ public class NoteParser extends BaseObject {
     return note;
   }
 
-  private static final int[] sB = { 27, 29, 31, 32, 34, 36, 38 };
+  private static final int[] sBareNoteToPianoKeyTable = { 27, 29, 31, 32, 34, 36, 38 };
 
   private int bareNoteToOctave(int bareNote) {
-    return sB[bareNote];
+    return sBareNoteToPianoKeyTable[bareNote];
   }
 
   private static final int BARE_NOTES_TOTAL = 7; // c=0,d=1,...,a=5, b = 6

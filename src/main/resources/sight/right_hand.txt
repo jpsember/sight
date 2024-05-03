@@ -4,36 +4,30 @@
   horizontal-shift = -2.0\mm
 }
 
-rh = \relative {
-
-  % This seems to make the notes appear at specific horizontal intervals;
-  % See https://lilypond.org/doc/v2.23/Documentation/snippets/spacing
-  %
-  \override Score.SpacingSpanner.strict-note-spacing = ##t
-  \set Score.proportionalNotationDuration = #(ly:make-moment 1/16)
-
-  \key [!key]
-  \clef treble
-
-  %\time 4/4          % Specify time sig
-  % \omit Staff.Clef
-  \omit Staff.TimeSignature
-
-    \omit Score.BarLine  % hide the bar lines
-
-  [!notes]
-
-}
-
-
 \score {
    \new PianoStaff <<
     \new Staff   <<
-      \rh
+      \relative {
+
+        % This seems to make the notes appear at specific horizontal intervals;
+        % See https://lilypond.org/doc/v2.23/Documentation/snippets/spacing
+        %
+        \override Score.SpacingSpanner.strict-note-spacing = ##t
+        \set Score.proportionalNotationDuration = #(ly:make-moment 1/16)
+
+        \key [!key]
+        \clef treble
+
+        %\time 4/4          % Specify time sig
+        % \omit Staff.Clef
+        \omit Staff.TimeSignature
+        \omit Score.BarLine  % hide the bar lines
+
+        [!notes]
+
+      }
+
     >>
-  %  \new Staff  <<
-  %    \lh
-  %  >>
    >>
 }
 
