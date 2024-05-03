@@ -2,13 +2,12 @@ package sight;
 
 import static js.base.Tools.*;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import js.base.BaseObject;
 import js.base.BasePrinter;
 import js.data.IntArray;
+import js.geometry.MyMath;
 import sight.gen.Chord;
 
 public class NoteParser extends BaseObject {
@@ -29,13 +28,17 @@ public class NoteParser extends BaseObject {
       var nb = Chord.newBuilder();
       var keynum = IntArray.newBuilder();
 
-      mStartPitch = -1;
-
       if (readIf('<')) {
         keynum.add(readNote());
+        // Preserve the relative pitch vars that are in effect after the first note in the chord.
+        var s1 = mStartPitchBare;
+        var s2 = mStartPitchOctaveOffset;
+
         while (!readIf('>')) {
           keynum.add(readNote());
         }
+        mStartPitchBare = s1;
+        mStartPitchOctaveOffset = s2;
       } else {
         keynum.add(readNote());
       }
@@ -181,33 +184,27 @@ public class NoteParser extends BaseObject {
     skipWs();
   }
 
-  private static final Map<String, Integer> sPitchMap;
-
-  // "<gis b dis>4 <gis' b dis gis> <fis, a cis e> <fis a c dis>"
-
   /**
    * Read a single note, e.g. "gis", "dis''"; return its number
    */
   private int readNote() {
     todo("assume relative pitch, except if no start pitch defined");
     log("readNote");
-    var sb = new StringBuilder();
-    char x = peek();
-    int pitch = x - 'a';
-    log("pitch char:", x);
-    ensure(pitch >= 0 && pitch <= 6, "expected pitch char");
-    sb.append(x);
-    read();
 
+    int cStart = mCursor;
+    char x = read();
+    ensure(x >= 'a' && x <= 'g', "expected pitch char");
+    var bareNote = MyMath.myMod(x - 'c', BARE_NOTES_TOTAL);
+    log("bare note:", bareNote);
+
+    int accidentalAdj = 0;
     if (readIf("is")) {
-      sb.append("is");
+      accidentalAdj = 1;
     } else if (readIf("es")) {
-      sb.append("es");
+      accidentalAdj = -1;
     }
-    var word = sb.toString();
-    log("looking at pitch map for:", quote(word));
-    var note = sPitchMap.get(word);
-    ensure(note != null, "pitch not in map:", word);
+    int cEnd = mCursor;
+    String debWord = mText.substring(cStart, cEnd);
 
     int octaveAdj = 0;
     while (true) {
@@ -218,36 +215,54 @@ public class NoteParser extends BaseObject {
       else
         break;
     }
-    note += octaveAdj * 12;
+
+    log(VERT_SP, "note exp:", debWord, "bare note:", bareNote, "start pitch:", mStartPitchBare,
+        "startPitchOctaveOffset:", mStartPitchOctaveOffset);
+
+    if (mStartPitchBare >= 0) {
+
+      octaveAdj += mStartPitchOctaveOffset;
+
+      var relDist = bareNote - mStartPitchBare;
+      if (relDist > 3)
+        relDist -= BARE_NOTES_TOTAL;
+      else if (relDist < -3)
+        relDist += BARE_NOTES_TOTAL;
+
+      bareNote = mStartPitchBare + relDist;
+
+      var modded = MyMath.myMod(bareNote, BARE_NOTES_TOTAL);
+      var octAdj = ((bareNote - modded) / BARE_NOTES_TOTAL);
+
+      bareNote = modded;
+      octaveAdj += octAdj;
+    }
+
+    log("...updating start pitch bare to:", bareNote);
+    log("...updating octave offset to:", octaveAdj);
+    mStartPitchBare = bareNote;
+    mStartPitchOctaveOffset = octaveAdj;
+
+    var note = bareNoteToOctave(bareNote) + octaveAdj * 12 + accidentalAdj;
+    log("...calc keybd note as:", note);
+
     ensure(note >= 0 && note < 88, "note is out of range of 88-key piano", note);
-    log("note read:", word, note);
+    log("note read:", debWord, note);
     return note;
   }
 
-  static {
-    var x = new HashMap<String, Integer>();
-    x.put("c", 27);
-    x.put("cis", 27 + 1);
-    x.put("des", 29 - 1);
-    x.put("d", 29);
-    x.put("dis", 29 + 1);
-    x.put("ees", 31 - 1);
-    x.put("e", 31);
-    x.put("f", 32);
-    x.put("fis", 32 + 1);
-    x.put("ges", 34 - 1);
-    x.put("g", 34);
-    x.put("gis", 34 + 1);
-    x.put("aes", 36 - 1);
-    x.put("a", 36);
-    x.put("ais", 36 + 1);
-    x.put("bes", 38 - 1);
-    x.put("b", 38);
-    sPitchMap = x;
+  private static final int[] sB = { 27, 29, 31, 32, 34, 36, 38 };
+
+  private int bareNoteToOctave(int bareNote) {
+    return sB[bareNote];
   }
+
+  private static final int BARE_NOTES_TOTAL = 7; // c=0,d=1,...,a=5, b = 6
 
   private String mText;
   private int mCursor;
   private List<Chord> mChords;
-  private int mStartPitch = -1;
+
+  private int mStartPitchBare = -1;
+  private int mStartPitchOctaveOffset;
 }

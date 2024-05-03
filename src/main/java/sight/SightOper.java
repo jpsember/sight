@@ -129,7 +129,7 @@ public class SightOper extends AppOper {
     ext.setSource(bi);
     ext.extract();
 
-    mark("do something with rectangles and the note expressions that generated them");
+    todo("do something with rectangles and the note expressions that generated them");
   }
 
   public String frag(String resourceName) {
