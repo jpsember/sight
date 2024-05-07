@@ -111,6 +111,15 @@ public class ChordLibrary extends BaseObject {
     ext.setSource(bi);
     var boxes = ext.rects();
 
+    if (alert("rendering boxes")) {
+      var bx = ext.plotRects();
+      var d = Files.parent(targetFile);
+      var bn = Files.basename(targetFile);
+      var f = new File(d, bn + "_rects.png");
+      ImgUtil.writeImage(files(), bx, f);
+      pr("...wrote:", f);
+    }
+
     var renderedNotesBuilder = RenderedNotes.newBuilder();
     renderedNotesBuilder.imageFile(new File(targetFile.getName()));
 

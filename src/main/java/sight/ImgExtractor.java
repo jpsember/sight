@@ -2,6 +2,9 @@ package sight;
 
 import static js.base.Tools.*;
 
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Font;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.List;
@@ -11,6 +14,7 @@ import js.base.BasePrinter;
 import js.geometry.IPoint;
 import js.geometry.IRect;
 import js.graphics.ImgUtil;
+import js.graphics.Plotter;
 
 public class ImgExtractor extends BaseObject {
 
@@ -228,6 +232,35 @@ public class ImgExtractor extends BaseObject {
   public ImgExtractor withRenderedRects(File imageFile) {
     mRenderedRectsImageFile = imageFile;
     return this;
+  }
+
+  public BufferedImage plotRects() {
+    var b = ImgUtil.imageAsType(ImgUtil.deepCopy(mSource), Plotter.PREFERRED_IMAGE_TYPE);
+
+    var pl = Plotter.build();
+    pl.into(b);
+    pl.withBlue();
+    //    var g = b.createGraphics();
+    //    g.setStroke(new BasicStroke(2));
+    //    var clr = Color.blue;
+    //    // clr = ImgUtil.withAlpha(clr,64);
+    //    g.setColor(clr);
+
+    var unscaledFont = new Font("Courier", Font.PLAIN, 16);
+    var CONSOLE_FONT = unscaledFont.deriveFont(24);
+    pl.graphics().setFont(CONSOLE_FONT);
+    var fm = pl.graphics().getFontMetrics();
+    int i = INIT_INDEX;
+    for (var r : rects()) {
+      i++;
+      var r2 = r.withInset(-1);
+      pl.drawRect(r2);
+      var g = pl.graphics();
+      g.drawString("" + i, r2.x, r2.y - fm.getAscent());
+      //      g.drawRect(r2.x, r2.y, r2.width, r2.height);
+    }
+
+    return b;
   }
 
   private void renderRects(BufferedImage sourceImage, List<IRect> rects, File outputFile) {
