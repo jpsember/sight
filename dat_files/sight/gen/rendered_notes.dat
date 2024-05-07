@@ -1,4 +1,8 @@
 fields {
   File image_file;
   *RenderedChord rendered_chords;
+
+  IRect staff_rect;
+  IRect clef_rect;
+  IRect keysig_rect;
 }

@@ -5,6 +5,7 @@ import java.util.List;
 import js.data.AbstractData;
 import js.data.DataUtil;
 import js.file.Files;
+import js.geometry.IRect;
 import js.json.JSList;
 import js.json.JSMap;
 
@@ -18,6 +19,18 @@ public class RenderedNotes implements AbstractData {
     return mRenderedChords;
   }
 
+  public IRect staffRect() {
+    return mStaffRect;
+  }
+
+  public IRect clefRect() {
+    return mClefRect;
+  }
+
+  public IRect keysigRect() {
+    return mKeysigRect;
+  }
+
   @Override
   public Builder toBuilder() {
     return new Builder(this);
@@ -25,6 +38,9 @@ public class RenderedNotes implements AbstractData {
 
   protected static final String _0 = "image_file";
   protected static final String _1 = "rendered_chords";
+  protected static final String _2 = "staff_rect";
+  protected static final String _3 = "clef_rect";
+  protected static final String _4 = "keysig_rect";
 
   @Override
   public String toString() {
@@ -41,6 +57,9 @@ public class RenderedNotes implements AbstractData {
         j.add(x.toJson());
       m.put(_1, j);
     }
+    m.putUnsafe(_2, mStaffRect.toJson());
+    m.putUnsafe(_3, mClefRect.toJson());
+    m.putUnsafe(_4, mKeysigRect.toJson());
     return m;
   }
 
@@ -63,6 +82,27 @@ public class RenderedNotes implements AbstractData {
       }
     }
     mRenderedChords = DataUtil.parseListOfObjects(RenderedChord.DEFAULT_INSTANCE, m.optJSList(_1), false);
+    {
+      mStaffRect = IRect.DEFAULT_INSTANCE;
+      Object x = m.optUnsafe(_2);
+      if (x != null) {
+        mStaffRect = IRect.DEFAULT_INSTANCE.parse(x);
+      }
+    }
+    {
+      mClefRect = IRect.DEFAULT_INSTANCE;
+      Object x = m.optUnsafe(_3);
+      if (x != null) {
+        mClefRect = IRect.DEFAULT_INSTANCE.parse(x);
+      }
+    }
+    {
+      mKeysigRect = IRect.DEFAULT_INSTANCE;
+      Object x = m.optUnsafe(_4);
+      if (x != null) {
+        mKeysigRect = IRect.DEFAULT_INSTANCE.parse(x);
+      }
+    }
   }
 
   public static Builder newBuilder() {
@@ -82,6 +122,12 @@ public class RenderedNotes implements AbstractData {
       return false;
     if (!(mRenderedChords.equals(other.mRenderedChords)))
       return false;
+    if (!(mStaffRect.equals(other.mStaffRect)))
+      return false;
+    if (!(mClefRect.equals(other.mClefRect)))
+      return false;
+    if (!(mKeysigRect.equals(other.mKeysigRect)))
+      return false;
     return true;
   }
 
@@ -94,6 +140,9 @@ public class RenderedNotes implements AbstractData {
       for (RenderedChord x : mRenderedChords)
         if (x != null)
           r = r * 37 + x.hashCode();
+      r = r * 37 + mStaffRect.hashCode();
+      r = r * 37 + mClefRect.hashCode();
+      r = r * 37 + mKeysigRect.hashCode();
       m__hashcode = r;
     }
     return r;
@@ -101,6 +150,9 @@ public class RenderedNotes implements AbstractData {
 
   protected File mImageFile;
   protected List<RenderedChord> mRenderedChords;
+  protected IRect mStaffRect;
+  protected IRect mClefRect;
+  protected IRect mKeysigRect;
   protected int m__hashcode;
 
   public static final class Builder extends RenderedNotes {
@@ -108,6 +160,9 @@ public class RenderedNotes implements AbstractData {
     private Builder(RenderedNotes m) {
       mImageFile = m.mImageFile;
       mRenderedChords = DataUtil.mutableCopyOf(m.mRenderedChords);
+      mStaffRect = m.mStaffRect;
+      mClefRect = m.mClefRect;
+      mKeysigRect = m.mKeysigRect;
     }
 
     @Override
@@ -126,6 +181,9 @@ public class RenderedNotes implements AbstractData {
       RenderedNotes r = new RenderedNotes();
       r.mImageFile = mImageFile;
       r.mRenderedChords = DataUtil.immutableCopyOf(mRenderedChords);
+      r.mStaffRect = mStaffRect;
+      r.mClefRect = mClefRect;
+      r.mKeysigRect = mKeysigRect;
       return r;
     }
 
@@ -139,6 +197,21 @@ public class RenderedNotes implements AbstractData {
       return this;
     }
 
+    public Builder staffRect(IRect x) {
+      mStaffRect = (x == null) ? IRect.DEFAULT_INSTANCE : x.build();
+      return this;
+    }
+
+    public Builder clefRect(IRect x) {
+      mClefRect = (x == null) ? IRect.DEFAULT_INSTANCE : x.build();
+      return this;
+    }
+
+    public Builder keysigRect(IRect x) {
+      mKeysigRect = (x == null) ? IRect.DEFAULT_INSTANCE : x.build();
+      return this;
+    }
+
   }
 
   public static final RenderedNotes DEFAULT_INSTANCE = new RenderedNotes();
@@ -146,6 +219,9 @@ public class RenderedNotes implements AbstractData {
   private RenderedNotes() {
     mImageFile = Files.DEFAULT;
     mRenderedChords = DataUtil.emptyList();
+    mStaffRect = IRect.DEFAULT_INSTANCE;
+    mClefRect = IRect.DEFAULT_INSTANCE;
+    mKeysigRect = IRect.DEFAULT_INSTANCE;
   }
 
 }

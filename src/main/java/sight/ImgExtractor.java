@@ -2,8 +2,6 @@ package sight;
 
 import static js.base.Tools.*;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
 import java.awt.Font;
 import java.awt.image.BufferedImage;
 import java.io.File;

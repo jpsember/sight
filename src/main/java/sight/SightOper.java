@@ -49,7 +49,7 @@ public class SightOper extends AppOper {
   @Override
   public void perform() {
 
-    mark("look for notes file in config, generate them all via the chord library");
+    //    mark("look for notes file in config, generate them all via the chord library");
 
     var rs = RenderedSet.newBuilder();
     rs.keySig(KeySig.E);
@@ -61,9 +61,9 @@ public class SightOper extends AppOper {
 
     var r = rs.build();
     var cl = new ChordLibrary();
-    cl.ignoreCache();
+    //cl.ignoreCache();
 
-    cl.alertVerbose();
+    //cl.alertVerbose();
     var rn = cl.get(r);
     pr("library produced:", INDENT, rn);
   }

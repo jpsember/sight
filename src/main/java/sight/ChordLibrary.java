@@ -120,8 +120,8 @@ public class ChordLibrary extends BaseObject {
       pr("...wrote:", f);
     }
 
-    var renderedNotesBuilder = RenderedNotes.newBuilder();
-    renderedNotesBuilder.imageFile(new File(targetFile.getName()));
+    var nb = RenderedNotes.newBuilder();
+    nb.imageFile(new File(targetFile.getName()));
 
     {
       int numBoxes = boxes.size();
@@ -130,6 +130,9 @@ public class ChordLibrary extends BaseObject {
         badState("number of chords:", chords.size(), "number of boxes:", numBoxes, "expected:",
             chords.size() + hdrRects);
       }
+      nb.staffRect(boxes.get(ImgExtractor.RECT_STAFF_LINES));
+      nb.clefRect(boxes.get(ImgExtractor.RECT_CLEF));
+      nb.keysigRect(boxes.get(ImgExtractor.RECT_KEYSIG));
 
       List<RenderedChord> renderedChordsList = arrayList();
 
@@ -142,10 +145,10 @@ public class ChordLibrary extends BaseObject {
         renc.rect(boxes.get(i));
         renderedChordsList.add(renc);
       }
-      renderedNotesBuilder.renderedChords(renderedChordsList);
+      nb.renderedChords(renderedChordsList);
     }
 
-    files().writePretty(metadata, renderedNotesBuilder);
+    files().writePretty(metadata, nb);
   }
 
   private String toLilyPond(KeySig keySig) {
