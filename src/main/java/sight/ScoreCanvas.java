@@ -11,6 +11,7 @@ import js.base.BaseObject;
 import js.geometry.IPoint;
 import js.geometry.IRect;
 import js.geometry.Matrix;
+import js.geometry.MyMath;
 import js.graphics.ImgUtil;
 import sight.gen.RenderedNotes;
 
@@ -35,85 +36,65 @@ public class ScoreCanvas extends BaseObject {
     var rn = mRenderedNotes;
 
     // We'll set the height to the height of the staff image, multipled by a constant
+    var staffHeight = rn.staffRect().height;
+    var extraAbove = round(staffHeight * .8);
+    var extraBelow = round(staffHeight * .8);
 
-    var r = rn.staffRect();
-    var staffHeight = r.height;
-
-    var extraAbove = round(staffHeight * .6);
-    var extraBelow = round(staffHeight * .6);
-    
-    pr("extra above & below:",extraAbove,extraBelow);
-    
     var canvasHeight = extraAbove + staffHeight + extraBelow;
 
     // Determine x offsets of the clef, keysig, and the (first) chord
 
     var xpad = staffHeight * .1;
 
-    var clefWidth = rn.clefRect().width;
-
-    xClef = round(xpad);
-    xKeySig = round(xClef + clefWidth + xpad);
-    xChords = round(xKeySig + xpad);
+    mClefX = round(xpad);
+    mKeySigX = round(mClefX + rn.clefRect().width + xpad);
+    mChordsX = round(mKeySigX + rn.keysigRect().width + staffHeight * .5);
 
     // The width given to each chord is a proportion of the staff height
-    mChordWidth = round(staffHeight * 1.2);
+    mChordWidth = round(staffHeight * 1.4);
 
-    contentWidth = round(xChords + mChordWidth * mMaxNotes + xpad);
+    mContentWidth = round(mChordsX + mChordWidth * mMaxNotes + xpad);
 
-    int padding = 20;
+    int padding = round(staffHeight * .5);
     mAtlasToCanvas = Matrix.getTranslate(padding, padding + extraAbove - rn.staffRect().y);
-    mCanvasSize = new IPoint(contentWidth + padding * 2, padding * 2 + canvasHeight);
-    
-    pr("xClef:",xClef);
-    pr("xKeySig:",xKeySig);
-    pr("xChords:",xChords);
-    pr("contentWidth:",contentWidth);
-    pr("canvasSize:",mCanvasSize);
+    mCanvasSize = new IPoint(mContentWidth + padding * 2, padding * 2 + canvasHeight);
   }
 
   public void render() {
     var rn = mRenderedNotes;
-    //var r = rn.staffRect();
-    //    var origPt = new IPoint(staffXStart, r.y);
-    //    var endPt = new IPoint(staffXEnd, r.endY());
 
-    //    var plotStart = toCanvas(origPt);
-    //    var plotEnd = toCanvas(endPt);
+    // Stretch the staff image (a vertical strip) to fill the horizontal extent of the staff
+    {
+      var sr = rn.staffRect();
+      var staffImg = getImage(sr);
+      graphics().drawImage(staffImg, 0, sr.y, mContentWidth, sr.height, null);
+    }
+    // Draw the clef
+    drawAtlasImage(rn.clefRect(), mClefX);
 
-    var g = graphics();
+    // Draw the key signature
+    drawAtlasImage(rn.keysigRect(), mKeySigX);
 
-    var sr = rn.staffRect();
+    // Draw up to four notes
+    var cx = mChordsX;
+    var rnd = MyMath.random();
 
-    var staffImg = getImage(sr);
+    for (int i = 0; i < mMaxNotes; i++) {
+      int j = rnd.nextInt(rn.renderedChords().size());
+      var ch = rn.renderedChords().get(j);
 
-    //    pr("staffImg:", ImgUtil.toJson(staffImg));
-    //    pr("plotStart:", plotStart);
-    //    pr("plotEnd:", plotEnd);
-    //    pr("sr:", sr);
-    //    pr("canvas size:", mCanvasSize);
+      var r = getImage(ch.rect());
+      graphics().drawImage(r, cx, ch.rect().y, null);
+      cx += mChordWidth;
+    }
+  }
 
-    //    ImgUtil.writeImage(Files.S, staffImg, new File("wtf.png"));
-    //halt();
-
-    g.drawImage(staffImg, 0, sr.y, contentWidth, sr.height, null);
-
-    //    g.setColor(Color.red);
-    //    g.drawRect(plotStart.x, plotStart.y, plotEnd.x - plotStart.x, plotEnd.y - plotStart.y);
-
+  private void drawAtlasImage(IRect atlasRect, int targetX) {
+    graphics().drawImage(getImage(atlasRect), targetX, atlasRect.y, null);
   }
 
   public BufferedImage image() {
     if (mCanvasImage == null) {
-
-      //      var rn = mRn;
-      //      var r = rn.staffRect();
-      //      var origPt = new IPoint(staffXStart, r.y);
-      //      var endPt = new IPoint(staffXEnd, r.endY());
-
-      //      var plotStart = toCanvas(origPt);
-      //      var plotEnd = toCanvas(endPt);
-
       mCanvasImage = ImgUtil.build(mCanvasSize, ImgUtil.PREFERRED_IMAGE_TYPE_COLOR);
       mCanvasGraphics = image().createGraphics();
       mCanvasGraphics.setBackground(Color.white);
@@ -153,6 +134,6 @@ public class ScoreCanvas extends BaseObject {
   //  private int staffXStart, staffXEnd;
   private BufferedImage mCanvasImage;
   private Graphics2D mCanvasGraphics;
-  private int xClef, xKeySig, xChords, contentWidth;
+  private int mClefX, mKeySigX, mChordsX, mContentWidth;
 
 }

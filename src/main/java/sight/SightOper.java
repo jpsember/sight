@@ -42,8 +42,10 @@ public class SightOper extends AppOper {
 
   @Override
   public SightConfig config() {
-    if (mConfig == null)
+    if (mConfig == null) {
+      loadTools();
       mConfig = (SightConfig) super.config();
+    }
     return mConfig;
   }
 
@@ -52,15 +54,10 @@ public class SightOper extends AppOper {
   @Override
   public void perform() {
 
-    //    mark("look for notes file in config, generate them all via the chord library");
-
     var rs = RenderedSet.newBuilder();
     rs.keySig(KeySig.E);
     rs.hand(Hand.RIGHT);
-    rs.notes("<gis b dis>4 <gis' b dis gis> <fis, a cis e> <fis a c dis>");
-
-    rs.notes("<gis b dis>4 <gis' b dis gis> <fis, a cis e> <fis a c dis> <c e g> <d f a> <e g b>");
-    rs.notes("<gis b dis>4 <gis' b dis gis> <fis, a cis e> <fis a c dis> <c e g> <d f a> <e g b>");
+    rs.notes("<gis b dis>4 <gis' b dis gis> <fis, a cis e> <fis a c dis> <c' e g> <d f a> <e g b> <e ges b>");
 
     var r = rs.build();
     var cl = new ChordLibrary();
@@ -68,8 +65,6 @@ public class SightOper extends AppOper {
 
     //cl.alertVerbose();
     var rn = cl.get(r);
-    pr("library produced:", INDENT, rn);
-
     var sc = new ScoreCanvas();
     sc.setNotes(rn);
     sc.setSourceImage(rn.imageFile());
