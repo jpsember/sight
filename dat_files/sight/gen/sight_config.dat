@@ -1,6 +1,3 @@
 fields {
-  enum KeySig key_sig;
-  enum Hand hand;
-  string notes;
-  int resolution = 300;
+  File chords;
 }

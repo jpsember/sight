@@ -1,8 +1,4 @@
 fields {
-
-  int version = 1;
-
   File image_file;
-
   *RenderedChord rendered_chords;
 }

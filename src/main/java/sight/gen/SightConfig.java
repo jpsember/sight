@@ -1,24 +1,14 @@
 package sight.gen;
 
+import java.io.File;
 import js.data.AbstractData;
+import js.file.Files;
 import js.json.JSMap;
 
 public class SightConfig implements AbstractData {
 
-  public KeySig keySig() {
-    return mKeySig;
-  }
-
-  public Hand hand() {
-    return mHand;
-  }
-
-  public String notes() {
-    return mNotes;
-  }
-
-  public int resolution() {
-    return mResolution;
+  public File chords() {
+    return mChords;
   }
 
   @Override
@@ -26,10 +16,7 @@ public class SightConfig implements AbstractData {
     return new Builder(this);
   }
 
-  protected static final String _0 = "key_sig";
-  protected static final String _1 = "hand";
-  protected static final String _2 = "notes";
-  protected static final String _3 = "resolution";
+  protected static final String _0 = "chords";
 
   @Override
   public String toString() {
@@ -39,10 +26,7 @@ public class SightConfig implements AbstractData {
   @Override
   public JSMap toJson() {
     JSMap m = new JSMap();
-    m.putUnsafe(_0, mKeySig.toString().toLowerCase());
-    m.putUnsafe(_1, mHand.toString().toLowerCase());
-    m.putUnsafe(_2, mNotes);
-    m.putUnsafe(_3, mResolution);
+    m.putUnsafe(_0, mChords.toString());
     return m;
   }
 
@@ -58,15 +42,12 @@ public class SightConfig implements AbstractData {
 
   private SightConfig(JSMap m) {
     {
-      String x = m.opt(_0, "");
-      mKeySig = x.isEmpty() ? KeySig.DEFAULT_INSTANCE : KeySig.valueOf(x.toUpperCase());
+      mChords = Files.DEFAULT;
+      String x = m.opt(_0, (String) null);
+      if (x != null) {
+        mChords = new File(x);
+      }
     }
-    {
-      String x = m.opt(_1, "");
-      mHand = x.isEmpty() ? Hand.DEFAULT_INSTANCE : Hand.valueOf(x.toUpperCase());
-    }
-    mNotes = m.opt(_2, "");
-    mResolution = m.opt(_3, 300);
   }
 
   public static Builder newBuilder() {
@@ -82,13 +63,7 @@ public class SightConfig implements AbstractData {
     SightConfig other = (SightConfig) object;
     if (other.hashCode() != hashCode())
       return false;
-    if (!(mKeySig.equals(other.mKeySig)))
-      return false;
-    if (!(mHand.equals(other.mHand)))
-      return false;
-    if (!(mNotes.equals(other.mNotes)))
-      return false;
-    if (!(mResolution == other.mResolution))
+    if (!(mChords.equals(other.mChords)))
       return false;
     return true;
   }
@@ -98,28 +73,19 @@ public class SightConfig implements AbstractData {
     int r = m__hashcode;
     if (r == 0) {
       r = 1;
-      r = r * 37 + mKeySig.ordinal();
-      r = r * 37 + mHand.ordinal();
-      r = r * 37 + mNotes.hashCode();
-      r = r * 37 + mResolution;
+      r = r * 37 + mChords.hashCode();
       m__hashcode = r;
     }
     return r;
   }
 
-  protected KeySig mKeySig;
-  protected Hand mHand;
-  protected String mNotes;
-  protected int mResolution;
+  protected File mChords;
   protected int m__hashcode;
 
   public static final class Builder extends SightConfig {
 
     private Builder(SightConfig m) {
-      mKeySig = m.mKeySig;
-      mHand = m.mHand;
-      mNotes = m.mNotes;
-      mResolution = m.mResolution;
+      mChords = m.mChords;
     }
 
     @Override
@@ -136,30 +102,12 @@ public class SightConfig implements AbstractData {
     @Override
     public SightConfig build() {
       SightConfig r = new SightConfig();
-      r.mKeySig = mKeySig;
-      r.mHand = mHand;
-      r.mNotes = mNotes;
-      r.mResolution = mResolution;
+      r.mChords = mChords;
       return r;
     }
 
-    public Builder keySig(KeySig x) {
-      mKeySig = (x == null) ? KeySig.DEFAULT_INSTANCE : x;
-      return this;
-    }
-
-    public Builder hand(Hand x) {
-      mHand = (x == null) ? Hand.DEFAULT_INSTANCE : x;
-      return this;
-    }
-
-    public Builder notes(String x) {
-      mNotes = (x == null) ? "" : x;
-      return this;
-    }
-
-    public Builder resolution(int x) {
-      mResolution = x;
+    public Builder chords(File x) {
+      mChords = (x == null) ? Files.DEFAULT : x;
       return this;
     }
 
@@ -168,10 +116,7 @@ public class SightConfig implements AbstractData {
   public static final SightConfig DEFAULT_INSTANCE = new SightConfig();
 
   private SightConfig() {
-    mKeySig = KeySig.DEFAULT_INSTANCE;
-    mHand = Hand.DEFAULT_INSTANCE;
-    mNotes = "";
-    mResolution = 300;
+    mChords = Files.DEFAULT;
   }
 
 }

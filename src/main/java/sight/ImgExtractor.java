@@ -3,6 +3,7 @@ package sight;
 import static js.base.Tools.*;
 
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.util.List;
 
 import js.base.BaseObject;
@@ -162,6 +163,9 @@ public class ImgExtractor extends BaseObject {
     r.sort((a, b) -> Integer.compare(a.x, b.x));
     for (var rd : r)
       log("subImage at:", rd);
+
+    if (mRenderedRectsImageFile != null)
+      renderRects(mSource, r, mRenderedRectsImageFile);
     return r;
   }
 
@@ -202,6 +206,16 @@ public class ImgExtractor extends BaseObject {
 
     int x0, x1, y0, y1;
   }
+
+  public ImgExtractor withRenderedRects(File imageFile) {
+    mRenderedRectsImageFile = imageFile;
+    return this;
+  }
+
+  private void renderRects(BufferedImage sourceImage, List<IRect> rects, File outputFile) {
+  }
+
+  private File mRenderedRectsImageFile;
 
   private BufferedImage mSource;
   private int mWidth, mHeight;

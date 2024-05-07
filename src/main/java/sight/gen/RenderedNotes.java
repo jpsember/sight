@@ -10,10 +10,6 @@ import js.json.JSMap;
 
 public class RenderedNotes implements AbstractData {
 
-  public int version() {
-    return mVersion;
-  }
-
   public File imageFile() {
     return mImageFile;
   }
@@ -27,9 +23,8 @@ public class RenderedNotes implements AbstractData {
     return new Builder(this);
   }
 
-  protected static final String _0 = "version";
-  protected static final String _1 = "image_file";
-  protected static final String _2 = "rendered_chords";
+  protected static final String _0 = "image_file";
+  protected static final String _1 = "rendered_chords";
 
   @Override
   public String toString() {
@@ -39,13 +34,12 @@ public class RenderedNotes implements AbstractData {
   @Override
   public JSMap toJson() {
     JSMap m = new JSMap();
-    m.putUnsafe(_0, mVersion);
-    m.putUnsafe(_1, mImageFile.toString());
+    m.putUnsafe(_0, mImageFile.toString());
     {
       JSList j = new JSList();
       for (RenderedChord x : mRenderedChords)
         j.add(x.toJson());
-      m.put(_2, j);
+      m.put(_1, j);
     }
     return m;
   }
@@ -61,15 +55,14 @@ public class RenderedNotes implements AbstractData {
   }
 
   private RenderedNotes(JSMap m) {
-    mVersion = m.opt(_0, 1);
     {
       mImageFile = Files.DEFAULT;
-      String x = m.opt(_1, (String) null);
+      String x = m.opt(_0, (String) null);
       if (x != null) {
         mImageFile = new File(x);
       }
     }
-    mRenderedChords = DataUtil.parseListOfObjects(RenderedChord.DEFAULT_INSTANCE, m.optJSList(_2), false);
+    mRenderedChords = DataUtil.parseListOfObjects(RenderedChord.DEFAULT_INSTANCE, m.optJSList(_1), false);
   }
 
   public static Builder newBuilder() {
@@ -85,8 +78,6 @@ public class RenderedNotes implements AbstractData {
     RenderedNotes other = (RenderedNotes) object;
     if (other.hashCode() != hashCode())
       return false;
-    if (!(mVersion == other.mVersion))
-      return false;
     if (!(mImageFile.equals(other.mImageFile)))
       return false;
     if (!(mRenderedChords.equals(other.mRenderedChords)))
@@ -99,7 +90,6 @@ public class RenderedNotes implements AbstractData {
     int r = m__hashcode;
     if (r == 0) {
       r = 1;
-      r = r * 37 + mVersion;
       r = r * 37 + mImageFile.hashCode();
       for (RenderedChord x : mRenderedChords)
         if (x != null)
@@ -109,7 +99,6 @@ public class RenderedNotes implements AbstractData {
     return r;
   }
 
-  protected int mVersion;
   protected File mImageFile;
   protected List<RenderedChord> mRenderedChords;
   protected int m__hashcode;
@@ -117,7 +106,6 @@ public class RenderedNotes implements AbstractData {
   public static final class Builder extends RenderedNotes {
 
     private Builder(RenderedNotes m) {
-      mVersion = m.mVersion;
       mImageFile = m.mImageFile;
       mRenderedChords = DataUtil.mutableCopyOf(m.mRenderedChords);
     }
@@ -136,15 +124,9 @@ public class RenderedNotes implements AbstractData {
     @Override
     public RenderedNotes build() {
       RenderedNotes r = new RenderedNotes();
-      r.mVersion = mVersion;
       r.mImageFile = mImageFile;
       r.mRenderedChords = DataUtil.immutableCopyOf(mRenderedChords);
       return r;
-    }
-
-    public Builder version(int x) {
-      mVersion = x;
-      return this;
     }
 
     public Builder imageFile(File x) {
@@ -162,7 +144,6 @@ public class RenderedNotes implements AbstractData {
   public static final RenderedNotes DEFAULT_INSTANCE = new RenderedNotes();
 
   private RenderedNotes() {
-    mVersion = 1;
     mImageFile = Files.DEFAULT;
     mRenderedChords = DataUtil.emptyList();
   }

@@ -11,6 +11,9 @@ import js.file.FileException;
 import js.file.Files;
 import js.graphics.ImgUtil;
 import js.parsing.MacroParser;
+import sight.gen.Hand;
+import sight.gen.KeySig;
+import sight.gen.RenderedSet;
 import sight.gen.SightConfig;
 
 public class SightOper extends AppOper {
@@ -50,106 +53,26 @@ public class SightOper extends AppOper {
 
   private SightConfig mConfig;
 
-  private String compileKey() {
-    var k = config().keySig();
-    var s = k.toString().toLowerCase();
-    var s2 = chomp(s, "_flat");
-    if (s2 != s) {
-      s = s2 + "es";
-    }
-    s = s + " \\major";
-    return s;
-  }
-
-  private static final boolean SKIP_SYSTEM_CALL = false && alert("skipping the call to lilypond");
-
   @Override
   public void perform() {
 
-    String handFragName;
-    switch (config().hand()) {
-    default:
-      throw notFinished("not yet supported:", config().hand());
-    case RIGHT:
-      handFragName = "right_hand.txt";
-      break;
-    case LEFT:
-      handFragName = "left_hand.txt";
-      break;
-    }
-    var template = frag(handFragName);
+    mark("look for notes file in config, generate them all via the chord library");
 
-    var m = map();
-    m.put("key", compileKey());
-    m.put("notes", compileNotes(config().notes()));
+    var rs = RenderedSet.newBuilder();
+    rs.keySig(KeySig.E);
+    rs.hand(Hand.RIGHT);
+    rs.notes("<gis b dis>4 <gis' b dis gis> <fis, a cis e> <fis a c dis>");
 
-    MacroParser parser = new MacroParser();
-    parser.withTemplate(template).withMapper(m);
-    String script = parser.content();
+    rs.notes("<gis b dis>4 <gis' b dis gis> <fis, a cis e> <fis a c dis> <c e g> <d f a> <e g b>");
+    rs.notes("<gis b dis>4 <gis' b dis gis> <fis, a cis e> <fis a c dis> <c e g> <d f a> <e g b>");
 
-    File targetFile;
+    var r = rs.build();
+    var cl = new ChordLibrary();
+    cl.ignoreCache();
 
-    if (SKIP_SYSTEM_CALL) {
-      targetFile = new File("/Users/home/github_projects/sight/_SKIP_work/hello.png");
-    } else {
-      // Create work directory
-
-      var workDir = new File(Files.currentDirectory(), "_SKIP_work");
-      files().deleteDirectory(workDir, "_SKIP_");
-      files().mkdirs(workDir);
-
-      String name = "hello";
-      var sourceFile = new File(workDir, name + ".ly");
-      targetFile = Files.setExtension(sourceFile, "png");
-
-      files().writeString(sourceFile, script);
-
-      {
-
-        var s = new SystemCall();
-        s.setVerbose(verbose());
-
-        s.directory(workDir);
-        s.arg("/opt/local/bin/lilypond", "--format=png", "-dresolution=" + config().resolution());
-        s.arg(name + ".ly");
-        s.call();
-
-        if (!targetFile.exists()) {
-          pr("target file doesn't exist?", targetFile);
-          alert("problem compiling:", sourceFile, INDENT, s.systemErr());
-          pr("targetFile:", Files.infoMap(targetFile));
-          badState("trouble compiling");
-        }
-      }
-
-    }
-    var bi = ImgUtil.read(targetFile);
-
-    var ext = new ImgExtractor();
-    //    ext.alertVerbose();
-    ext.setSource(bi);
-    ext.extract();
-
-    todo("do something with rectangles and the note expressions that generated them");
-  }
-
-  public String frag(String resourceName) {
-    try {
-      return Files.readString(getClass(), resourceName);
-    } catch (FileException e) {
-      // In case we're running in an IDE, look for it in other ways
-      var pkg = "sight";
-      var dir = new File(Files.homeDirectory(), "github_projects/sight/src/main/resources/" + pkg);
-      var f = new File(dir, resourceName);
-      return Files.readString(f);
-    }
-  }
-
-  private String compileNotes(String notesExpr) {
-    checkNonEmpty(notesExpr, "no notes given!");
-
-    // Ensure that 
-    return notesExpr.trim();
+    cl.alertVerbose();
+    var rn = cl.get(r);
+    pr("library produced:", INDENT, rn);
   }
 
 }

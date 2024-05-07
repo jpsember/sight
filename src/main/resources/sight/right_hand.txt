@@ -1,4 +1,9 @@
-#(set-default-paper-size '(cons (* 75 mm) (* 22 mm)))
+ \version "2.24.3"
+
+% This is causing formatting trouble.  Best to work with a larger page size, as
+% we are extracting much smaller rects from it anways.
+
+% #(set-default-paper-size '(cons (* 75 mm) (* 22 mm)))
 
 \paper {
   horizontal-shift = -2.0\mm
