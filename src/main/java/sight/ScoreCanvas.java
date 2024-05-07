@@ -6,8 +6,10 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.List;
 
 import js.base.BaseObject;
+import js.file.Files;
 import js.geometry.IPoint;
 import js.geometry.IRect;
 import js.geometry.Matrix;
@@ -19,7 +21,7 @@ public class ScoreCanvas extends BaseObject {
 
   public void setSourceImage(File sourceImage) {
     loadTools();
-    ms = ImgUtil.read(sourceImage);
+    mAtlasImage = ImgUtil.read(sourceImage);
   }
 
   public void setNotes(RenderedNotes rn) {
@@ -37,10 +39,13 @@ public class ScoreCanvas extends BaseObject {
 
     // We'll set the height to the height of the staff image, multipled by a constant
     var staffHeight = rn.staffRect().height;
-    var extraAbove = round(staffHeight * .8);
-    var extraBelow = round(staffHeight * .8);
+    var extraAbove = round(staffHeight * 1.2);
+    var extraBelow = round(staffHeight * 1.2);
 
-    var canvasHeight = extraAbove + staffHeight + extraBelow;
+    mPromptHeight = round(staffHeight * .4);
+    pr("prompt height:", mPromptHeight);
+
+    var canvasHeight = extraAbove + staffHeight + extraBelow + mPromptHeight;
 
     // Determine x offsets of the clef, keysig, and the (first) chord
 
@@ -57,6 +62,7 @@ public class ScoreCanvas extends BaseObject {
 
     int padding = round(staffHeight * .5);
     mAtlasToCanvas = Matrix.getTranslate(padding, padding + extraAbove - rn.staffRect().y);
+    mPromptY = canvasHeight - mPromptHeight;
     mCanvasSize = new IPoint(mContentWidth + padding * 2, padding * 2 + canvasHeight);
   }
 
@@ -76,7 +82,7 @@ public class ScoreCanvas extends BaseObject {
     drawAtlasImage(rn.keysigRect(), mKeySigX);
 
     // Draw up to four notes
-    var cx = mChordsX;
+    var cx = mChordsX + mChordWidth / 2;
     var rnd = MyMath.random();
 
     for (int i = 0; i < mMaxNotes; i++) {
@@ -84,10 +90,40 @@ public class ScoreCanvas extends BaseObject {
       var ch = rn.renderedChords().get(j);
 
       var r = getImage(ch.rect());
-      graphics().drawImage(r, cx, ch.rect().y, null);
+      graphics().drawImage(r, cx - ch.rect().width / 2, ch.rect().y, null);
+
+      // Draw something in the prompt region
+
+      var ic = icon(rnd.nextInt(3));
+      graphics().drawImage(ic, cx - ic.getWidth() / 2, mPromptY, null);
+
       cx += mChordWidth;
     }
   }
+
+  private BufferedImage icon(int index) {
+    if (mIcons == null) {
+      mIcons = arrayList();
+      for (var name : split("cursor right wrong", ' ')) {
+        var nm = name + ".png";
+        pr("attempting to read resource:", nm);
+        var k = getClass();
+        byte[] h = null;
+        try {
+          h = Files.toByteArray(k, nm);
+        } catch (Throwable t) {
+          var d = new File("src/main/resources/sight", nm);
+          pr(Files.infoMap(d));
+          h = Files.toByteArray(d, "reading resource outside of jar");
+        }
+
+        mIcons.add(ImgUtil.read(h));
+      }
+    }
+    return mIcons.get(index);
+  }
+
+  private List<BufferedImage> mIcons;
 
   private void drawAtlasImage(IRect atlasRect, int targetX) {
     graphics().drawImage(getImage(atlasRect), targetX, atlasRect.y, null);
@@ -104,18 +140,12 @@ public class ScoreCanvas extends BaseObject {
   }
 
   private BufferedImage getImage(IRect rect) {
-    return ImgUtil.subimage(ms, rect);
+    return ImgUtil.subimage(mAtlasImage, rect);
   }
-
-  private BufferedImage ms;
 
   private static int round(double v) {
     return (int) Math.round(v);
   }
-
-  //  private IPoint toCanvas(IPoint pt) {
-  //    return pt.sumWith(mTranslateToCanvas);
-  //  }
 
   private Graphics2D graphics() {
     if (mCanvasGraphics == null) {
@@ -125,15 +155,15 @@ public class ScoreCanvas extends BaseObject {
   }
 
   private RenderedNotes mRenderedNotes;
-
   private int mMaxNotes = 4;
-
   private Matrix mAtlasToCanvas;
   private IPoint mCanvasSize;
   private int mChordWidth;
-  //  private int staffXStart, staffXEnd;
   private BufferedImage mCanvasImage;
   private Graphics2D mCanvasGraphics;
   private int mClefX, mKeySigX, mChordsX, mContentWidth;
+  private int mPromptHeight;
+  private BufferedImage mAtlasImage;
+  private int mPromptY;
 
 }
