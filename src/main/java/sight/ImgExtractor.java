@@ -23,9 +23,10 @@ public class ImgExtractor extends BaseObject {
     mSource = img;
   }
 
-  public static final int RECT_CLEF = 0 //
-      , RECT_KEYSIG = 1 //
-      , RECT_HEADER_SIZE = 2 //
+  public static final int RECT_STAFF_LINES = 0 //
+      , RECT_CLEF = 1 //
+      , RECT_KEYSIG = 2 //
+      , RECT_HEADER_SIZE = 3 //
   ;
 
   public List<IRect> rects() {
@@ -69,6 +70,7 @@ public class ImgExtractor extends BaseObject {
       }
     }
 
+    mStaffLineEndX = x;
     return lineRows;
   }
 
@@ -166,6 +168,17 @@ public class ImgExtractor extends BaseObject {
       r.add(rect);
     }
     r.sort((a, b) -> Integer.compare(a.x, b.x));
+
+    // Insert at position 0 a rectangle representing a thin slice of the staff lines
+    {
+      var width = 8;
+      int y0 = mStaffLines.get(0) - LINE_THICKNESS - 2;
+      int yLast = last(mStaffLines) + LINE_THICKNESS + 2;
+
+      var sr = new IRect(mStaffLineEndX - 1 - width, y0, width, yLast - y0);
+      r.add(0, sr);
+    }
+
     for (var rd : r)
       log("subImage at:", rd);
 
@@ -226,6 +239,7 @@ public class ImgExtractor extends BaseObject {
   private int mWidth, mHeight;
   private byte[] mPixels;
   private List<Integer> mStaffLines;
+  private int mStaffLineEndX;
   private List<IRect> mSubImages;
 
 }
