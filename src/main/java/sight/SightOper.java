@@ -2,15 +2,8 @@ package sight;
 
 import static js.base.Tools.*;
 
-import java.io.File;
-
 import js.app.AppOper;
 import js.base.BasePrinter;
-import js.base.SystemCall;
-import js.file.FileException;
-import js.file.Files;
-import js.graphics.ImgUtil;
-import js.parsing.MacroParser;
 import sight.gen.Hand;
 import sight.gen.KeySig;
 import sight.gen.RenderedSet;

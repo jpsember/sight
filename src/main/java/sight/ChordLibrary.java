@@ -109,19 +109,17 @@ public class ChordLibrary extends BaseObject {
     var ext = new ImgExtractor();
     //    ext.alertVerbose();
     ext.setSource(bi);
-    var boxes = ext.extract();
+    var boxes = ext.rects();
 
     var renderedNotesBuilder = RenderedNotes.newBuilder();
     renderedNotesBuilder.imageFile(new File(targetFile.getName()));
 
     {
       int numBoxes = boxes.size();
-
-      // We expect a box produced for each of the clef and the key signature
-      final int HEADER_BOXES = 2;
-      if (chords.size() != numBoxes - HEADER_BOXES) {
+      var hdrRects = ImgExtractor.RECT_HEADER_SIZE;
+      if (chords.size() != numBoxes - hdrRects) {
         badState("number of chords:", chords.size(), "number of boxes:", numBoxes, "expected:",
-            chords.size() + 2);
+            chords.size() + hdrRects);
       }
 
       List<RenderedChord> renderedChordsList = arrayList();
@@ -129,7 +127,7 @@ public class ChordLibrary extends BaseObject {
       var j = INIT_INDEX;
       for (var ch : chords) {
         j++;
-        var i = j + HEADER_BOXES;
+        var i = j + hdrRects;
         var renc = RenderedChord.newBuilder();
         renc.chord(ch);
         renc.rect(boxes.get(i));

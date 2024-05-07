@@ -23,7 +23,12 @@ public class ImgExtractor extends BaseObject {
     mSource = img;
   }
 
-  public List<IRect> extract() {
+  public static final int RECT_CLEF = 0 //
+      , RECT_KEYSIG = 1 //
+      , RECT_HEADER_SIZE = 2 //
+  ;
+
+  public List<IRect> rects() {
     if (mSubImages == null) {
       BufferedImage image = mSource;
       if (verbose())
