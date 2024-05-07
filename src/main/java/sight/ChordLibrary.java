@@ -41,8 +41,9 @@ public class ChordLibrary extends BaseObject {
     var imgFile = new File(mCacheDirectory, baseName + ".png");
     if (mIgnoreCache || !metadata.exists() || !imgFile.exists())
       compile(rs, metadata, imgFile);
-    var rn = Files.parseAbstractData(RenderedNotes.DEFAULT_INSTANCE, metadata);
-    return rn;
+    var rn = Files.parseAbstractData(RenderedNotes.DEFAULT_INSTANCE, metadata).toBuilder();
+    rn.imageFile(new File(mCacheDirectory, rn.imageFile().toString()));
+    return rn.build();
   }
 
   private void compile(RenderedSet rs, File metadata, File imgFile) {

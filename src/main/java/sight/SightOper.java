@@ -2,8 +2,11 @@ package sight;
 
 import static js.base.Tools.*;
 
+import java.io.File;
+
 import js.app.AppOper;
 import js.base.BasePrinter;
+import js.graphics.ImgUtil;
 import sight.gen.Hand;
 import sight.gen.KeySig;
 import sight.gen.RenderedSet;
@@ -66,6 +69,13 @@ public class SightOper extends AppOper {
     //cl.alertVerbose();
     var rn = cl.get(r);
     pr("library produced:", INDENT, rn);
+
+    var sc = new ScoreCanvas();
+    sc.setNotes(rn);
+    sc.setSourceImage(rn.imageFile());
+    sc.render();
+    var img = sc.image();
+    ImgUtil.writeImage(files(), img, new File("canvas.png"));
   }
 
 }
