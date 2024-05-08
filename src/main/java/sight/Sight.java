@@ -117,7 +117,7 @@ public class Sight extends App {
    * nothing
    */
   public void populateFrame(JPanel parentPanel) {
-    mCanvas = new ScoreCanvas();
+    mCanvas = new Canvas();
     //    var b = new JButton("hello");
     parentPanel.add(mCanvas);
 
@@ -134,10 +134,7 @@ public class Sight extends App {
     var rn = cl.get(r);
     var sc = mCanvas;
     sc.setNotes(rn);
-    pr("setting notes:", INDENT, rn);
     sc.setSourceImage(rn.imageFile());
-    //  sc.render();
-
   }
 
   /**
@@ -156,5 +153,5 @@ public class Sight extends App {
     // repaintPanels(repaintFlags);
   }
 
-  private ScoreCanvas mCanvas;
+  private Canvas mCanvas;
 }

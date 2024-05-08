@@ -18,14 +18,14 @@ import js.geometry.MyMath;
 import js.graphics.ImgUtil;
 import sight.gen.RenderedNotes;
 
-public class ScoreCanvas extends JPanel {
+public class Canvas extends JPanel {
 
-  public void paintComponent(Graphics g2) {
+  public void paintComponent(Graphics graphics) {
     if (mRenderedNotes == null)
       return;
 
-    mCanvasGraphics = (Graphics2D) g2;
-    var g = mCanvasGraphics;
+    var g = (Graphics2D) graphics;
+    //var g = mCanvasGraphics;
     {
       g.setBackground(Color.white);
       var b = new IRect(g.getClipBounds());
@@ -33,7 +33,7 @@ public class ScoreCanvas extends JPanel {
     }
 
     calcTransform();
-    graphics().setTransform(mAtlasToCanvas.toAffineTransform());
+    g.setTransform(mAtlasToCanvas.toAffineTransform());
 
     var rn = mRenderedNotes;
 
@@ -41,13 +41,13 @@ public class ScoreCanvas extends JPanel {
     {
       var sr = rn.staffRect();
       var staffImg = getImage(sr);
-      graphics().drawImage(staffImg, 0, sr.y, mContentWidth, sr.height, null);
+      g.drawImage(staffImg, 0, sr.y, mContentWidth, sr.height, null);
     }
     // Draw the clef
-    drawAtlasImage(rn.clefRect(), mClefX);
+    drawAtlasImage(g, rn.clefRect(), mClefX);
 
     // Draw the key signature
-    drawAtlasImage(rn.keysigRect(), mKeySigX);
+    drawAtlasImage(g, rn.keysigRect(), mKeySigX);
 
     // Draw up to four notes
     var cx = mChordsX + mChordWidth / 2;
@@ -58,21 +58,19 @@ public class ScoreCanvas extends JPanel {
       var ch = rn.renderedChords().get(j);
 
       var r = getImage(ch.rect());
-      graphics().drawImage(r, cx - ch.rect().width / 2, ch.rect().y, null);
+      g.drawImage(r, cx - ch.rect().width / 2, ch.rect().y, null);
 
       // Draw something in the prompt region
 
       var ic = icon(rnd.nextInt(3));
-      graphics().drawImage(ic, cx - ic.getWidth() / 2, mPromptY, null);
+      g.drawImage(ic, cx - ic.getWidth() / 2, mPromptY, null);
 
       cx += mChordWidth;
     }
 
-    mCanvasGraphics = null;
   }
 
   public void setSourceImage(File sourceImage) {
-    loadTools();
     mAtlasImage = ImgUtil.read(sourceImage);
   }
 
@@ -132,19 +130,9 @@ public class ScoreCanvas extends JPanel {
 
   private List<BufferedImage> mIcons;
 
-  private void drawAtlasImage(IRect atlasRect, int targetX) {
-    graphics().drawImage(getImage(atlasRect), targetX, atlasRect.y, null);
+  private void drawAtlasImage(Graphics2D g, IRect atlasRect, int targetX) {
+    g.drawImage(getImage(atlasRect), targetX, atlasRect.y, null);
   }
-
-  //  public BufferedImage image() {
-  //    if (mCanvasImage == null) {
-  //      mCanvasImage = ImgUtil.build(mCanvasSize, ImgUtil.PREFERRED_IMAGE_TYPE_COLOR);
-  //      mCanvasGraphics = image().createGraphics();
-  //      mCanvasGraphics.setBackground(Color.white);
-  //      mCanvasGraphics.clearRect(0, 0, mCanvasSize.x, mCanvasSize.y);
-  //    }
-  //    return mCanvasImage;
-  //  }
 
   private BufferedImage getImage(IRect rect) {
     return ImgUtil.subimage(mAtlasImage, rect);
@@ -154,15 +142,10 @@ public class ScoreCanvas extends JPanel {
     return (int) Math.round(v);
   }
 
-  private Graphics2D graphics() {
-    return mCanvasGraphics;
-  }
-
   private RenderedNotes mRenderedNotes;
   private int mMaxNotes = 4;
   private Matrix mAtlasToCanvas;
   private int mChordWidth;
-  private Graphics2D mCanvasGraphics;
   private int mClefX, mKeySigX, mChordsX, mContentWidth;
   private int mPromptHeight;
   private BufferedImage mAtlasImage;
