@@ -5,7 +5,9 @@ import static js.base.Tools.*;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.InputStream;
 import java.util.List;
 
 import js.base.BaseObject;
@@ -43,7 +45,6 @@ public class ScoreCanvas extends BaseObject {
     var extraBelow = round(staffHeight * 1.2);
 
     mPromptHeight = round(staffHeight * .4);
-    pr("prompt height:", mPromptHeight);
 
     var canvasHeight = extraAbove + staffHeight + extraBelow + mPromptHeight;
 
@@ -106,17 +107,10 @@ public class ScoreCanvas extends BaseObject {
       mIcons = arrayList();
       for (var name : split("cursor right wrong", ' ')) {
         var nm = name + ".png";
-        pr("attempting to read resource:", nm);
         var k = getClass();
         byte[] h = null;
-        try {
-          h = Files.toByteArray(k, nm);
-        } catch (Throwable t) {
-          var d = new File("src/main/resources/sight", nm);
-          pr(Files.infoMap(d));
-          h = Files.toByteArray(d, "reading resource outside of jar");
-        }
-
+        var res = Util.openResource(k, nm);
+        h = Files.toByteArray(res, "icon");
         mIcons.add(ImgUtil.read(h));
       }
     }

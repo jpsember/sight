@@ -32,8 +32,7 @@ public class ChordLibrary extends BaseObject {
   }
 
   public RenderedNotes get(RenderedSet rs) {
-    todo("the report stuff is still wonky; can't use ?xxx since it doesn't look for a file for some reason");
-    //todo("use a hash code with more resolution");
+    todo("?use a hash code with more resolution");
     var key = rs.hashCode();
     var baseName = DataUtil.hex32(key);
 
