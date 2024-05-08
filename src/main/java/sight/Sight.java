@@ -4,7 +4,6 @@ import static js.base.Tools.*;
 
 import java.awt.BorderLayout;
 
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -13,6 +12,9 @@ import javax.swing.SwingUtilities;
 import js.app.App;
 import js.app.AppOper;
 import js.system.SystemUtil;
+import sight.gen.Hand;
+import sight.gen.KeySig;
+import sight.gen.RenderedSet;
 
 public class Sight extends App {
 
@@ -115,8 +117,27 @@ public class Sight extends App {
    * nothing
    */
   public void populateFrame(JPanel parentPanel) {
-    var b = new JButton("hello");
-    parentPanel.add(b);
+    mCanvas = new ScoreCanvas();
+    //    var b = new JButton("hello");
+    parentPanel.add(mCanvas);
+
+    var rs = RenderedSet.newBuilder();
+    rs.keySig(KeySig.E);
+    rs.hand(Hand.RIGHT);
+    rs.notes("<gis b dis>4 <gis' b dis gis> <fis, a cis e> <fis a c dis> <c' e g> <d f a> <e g b> <e ges b>");
+
+    var r = rs.build();
+    var cl = new ChordLibrary();
+    //cl.ignoreCache();
+
+    //cl.alertVerbose();
+    var rn = cl.get(r);
+    var sc = mCanvas;
+    sc.setNotes(rn);
+    pr("setting notes:", INDENT, rn);
+    sc.setSourceImage(rn.imageFile());
+    //  sc.render();
+
   }
 
   /**
@@ -135,4 +156,5 @@ public class Sight extends App {
     // repaintPanels(repaintFlags);
   }
 
+  private ScoreCanvas mCanvas;
 }

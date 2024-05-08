@@ -2,16 +2,11 @@ package sight;
 
 import static js.base.Tools.*;
 
-import java.io.File;
-
 import js.app.AppOper;
 import js.base.BasePrinter;
-import js.graphics.ImgUtil;
-import sight.gen.Hand;
-import sight.gen.KeySig;
-import sight.gen.RenderedSet;
 import sight.gen.SightConfig;
 
+@Deprecated
 public class SightOper extends AppOper {
 
   @Override
@@ -53,24 +48,24 @@ public class SightOper extends AppOper {
 
   @Override
   public void perform() {
-
-    var rs = RenderedSet.newBuilder();
-    rs.keySig(KeySig.E);
-    rs.hand(Hand.RIGHT);
-    rs.notes("<gis b dis>4 <gis' b dis gis> <fis, a cis e> <fis a c dis> <c' e g> <d f a> <e g b> <e ges b>");
-
-    var r = rs.build();
-    var cl = new ChordLibrary();
-    //cl.ignoreCache();
-
-    //cl.alertVerbose();
-    var rn = cl.get(r);
-    var sc = new ScoreCanvas();
-    sc.setNotes(rn);
-    sc.setSourceImage(rn.imageFile());
-    sc.render();
-    var img = sc.image();
-    ImgUtil.writeImage(files(), img, new File("canvas.png"));
+//
+//    var rs = RenderedSet.newBuilder();
+//    rs.keySig(KeySig.E);
+//    rs.hand(Hand.RIGHT);
+//    rs.notes("<gis b dis>4 <gis' b dis gis> <fis, a cis e> <fis a c dis> <c' e g> <d f a> <e g b> <e ges b>");
+//
+//    var r = rs.build();
+//    var cl = new ChordLibrary();
+//    //cl.ignoreCache();
+//
+//    //cl.alertVerbose();
+//    var rn = cl.get(r);
+//    var sc = new ScoreCanvas();
+//    sc.setNotes(rn);
+//    sc.setSourceImage(rn.imageFile());
+//    sc.render();
+//    var img = sc.image();
+//    ImgUtil.writeImage(files(), img, new File("canvas.png"));
   }
 
 }
