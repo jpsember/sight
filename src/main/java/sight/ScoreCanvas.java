@@ -5,9 +5,7 @@ import static js.base.Tools.*;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.InputStream;
 import java.util.List;
 
 import js.base.BaseObject;

@@ -9,7 +9,7 @@ import js.testutil.MyTestCase;
 public class SightTest extends MyTestCase {
 
   @Test
-  public void parser() {
+  public void parser() {rv();
     p("<gis b dis>4 <gis' b dis gis> <fis, a cis e> <fis a c dis>");
   }
 

@@ -2,27 +2,27 @@ package sight;
 
 import static js.base.Tools.*;
 
-import js.app.App;
+import js.guiapp.GUIApp;
+import js.guiapp.MenuBarWrapper;
 
-public class Sight extends App {
+public class Sight extends GUIApp {
 
   public static void main(String[] args) {
     loadTools();
     Sight app = new Sight();
     //app.setCustomArgs("-h");
     app.startApplication(args);
-    app.exitWithReturnCode();
-  }
-
-  
-  @Override
-  public String getVersion() {
-    return "1.0";
+    //app.exitWithReturnCode();
   }
 
   @Override
-  protected void registerOperations() {
-    registerOper(new SightOper());
+  public void repaintPanels(int repaintFlags) {
+    pr("repaintPanels, flags:", repaintFlags);
+  }
+
+  @Override
+  public void populateMenuBar(MenuBarWrapper m) {
+    pr("populateMenuBar");
   }
 
 }
