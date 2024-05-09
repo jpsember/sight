@@ -4,6 +4,7 @@ import static js.base.Tools.*;
 
 import java.awt.BorderLayout;
 import java.io.File;
+import java.util.List;
 
 import javax.sound.midi.MidiDevice;
 import javax.sound.midi.MidiSystem;
@@ -100,22 +101,40 @@ public class Sight extends App {
     try {
 
       {
-        MidiDevice inputDevice = null;
+        //        MidiDevice inputDevice = null;
 
-        int index = INIT_INDEX;
-        var infos = MidiSystem.getMidiDeviceInfo();
-        for (var x : infos) {
-          index++;
-          pr("#", index);
-          pr("...name:", quote(x.getName()), "desc:", quote(x.getDescription()));
+        List<MidiDevice> deviceCandidates = arrayList();
+
+        var midiDevInfo = MidiSystem.getMidiDeviceInfo();
+        int i = INIT_INDEX;
+        for (var x : midiDevInfo) {
+          i++;
+          pr("#", i, "name:", quote(x.getName()), "desc:", quote(x.getDescription()));
           if (x.getName().equals("CASIO USB-MIDI")) {
-            inputDevice = MidiSystem.getMidiDevice(x);
-            pr("......set as input device");
-            break;
+            deviceCandidates.add(MidiSystem.getMidiDevice(x));
+            pr("...found input device candidate");
           }
         }
 
-        checkState(inputDevice != null, "can't find Casio");
+        // Determine which of the candidates is an actual input device
+        MidiDevice inputDevice = null;
+        for (var c : deviceCandidates) {
+          pr("...trying to get transmitter for:", c);
+          try {
+            c.open();
+            c.getTransmitter();
+            c.close();
+            inputDevice = c;
+            break;
+          } catch (Throwable t) {
+            pr(".......failed to get transmitter:", t.getMessage());
+          }
+        }
+
+        if (inputDevice == null) {
+          pr("can't find MidiDevice that can transmit");
+          return;
+        }
 
         var sequencer = MidiSystem.getSequencer();
         Transmitter transmitter;
@@ -143,6 +162,7 @@ public class Sight extends App {
         // And start recording
         sequencer.startRecording();
 
+       
         pr("now recording for 5s");
         DateTimeTools.sleepForRealMs(5000);
 
@@ -164,6 +184,8 @@ public class Sight extends App {
             pr("MidiFileFormat:", fmt, fmt.properties());
           }
         }
+        inputDevice.close();
+
       }
 
       if (true)
