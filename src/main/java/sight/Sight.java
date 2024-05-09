@@ -3,7 +3,15 @@ package sight;
 import static js.base.Tools.*;
 
 import java.awt.BorderLayout;
+import java.io.File;
 
+import javax.sound.midi.MidiDevice;
+import javax.sound.midi.MidiSystem;
+import javax.sound.midi.Receiver;
+import javax.sound.midi.Sequence;
+import javax.sound.midi.ShortMessage;
+import javax.sound.midi.Track;
+import javax.sound.midi.Transmitter;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -11,15 +19,11 @@ import javax.swing.SwingUtilities;
 
 import js.app.App;
 import js.app.AppOper;
+import js.base.DateTimeTools;
 import js.system.SystemUtil;
 import sight.gen.Hand;
 import sight.gen.KeySig;
 import sight.gen.RenderedSet;
-
-import javax.sound.midi.InvalidMidiDataException;
-import javax.sound.midi.MidiSystem;
-import javax.sound.midi.MidiUnavailableException;
-import javax.sound.midi.ShortMessage;
 
 public class Sight extends App {
 
@@ -78,23 +82,93 @@ public class Sight extends App {
       SystemUtil.killProcesses(processExpr);
       SystemUtil.killAfterDelay(processExpr);
     }
-
-    //    UserEventManager.construct(getDefaultUserOperation());
-    //    UserEventManager.sharedInstance().setListener((x) -> userEventManagerListener(x));
-    //    KeyboardShortcutManager.construct(guiAppConfig().keyboardShortcutRegistry());
+    if (true) {
+      midiExpPlay();
+      return;
+    }
 
     createFrame();
 
     mFrame.frame().setVisible(true);
 
-    midiExpPlay();
   }
 
   private void midiExpPlay() {
 
     // adapted from https://stackoverflow.com/questions/69909883
-    
+
     try {
+
+      {
+        MidiDevice inputDevice = null;
+
+        int index = INIT_INDEX;
+        var infos = MidiSystem.getMidiDeviceInfo();
+        for (var x : infos) {
+          index++;
+          pr("#", index);
+          pr("...name:", quote(x.getName()), "desc:", quote(x.getDescription()));
+          if (x.getName().equals("CASIO USB-MIDI")) {
+            inputDevice = MidiSystem.getMidiDevice(x);
+            pr("......set as input device");
+            break;
+          }
+        }
+
+        checkState(inputDevice != null, "can't find Casio");
+
+        var sequencer = MidiSystem.getSequencer();
+        Transmitter transmitter;
+        Receiver receiver;
+
+        // Open a connection to your input device
+        inputDevice.open();
+        // Open a connection to the default sequencer (as specified by MidiSystem)
+        sequencer.open();
+        // Get the transmitter class from your input device
+        transmitter = inputDevice.getTransmitter();
+        // Get the receiver class from your sequencer
+        receiver = sequencer.getReceiver();
+        // Bind the transmitter to the receiver so the receiver gets input from the transmitter
+        transmitter.setReceiver(receiver);
+
+        // Create a new sequence
+        Sequence seq = new Sequence(Sequence.PPQ, 24);
+        // And of course a track to record the input on
+        Track currentTrack = seq.createTrack();
+        // Do some sequencer settings
+        sequencer.setSequence(seq);
+        sequencer.setTickPosition(0);
+        sequencer.recordEnable(currentTrack, -1);
+        // And start recording
+        sequencer.startRecording();
+
+        pr("now recording for 5s");
+        DateTimeTools.sleepForRealMs(5000);
+
+        // Stop recording
+        if (sequencer.isRecording()) {
+          pr("stopping recording");
+          // Tell sequencer to stop recording
+          sequencer.stopRecording();
+
+          // Retrieve the sequence containing the stuff you played on the MIDI instrument
+          Sequence tmp = sequencer.getSequence();
+
+          if (false) {
+            // Save to file
+            var f = new File("jeff_experiment.mid");
+            pr("saving to:", f);
+            MidiSystem.write(tmp, 0, f);
+            var fmt = MidiSystem.getMidiFileFormat(f);
+            pr("MidiFileFormat:", fmt, fmt.properties());
+          }
+        }
+      }
+
+      if (true)
+        return;
+
       var receiver = MidiSystem.getReceiver();
 
       int[] notes = { 60, 64, 67, 60, 65, 67, 55, 59, 62, 55, 60, 62, 53, 57, 60, 53, 58, 60 };
