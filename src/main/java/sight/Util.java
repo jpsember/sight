@@ -38,4 +38,15 @@ public final class Util {
     DateTimeTools.sleepForRealMs(ms);
   }
 
+  public static void autoClose(AutoCloseable... items) {
+    for (var x : items) {
+      if (x != null) {
+        try {
+          x.close();
+        } catch (Throwable t) {
+          throw asRuntimeException(t);
+        }
+      }
+    }
+  }
 }

@@ -20,7 +20,10 @@ public class Sight extends App {
 
   public static void main(String[] args) {
     if (true) {
-      (new MidiExp()).run();
+      
+        (new MidiExp()).run();
+        pr("finished MidiExp");
+       
       return;
     }
     Sight app = new Sight();

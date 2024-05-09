@@ -6,6 +6,8 @@ import js.base.DateTimeTools;
 import static js.base.Tools.*;
 import static sight.Util.*;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 import javax.sound.midi.InvalidMidiDataException;
@@ -30,18 +32,18 @@ public class MidiExp extends BaseObject {
     }
   }
 
-  private void runAux() throws MidiUnavailableException, InvalidMidiDataException {
+  private void runAux() throws MidiUnavailableException, InvalidMidiDataException, IOException {
 
     // adapted from https://stackoverflow.com/questions/69909883
 
     var inputDevice = findInputDevice();
-
+    if (alert("halting early"))
+      return;
     // How do I access the 'stream' of midi data without storing it in a buffer?
     // https://stackoverflow.com/questions/18851866
 
     Receiver receiver = new OurReceiver();
 
-    // Open a connection to your input device
     inputDevice.open();
 
     // Get the transmitter class from your input device
@@ -50,8 +52,8 @@ public class MidiExp extends BaseObject {
     var sequencer = MidiSystem.getSequencer();
     //        // Open a connection to the default sequencer (as specified by MidiSystem)
     sequencer.open();
-    //        // Get the receiver class from your sequencer
-    //        receiver = sequencer.getReceiver();
+    // Get the receiver class from your sequencer
+    receiver = sequencer.getReceiver();
     // Bind the transmitter to the receiver so the receiver gets input from the transmitter
     transmitter.setReceiver(receiver);
 
@@ -70,27 +72,34 @@ public class MidiExp extends BaseObject {
 
     DateTimeTools.sleepForRealMs(5000);
 
-    //        // Stop recording
-    //        if (sequencer.isRecording()) {
-    //          pr("stopping recording");
-    //          // Tell sequencer to stop recording
-    //          sequencer.stopRecording();
-    //
-    //          // Retrieve the sequence containing the stuff you played on the MIDI instrument
-    //          Sequence tmp = sequencer.getSequence();
-    //
-    //          if (false) {
-    //            // Save to file
-    //            var f = new File("jeff_experiment.mid");
-    //            pr("saving to:", f);
-    //            MidiSystem.write(tmp, 0, f);
-    //            var fmt = MidiSystem.getMidiFileFormat(f);
-    //            pr("MidiFileFormat:", fmt, fmt.properties());
-    //          }
-    //        }
+    // Stop recording
+    if (sequencer.isRecording()) {
+      pr("stopping recording");
+      // Tell sequencer to stop recording
+      sequencer.stopRecording();
+
+      // Retrieve the sequence containing the stuff you played on the MIDI instrument
+      Sequence tmp = sequencer.getSequence();
+
+      if (true) {
+        // Save to file
+        var f = new File("jeff_experiment.mid");
+        pr("saving to:", f);
+        MidiSystem.write(tmp, 0, f);
+        var fmt = MidiSystem.getMidiFileFormat(f);
+        pr("MidiFileFormat:", fmt, fmt.properties());
+      }
+    }
+
+    pr("closing transmitter");
+    autoClose(transmitter);
 
     pr("closing input device");
-    inputDevice.close();
+
+    autoClose(inputDevice);
+    pr("exiting");
+
+    //    autoClose(transmitter, inputDevice);
 
   }
 
@@ -129,17 +138,31 @@ public class MidiExp extends BaseObject {
 
     // Determine which of the candidates is an actual input device
     MidiDevice inputDevice = null;
+
+    int v = INIT_INDEX;
     for (var c : deviceCandidates) {
-      pr("...trying to get transmitter for:", c);
+      v++;
+      if (v != 1) continue;
+      
+      pr("counter:", v, "...trying to get transmitter for:", c);
       try {
         c.open();
-        c.getTransmitter();
-        c.close();
-        inputDevice = c;
-        return inputDevice;
       } catch (Throwable t) {
-        pr(".......failed to get transmitter:", t.getMessage());
+        pr(".......failed to open device:", c.getDeviceInfo().getName());
+        continue;
       }
+
+      try {
+        var tr = c.getTransmitter();
+        tr.close();
+        inputDevice = c;
+
+      } catch (MidiUnavailableException e) {
+        pr("couldn't get transmitter");
+      }
+      c.close();
+      if (inputDevice != null)
+        return inputDevice;
     }
 
     throw badState("Can't find MidiDevice that can transmit");
