@@ -3,15 +3,7 @@ package sight;
 import static js.base.Tools.*;
 
 import java.awt.BorderLayout;
-import java.util.List;
 
-import javax.sound.midi.MidiDevice;
-import javax.sound.midi.MidiMessage;
-import javax.sound.midi.MidiSystem;
-import javax.sound.midi.Receiver;
-import javax.sound.midi.Sequence;
-import javax.sound.midi.ShortMessage;
-import javax.sound.midi.Track;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -19,8 +11,6 @@ import javax.swing.SwingUtilities;
 
 import js.app.App;
 import js.app.AppOper;
-import js.base.BaseObject;
-import js.base.DateTimeTools;
 import js.system.SystemUtil;
 import sight.gen.Hand;
 import sight.gen.KeySig;
@@ -29,7 +19,10 @@ import sight.gen.RenderedSet;
 public class Sight extends App {
 
   public static void main(String[] args) {
-    loadTools();
+    if (true) {
+      (new MidiExp()).run();
+      return;
+    }
     Sight app = new Sight();
     //app.setCustomArgs("-h");
     app.startApplication(args);
@@ -83,140 +76,11 @@ public class Sight extends App {
       SystemUtil.killProcesses(processExpr);
       SystemUtil.killAfterDelay(processExpr);
     }
-    if (true) {
-      midiExpPlay();
-      return;
-    }
 
     createFrame();
 
     mFrame.frame().setVisible(true);
 
-  }
-
-  private void midiExpPlay() {
-
-    // adapted from https://stackoverflow.com/questions/69909883
-
-    try {
-
-      {
-        //        MidiDevice inputDevice = null;
-
-        List<MidiDevice> deviceCandidates = arrayList();
-
-        var midiDevInfo = MidiSystem.getMidiDeviceInfo();
-        int i = INIT_INDEX;
-        for (var x : midiDevInfo) {
-          i++;
-          pr("#", i, "name:", quote(x.getName()), "desc:", quote(x.getDescription()));
-          if (x.getName().equals("CASIO USB-MIDI")) {
-            deviceCandidates.add(MidiSystem.getMidiDevice(x));
-            pr("...found input device candidate");
-          }
-        }
-
-        // Determine which of the candidates is an actual input device
-        MidiDevice inputDevice = null;
-        for (var c : deviceCandidates) {
-          pr("...trying to get transmitter for:", c);
-          try {
-            c.open();
-            c.getTransmitter();
-            c.close();
-            inputDevice = c;
-            break;
-          } catch (Throwable t) {
-            pr(".......failed to get transmitter:", t.getMessage());
-          }
-        }
-
-        if (inputDevice == null) {
-          pr("can't find MidiDevice that can transmit");
-          return;
-        }
-
-        // How do I access the 'stream' of midi data without storing it in a buffer?
-        // https://stackoverflow.com/questions/18851866
-        
-        Receiver receiver = new OurReceiver();
-
-        // Open a connection to your input device
-        inputDevice.open();
-
-        // Get the transmitter class from your input device
-        var transmitter = inputDevice.getTransmitter();
-
-       var sequencer = MidiSystem.getSequencer();
-        //        // Open a connection to the default sequencer (as specified by MidiSystem)
-                 sequencer.open();
-        //        // Get the receiver class from your sequencer
-        //        receiver = sequencer.getReceiver();
-        // Bind the transmitter to the receiver so the receiver gets input from the transmitter
-        transmitter.setReceiver(receiver);
-
-                // Create a new sequence
-                Sequence seq = new Sequence(Sequence.PPQ, 24);
-                // And of course a track to record the input on
-                Track currentTrack = seq.createTrack();
-                // Do some sequencer settings
-                sequencer.setSequence(seq);
-                sequencer.setTickPosition(0);
-                sequencer.recordEnable(currentTrack, -1);
-                // And start recording
-                sequencer.startRecording();
-        
-
-        pr("now recording for 5s");
-        DateTimeTools.sleepForRealMs(5000);
-
-        //        // Stop recording
-        //        if (sequencer.isRecording()) {
-        //          pr("stopping recording");
-        //          // Tell sequencer to stop recording
-        //          sequencer.stopRecording();
-        //
-        //          // Retrieve the sequence containing the stuff you played on the MIDI instrument
-        //          Sequence tmp = sequencer.getSequence();
-        //
-        //          if (false) {
-        //            // Save to file
-        //            var f = new File("jeff_experiment.mid");
-        //            pr("saving to:", f);
-        //            MidiSystem.write(tmp, 0, f);
-        //            var fmt = MidiSystem.getMidiFileFormat(f);
-        //            pr("MidiFileFormat:", fmt, fmt.properties());
-        //          }
-        //        }
-
-        pr("closing input device");
-        inputDevice.close();
-
-      }
-
-      if (true)
-        return;
-
-      var receiver = MidiSystem.getReceiver();
-
-      int[] notes = { 60, 64, 67, 60, 65, 67, 55, 59, 62, 55, 60, 62, 53, 57, 60, 53, 58, 60 };
-      int[] times = { 0, 0, 0, 1000, 1000, 1000, 2000, 2000, 2000, 3000, 3000, 3000, 4000, 4000, 4000, 5000,
-          5000, 5000 };
-
-      for (int i = 0; i < notes.length; i++) {
-
-        int note = notes[i];
-        int time = times[i];
-        pr(note, ":", time);
-        receiver.send(new ShortMessage(ShortMessage.NOTE_ON, 0, note, 127), time * 1000);
-        receiver.send(new ShortMessage(ShortMessage.NOTE_OFF, 0, note, 127), (time + 1000) * 1000);
-        Thread.sleep(1000);
-      }
-
-      Thread.sleep(7000);
-    } catch (Throwable t) {
-      halt("caught:", INDENT, t);
-    }
   }
 
   //------------------------------------------------------------------
@@ -290,23 +154,4 @@ public class Sight extends App {
   }
 
   private Canvas mCanvas;
-
-  private static class OurReceiver extends BaseObject implements Receiver {
-
-    public OurReceiver() {
-      setName("OurReceiver");
-      setVerbose(true);
-      log("constructed");
-    }
-
-    @Override
-    public void send(MidiMessage message, long timeStamp) {
-      log("Receiver send, timestamp:", timeStamp, "message:", message);
-    }
-
-    @Override
-    public void close() {
-      log("closing");
-    }
-  }
 }

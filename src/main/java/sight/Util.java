@@ -6,6 +6,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.InputStream;
 
+import js.base.DateTimeTools;
 import js.file.Files;
 
 public final class Util {
@@ -31,6 +32,10 @@ public final class Util {
       pr("Failed to open resource for class:", theClass, "name:", resourceName);
       throw Files.asFileException(e);
     }
+  }
+
+  public static void sleepMs(long ms) {
+    DateTimeTools.sleepForRealMs(ms);
   }
 
 }
