@@ -3,16 +3,15 @@ package sight;
 import static js.base.Tools.*;
 
 import java.awt.BorderLayout;
-import java.io.File;
 import java.util.List;
 
 import javax.sound.midi.MidiDevice;
+import javax.sound.midi.MidiMessage;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.Receiver;
 import javax.sound.midi.Sequence;
 import javax.sound.midi.ShortMessage;
 import javax.sound.midi.Track;
-import javax.sound.midi.Transmitter;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -20,6 +19,7 @@ import javax.swing.SwingUtilities;
 
 import js.app.App;
 import js.app.AppOper;
+import js.base.BaseObject;
 import js.base.DateTimeTools;
 import js.system.SystemUtil;
 import sight.gen.Hand;
@@ -136,54 +136,60 @@ public class Sight extends App {
           return;
         }
 
-        var sequencer = MidiSystem.getSequencer();
-        Transmitter transmitter;
-        Receiver receiver;
+        // How do I access the 'stream' of midi data without storing it in a buffer?
+        // https://stackoverflow.com/questions/18851866
+        
+        Receiver receiver = new OurReceiver();
 
         // Open a connection to your input device
         inputDevice.open();
-        // Open a connection to the default sequencer (as specified by MidiSystem)
-        sequencer.open();
+
         // Get the transmitter class from your input device
-        transmitter = inputDevice.getTransmitter();
-        // Get the receiver class from your sequencer
-        receiver = sequencer.getReceiver();
+        var transmitter = inputDevice.getTransmitter();
+
+       var sequencer = MidiSystem.getSequencer();
+        //        // Open a connection to the default sequencer (as specified by MidiSystem)
+                 sequencer.open();
+        //        // Get the receiver class from your sequencer
+        //        receiver = sequencer.getReceiver();
         // Bind the transmitter to the receiver so the receiver gets input from the transmitter
         transmitter.setReceiver(receiver);
 
-        // Create a new sequence
-        Sequence seq = new Sequence(Sequence.PPQ, 24);
-        // And of course a track to record the input on
-        Track currentTrack = seq.createTrack();
-        // Do some sequencer settings
-        sequencer.setSequence(seq);
-        sequencer.setTickPosition(0);
-        sequencer.recordEnable(currentTrack, -1);
-        // And start recording
-        sequencer.startRecording();
+                // Create a new sequence
+                Sequence seq = new Sequence(Sequence.PPQ, 24);
+                // And of course a track to record the input on
+                Track currentTrack = seq.createTrack();
+                // Do some sequencer settings
+                sequencer.setSequence(seq);
+                sequencer.setTickPosition(0);
+                sequencer.recordEnable(currentTrack, -1);
+                // And start recording
+                sequencer.startRecording();
+        
 
-       
         pr("now recording for 5s");
         DateTimeTools.sleepForRealMs(5000);
 
-        // Stop recording
-        if (sequencer.isRecording()) {
-          pr("stopping recording");
-          // Tell sequencer to stop recording
-          sequencer.stopRecording();
+        //        // Stop recording
+        //        if (sequencer.isRecording()) {
+        //          pr("stopping recording");
+        //          // Tell sequencer to stop recording
+        //          sequencer.stopRecording();
+        //
+        //          // Retrieve the sequence containing the stuff you played on the MIDI instrument
+        //          Sequence tmp = sequencer.getSequence();
+        //
+        //          if (false) {
+        //            // Save to file
+        //            var f = new File("jeff_experiment.mid");
+        //            pr("saving to:", f);
+        //            MidiSystem.write(tmp, 0, f);
+        //            var fmt = MidiSystem.getMidiFileFormat(f);
+        //            pr("MidiFileFormat:", fmt, fmt.properties());
+        //          }
+        //        }
 
-          // Retrieve the sequence containing the stuff you played on the MIDI instrument
-          Sequence tmp = sequencer.getSequence();
-
-          if (false) {
-            // Save to file
-            var f = new File("jeff_experiment.mid");
-            pr("saving to:", f);
-            MidiSystem.write(tmp, 0, f);
-            var fmt = MidiSystem.getMidiFileFormat(f);
-            pr("MidiFileFormat:", fmt, fmt.properties());
-          }
-        }
+        pr("closing input device");
         inputDevice.close();
 
       }
@@ -284,4 +290,23 @@ public class Sight extends App {
   }
 
   private Canvas mCanvas;
+
+  private static class OurReceiver extends BaseObject implements Receiver {
+
+    public OurReceiver() {
+      setName("OurReceiver");
+      setVerbose(true);
+      log("constructed");
+    }
+
+    @Override
+    public void send(MidiMessage message, long timeStamp) {
+      log("Receiver send, timestamp:", timeStamp, "message:", message);
+    }
+
+    @Override
+    public void close() {
+      log("closing");
+    }
+  }
 }
