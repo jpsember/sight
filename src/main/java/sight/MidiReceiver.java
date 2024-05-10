@@ -16,11 +16,11 @@ import sight.gen.Chord;
 /**
  * This must be thread safe!
  */
-class OurReceiver extends BaseObject implements Receiver {
+class MidiReceiver extends BaseObject implements Receiver {
 
-  public OurReceiver() {
+  public MidiReceiver() {
     setName("OurReceiver");
-    setVerbose(true);
+    // setVerbose(true);
     log("constructed");
   }
 
@@ -52,19 +52,14 @@ class OurReceiver extends BaseObject implements Receiver {
         return;
       }
       int pitch = by[1];
-      // log("...note on, pitch:", pitch);
       mKeysPressedSet.add(pitch);
       mLastPressTimestamp = System.currentTimeMillis();
-      if (false && verbose())
-        log("chord:", currentChord());
     } else if (highNyb == 0x80) {
       if (channel != 0)
         return;
       int pitch = by[1];
       mKeysPressedSet.remove(pitch);
       mLastPressTimestamp = System.currentTimeMillis();
-      if (false && verbose())
-        log("chord:", currentChord()); //chordStr());
     }
   }
 

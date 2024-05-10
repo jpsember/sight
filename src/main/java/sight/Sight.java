@@ -223,26 +223,5 @@ public class Sight extends App {
     // repaintPanels(repaintFlags);
   }
 
-  //  // ------------------------------------------------------------------
-  //  // Performing periodic tasks on the Swing event thread
-  //  // ------------------------------------------------------------------
-  //
-  //  private void startPeriodicBackgroundTask() {
-  //    mSwingTasks = new SwingTaskManager();
-  //    mSwingTasks.addTask(() -> swingBackgroundTask()).start();
-  //  }
-  //
-  //  private SwingTaskManager mSwingTasks = new SwingTaskManager();
-  //
-  //  protected SwingTaskManager taskManager() {
-  //    return mSwingTasks;
-  //  }
-  //
-  //  /**
-  //   * Called every ~3 seconds on the Swing event thread. Default does nothing
-  //   */
-  //  public void swingBackgroundTask() {
-  //  }
-
   private Canvas mCanvas;
 }

@@ -34,7 +34,7 @@ public class MidiManager extends BaseObject {
         pr("CoreMIDI4J native library is not available.");
       }
 
-      mReceiver = new OurReceiver();
+      mReceiver = new MidiReceiver();
 
       mDevice = findInputDevice();
       mDevice.open();
@@ -111,7 +111,7 @@ public class MidiManager extends BaseObject {
   }
 
   private boolean mStarted;
-  private OurReceiver mReceiver;
+  private MidiReceiver mReceiver;
   private MidiDevice mDevice;
   private Transmitter mTransmitter;
 
