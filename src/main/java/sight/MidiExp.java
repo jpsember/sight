@@ -1,12 +1,8 @@
 package sight;
 
-import js.base.BaseObject;
-import js.base.DateTimeTools;
-
 import static js.base.Tools.*;
 import static sight.Util.*;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
@@ -15,13 +11,12 @@ import javax.sound.midi.MidiDevice;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.MidiUnavailableException;
 import javax.sound.midi.Receiver;
-import javax.sound.midi.Sequence;
 import javax.sound.midi.ShortMessage;
-import javax.sound.midi.Track;
 
+import js.base.BaseObject;
 import uk.co.xfactorylibrarians.coremidi4j.CoreMidiDeviceProvider;
-import uk.co.xfactorylibrarians.coremidi4j.CoreMidiNotification;
 import uk.co.xfactorylibrarians.coremidi4j.CoreMidiException;
+import uk.co.xfactorylibrarians.coremidi4j.CoreMidiNotification;
 
 public class MidiExp extends BaseObject {
 
@@ -54,7 +49,7 @@ public class MidiExp extends BaseObject {
 
     pr("Working MIDI Devices:");
     for (var device : CoreMidiDeviceProvider.getMidiDeviceInfo()) {
-      pr(INDENT, device);
+      pr(device);
     }
 
     if (isCoreMidiLoaded()) {
@@ -63,14 +58,7 @@ public class MidiExp extends BaseObject {
       pr("CoreMIDI4J native library is not available.");
     }
 
-    //      watchForMidiChanges();
-    //      pr("Watching for MIDI environment changes for several seconds...");
-    //      sleepMs(5000);
-    //      pr("...exiting");
-    //
-
     var device = findInputDevice();
-    pr("input device:", device);
 
     Receiver receiver = new OurReceiver();
     mCloseList.add(receiver);
@@ -82,52 +70,12 @@ public class MidiExp extends BaseObject {
     var transmitter = device.getTransmitter();
     mCloseList.add(transmitter);
 
-//    //
-//    var sequencer = MidiSystem.getSequencer();
-//    //    //        // Open a connection to the default sequencer (as specified by MidiSystem)
-//    sequencer.open();
-//    mCloseList.add(sequencer);
-//
-//    //    // Get the receiver class from your sequencer
-//    receiver = sequencer.getReceiver();
-//    mCloseList.add(receiver);
-
-    //    // Bind the transmitter to the receiver so the receiver gets input from the transmitter
+    // Bind the transmitter to the receiver so the receiver gets input from the transmitter
     transmitter.setReceiver(receiver);
-    //
-//    // Create a new sequence
-//    Sequence seq = new Sequence(Sequence.PPQ, 24);
-//    // And of course a track to record the input on
-//    Track currentTrack = seq.createTrack();
-//    // Do some sequencer settings
-//    sequencer.setSequence(seq);
-//    sequencer.setTickPosition(0);
-//    sequencer.recordEnable(currentTrack, -1);
-//    // And start recording
-//    sequencer.startRecording();
-    //
+
     pr("now recording for 5s");
     //
-    sleepMs(5000);
-
-//    // Stop recording
-//    if (sequencer.isRecording()) {
-//      pr("stopping recording");
-//      // Tell sequencer to stop recording
-//      sequencer.stopRecording();
-//
-//      // Retrieve the sequence containing the stuff you played on the MIDI instrument
-//      Sequence tmp = sequencer.getSequence();
-//
-//      if (true) {
-//        // Save to file
-//        var f = new File("jeff_experiment.mid");
-//        pr("saving to:", f);
-//        MidiSystem.write(tmp, 0, f);
-//        var fmt = MidiSystem.getMidiFileFormat(f);
-//        pr("MidiFileFormat:", fmt, fmt.properties());
-//      }
-//    }
+    sleepMs(25000);
 
     {
       var cl = mCloseList;
@@ -163,48 +111,40 @@ public class MidiExp extends BaseObject {
   private MidiDevice findInputDevice() throws MidiUnavailableException {
     List<MidiDevice> deviceCandidates = arrayList();
 
-    var midiDevInfo = MidiSystem.getMidiDeviceInfo();
-    int i = INIT_INDEX;
-    for (var x : midiDevInfo) {
-      i++;
-
-      var nm = x.getName();
-      var nm2 = chompPrefix(nm, "CoreMIDI4J - ");
-      if (nm == nm2)
+    var midiDevInfoList = MidiSystem.getMidiDeviceInfo();
+    for (var devInfo : midiDevInfoList) {
+      var name = devInfo.getName();
+      var origName = name;
+      name = chompPrefix(name, "CoreMIDI4J - ");
+      if (name == origName)
         continue;
-      if (!nm2.equals("CASIO USB-MIDI"))
+      if (!name.equals("CASIO USB-MIDI"))
         continue;
 
-      var d = MidiSystem.getMidiDevice(x);
+      var d = MidiSystem.getMidiDevice(devInfo);
       deviceCandidates.add(d);
-      pr("...found input device candidate");
     }
 
     // Determine which of the candidates is an actual input device
     MidiDevice inputDevice = null;
 
-    int v = INIT_INDEX;
-    for (var c : deviceCandidates) {
-      v++;
-      //      if (v != 1)
-      //        continue;
-
-      pr("counter:", v, "...trying to get transmitter for:", c);
+    for (var device : deviceCandidates) {
       try {
-        c.open();
+        device.open();
       } catch (Throwable t) {
-        pr(".......failed to open device:", c.getDeviceInfo().getName());
+        pr(".......failed to open device:", device.getDeviceInfo().getName());
         continue;
       }
 
+      // Determine if device can transmit.  If not, it is not a valid input device
       try {
-        var tr = c.getTransmitter();
-        tr.close();
-        inputDevice = c;
+        var transmitter = device.getTransmitter();
+        transmitter.close();
+        inputDevice = device;
       } catch (MidiUnavailableException e) {
-        pr("couldn't get transmitter");
+        log("couldn't get transmitter");
       }
-      c.close();
+      device.close();
       if (inputDevice != null)
         return inputDevice;
     }

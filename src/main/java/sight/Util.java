@@ -5,6 +5,7 @@ import static js.base.Tools.*;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.InputStream;
+import java.util.Map;
 
 import js.base.DateTimeTools;
 import js.file.Files;
@@ -49,4 +50,22 @@ public final class Util {
       }
     }
   }
+
+  public static String midiMessage(int statusByteValue) {
+    if (sStatusByteNames == null) {
+      sStatusByteNames = hashMap();
+      var x = sStatusByteNames;
+      for (int i = 0; i < 16; i++) {
+        x.put(144 + i, "Chan " + (i + 1) + " Note on");
+        x.put(128 + i, "Chan " + (i + 1) + " Note off");
+      }
+    }
+    var msg = sStatusByteNames.get(statusByteValue);
+    if (msg == null)
+      msg = "#UNKNOWN:" + statusByteValue;
+    return msg;
+  }
+
+  private static Map<Integer, String> sStatusByteNames;
+
 }

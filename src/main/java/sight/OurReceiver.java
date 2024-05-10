@@ -1,9 +1,15 @@
 package sight;
 
+import static js.base.Tools.*;
+
+import java.util.SortedSet;
+import java.util.TreeSet;
+
 import javax.sound.midi.MidiMessage;
 import javax.sound.midi.Receiver;
 
 import js.base.BaseObject;
+import js.data.DataUtil;
 
 class OurReceiver extends BaseObject implements Receiver {
 
@@ -15,11 +21,66 @@ class OurReceiver extends BaseObject implements Receiver {
 
   @Override
   public void send(MidiMessage message, long timeStamp) {
-    log("Receiver send, timestamp:", timeStamp, "message:", message);
+
+    var by = message.getMessage();
+    pr("MidiMessage:", DataUtil.hexDump(by));
+
+    if (by.length < 2) {
+      pr("*** unexpected MidiMessage length:", DataUtil.hexDump(by));
+      return;
+    }
+    var status = by[0];
+    var data1 = by[1];
+    var data2 = 0;
+    if (by.length >= 3)
+      data2 = by[2];
+
+    if ((status & 0x80) != 0x80 || ((data1 | data2) & 0x80) != 0) {
+      pr("*** ill-formed MidiMessage:", DataUtil.hexDump(by));
+      return;
+    }
+
+    //    log("Receiver send, timestamp:", timeStamp, DataUtil.hex8(status), "status:", midiMessage(status));
+
+    var highNyb = status & 0xf0;
+    var channel = status & 0x0f;
+    if (highNyb == 0x90) {
+      if (channel != 0) {
+        pr("*** received note on, channel:", channel);
+        return;
+      }
+      int pitch = by[1];
+      log("...note on, pitch:", pitch);
+      mKeysPressedSet.add(pitch);
+      mLastPressTimestamp = System.currentTimeMillis();
+      if (verbose())
+        log("chord:", chordStr());
+    } else if (highNyb == 0x80) {
+      if (channel != 0)
+        return;
+      int pitch = by[1];
+      mKeysPressedSet.remove(pitch);
+      mLastPressTimestamp = System.currentTimeMillis();
+      if (verbose())
+        log("chord:", chordStr());
+    }
   }
 
   @Override
   public void close() {
     log("closing");
   }
+
+  private String chordStr() {
+    var sb = new StringBuilder();
+    for (var x : mKeysPressedSet) {
+      sb.append(' ');
+      sb.append(x);
+    }
+    return "[" + sb + " ]";
+  }
+
+  private SortedSet<Integer> mKeysPressedSet = new TreeSet<>();
+  private long mLastPressTimestamp;
+
 }
