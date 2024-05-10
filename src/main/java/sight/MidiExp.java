@@ -74,8 +74,15 @@ public class MidiExp extends BaseObject {
     transmitter.setReceiver(receiver);
 
     pr("now recording for 5s");
+
+    pr("current thread:", Thread.currentThread());
     //
-    sleepMs(25000);
+    for (int i = 0; i < 25; i++) {
+      sleepMs(1000);
+      var t = Thread.currentThread();
+
+      pr("current thread:", t, "id:", t.getId(), "name:", t.getName());
+    }
 
     {
       var cl = mCloseList;

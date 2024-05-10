@@ -2,6 +2,7 @@ package sight;
 
 import static js.base.Tools.*;
 
+import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -11,6 +12,9 @@ import javax.sound.midi.Receiver;
 import js.base.BaseObject;
 import js.data.DataUtil;
 
+/**
+ * This must be thread safe!
+ */
 class OurReceiver extends BaseObject implements Receiver {
 
   public OurReceiver() {
@@ -21,9 +25,10 @@ class OurReceiver extends BaseObject implements Receiver {
 
   @Override
   public void send(MidiMessage message, long timeStamp) {
-
+    var t = Thread.currentThread();
+    pr("OurReceiver.send:", t, "id:", t.getId(), "name:", t.getName());
     var by = message.getMessage();
-    pr("MidiMessage:", DataUtil.hexDump(by));
+    //log("MidiMessage:", DataUtil.hexDump(by));
 
     if (by.length < 2) {
       pr("*** unexpected MidiMessage length:", DataUtil.hexDump(by));
@@ -50,11 +55,11 @@ class OurReceiver extends BaseObject implements Receiver {
         return;
       }
       int pitch = by[1];
-      log("...note on, pitch:", pitch);
+      // log("...note on, pitch:", pitch);
       mKeysPressedSet.add(pitch);
       mLastPressTimestamp = System.currentTimeMillis();
       if (verbose())
-        log("chord:", chordStr());
+        log("chord:", currentChord());
     } else if (highNyb == 0x80) {
       if (channel != 0)
         return;
@@ -62,7 +67,7 @@ class OurReceiver extends BaseObject implements Receiver {
       mKeysPressedSet.remove(pitch);
       mLastPressTimestamp = System.currentTimeMillis();
       if (verbose())
-        log("chord:", chordStr());
+        log("chord:", currentChord()); //chordStr());
     }
   }
 
@@ -80,7 +85,25 @@ class OurReceiver extends BaseObject implements Receiver {
     return "[" + sb + " ]";
   }
 
+  private static final int QUIESCENT_CHORD_MS = 200;
+
+  public List<Integer> currentChord() {
+    // Update the chord if there hasn't been recent action
+    if (mLastPressTimestamp != mCurrentChordTimestamp) {
+      var tm = System.currentTimeMillis();
+      if (tm - mLastPressTimestamp >= QUIESCENT_CHORD_MS) {
+        List<Integer> x = arrayList();
+        x.addAll(mKeysPressedSet);
+        mCurrentChord = x;
+        mCurrentChordTimestamp = mLastPressTimestamp;
+      }
+    }
+    return mCurrentChord;
+  }
+
   private SortedSet<Integer> mKeysPressedSet = new TreeSet<>();
   private long mLastPressTimestamp;
+  private List<Integer> mCurrentChord = arrayList();
+  private long mCurrentChordTimestamp;
 
 }
