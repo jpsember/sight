@@ -3,14 +3,13 @@ package sight;
 import static js.base.Tools.*;
 import static sight.Util.*;
 
-import java.util.List;
-
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.MidiUnavailableException;
 import javax.sound.midi.ShortMessage;
 
 import js.base.BaseObject;
+import sight.gen.Chord;
 import uk.co.xfactorylibrarians.coremidi4j.CoreMidiDeviceProvider;
 import uk.co.xfactorylibrarians.coremidi4j.CoreMidiException;
 import uk.co.xfactorylibrarians.coremidi4j.CoreMidiNotification;
@@ -31,18 +30,17 @@ public class MidiExp extends BaseObject {
 
   public void run() {
     var m = MidiManager.SHARED_INSTANCE;
-    m.start();
+    m.start( );
 
-    List<Integer> prevChord = null;
+    var prevChord = Chord.DEFAULT_INSTANCE;
     while (true) {
       sleepMs(50);
       var ch = m.currentChord();
-
       if (ch != prevChord) {
         prevChord = ch;
-        if (ch.size() > 0)
+        if (ch.keyNumbers().length != 0)
           pr("chord:", ch);
-        if (ch.size() == 1 && ch.get(0) == 36) {
+        if (ch.equals(DEATH_CHORD)) {
           pr("DEATH CHORD PRESSED!");
           break;
         }
@@ -50,6 +48,8 @@ public class MidiExp extends BaseObject {
     }
 
   }
+
+  private static final Chord DEATH_CHORD = Chord.newBuilder().keyNumbers(intArray(36)).build();
 
   /* private */ void playExp() throws InvalidMidiDataException, MidiUnavailableException {
     var receiver = MidiSystem.getReceiver();

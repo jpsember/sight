@@ -11,6 +11,7 @@ import javax.sound.midi.Receiver;
 
 import js.base.BaseObject;
 import js.data.DataUtil;
+import sight.gen.Chord;
 
 /**
  * This must be thread safe!
@@ -74,15 +75,20 @@ class OurReceiver extends BaseObject implements Receiver {
 
   private static final int QUIESCENT_CHORD_MS = 100;
 
-  public synchronized List<Integer> currentChord() {
+  public synchronized Chord currentChord() {
+    boolean db = false;
     // Update the chord if there hasn't been recent action
     if (mLastPressTimestamp != mCurrentChordTimestamp) {
       var tm = System.currentTimeMillis();
+      if (db)
+        pr("...currentChord; ms since press:", tm - mLastPressTimestamp, "key num:", mKeysPressedSet);
       if (tm - mLastPressTimestamp >= QUIESCENT_CHORD_MS) {
         List<Integer> x = arrayList();
         x.addAll(mKeysPressedSet);
-        mCurrentChord = x;
+        mCurrentChord = Chord.newBuilder().keyNumbers(DataUtil.intArray(x)).build();
         mCurrentChordTimestamp = mLastPressTimestamp;
+        if (db)
+          pr("...... set chord to:", mCurrentChord.keyNumbers());
       }
     }
     return mCurrentChord;
@@ -90,7 +96,7 @@ class OurReceiver extends BaseObject implements Receiver {
 
   private SortedSet<Integer> mKeysPressedSet = new TreeSet<>();
   private long mLastPressTimestamp;
-  private List<Integer> mCurrentChord = arrayList();
+  private Chord mCurrentChord = Chord.DEFAULT_INSTANCE;
   private long mCurrentChordTimestamp;
 
 }

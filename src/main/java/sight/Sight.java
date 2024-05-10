@@ -1,6 +1,7 @@
 package sight;
 
 import static js.base.Tools.*;
+import static sight.Util.*;
 
 import java.awt.BorderLayout;
 
@@ -12,6 +13,7 @@ import javax.swing.SwingUtilities;
 import js.app.App;
 import js.app.AppOper;
 import js.system.SystemUtil;
+import sight.gen.Chord;
 import sight.gen.Hand;
 import sight.gen.KeySig;
 import sight.gen.RenderedSet;
@@ -19,13 +21,13 @@ import sight.gen.RenderedSet;
 public class Sight extends App {
 
   public static void main(String[] args) {
-    if (true) {
-      
-        (new MidiExp()).run();
-        pr("finished MidiExp");
-       
-      return;
-    }
+    //    if (false) {
+    //      
+    //        (new MidiExp()).run();
+    //        pr("finished MidiExp");
+    //       
+    //      return;
+    //    }
     Sight app = new Sight();
     //app.setCustomArgs("-h");
     app.startApplication(args);
@@ -84,7 +86,29 @@ public class Sight extends App {
 
     mFrame.frame().setVisible(true);
 
+    mTaskManager = new BgndTaskManager();
+    var m = MidiManager.SHARED_INSTANCE;
+    m.start();
+    mTaskManager.addTask(() -> watchForChords());
+    mTaskManager.start();
   }
+
+  private void watchForChords() {
+    var ch = MidiManager.SHARED_INSTANCE.currentChord();
+    if (ch != mPrevChord) {
+      mPrevChord = ch;
+      pr("got a new chord:", INDENT, ch);
+      if (ch.equals(DEATH_CHORD)) {
+        halt("DEATH CHORD pressed, quitting");
+      }
+
+    }
+  }
+
+  private Chord mPrevChord = Chord.DEFAULT_INSTANCE;
+  private static final Chord DEATH_CHORD = Chord.newBuilder().keyNumbers(intArray(36)).build();
+
+  private BgndTaskManager mTaskManager;
 
   //------------------------------------------------------------------
   // Frame
@@ -95,6 +119,7 @@ public class Sight extends App {
   }
 
   private void createFrame() {
+    todo("add a frame listener to persist the location");
     mFrame = new FrameWrapper();
     mFrame.frame().setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -155,6 +180,27 @@ public class Sight extends App {
   public final void performRepaint() {
     // repaintPanels(repaintFlags);
   }
+
+  //  // ------------------------------------------------------------------
+  //  // Performing periodic tasks on the Swing event thread
+  //  // ------------------------------------------------------------------
+  //
+  //  private void startPeriodicBackgroundTask() {
+  //    mSwingTasks = new SwingTaskManager();
+  //    mSwingTasks.addTask(() -> swingBackgroundTask()).start();
+  //  }
+  //
+  //  private SwingTaskManager mSwingTasks = new SwingTaskManager();
+  //
+  //  protected SwingTaskManager taskManager() {
+  //    return mSwingTasks;
+  //  }
+  //
+  //  /**
+  //   * Called every ~3 seconds on the Swing event thread. Default does nothing
+  //   */
+  //  public void swingBackgroundTask() {
+  //  }
 
   private Canvas mCanvas;
 }

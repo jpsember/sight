@@ -11,14 +11,15 @@ import javax.sound.midi.MidiUnavailableException;
 import javax.sound.midi.Transmitter;
 
 import js.base.BaseObject;
-import js.data.DataUtil;
+import sight.gen.Chord;
 import uk.co.xfactorylibrarians.coremidi4j.CoreMidiDeviceProvider;
 
 public class MidiManager extends BaseObject {
 
   public static final MidiManager SHARED_INSTANCE = new MidiManager();
 
-  public synchronized void start() {
+  public synchronized void start( ) {
+    todo("ability to send new chords to listener on Swing (or other) thread");
     if (mStarted)
       return;
     try {
@@ -56,9 +57,9 @@ public class MidiManager extends BaseObject {
     close(mTransmitter, mDevice, mReceiver);
   }
 
-  public synchronized List<Integer> currentChord() {
+  public synchronized Chord currentChord() {
     if (!mStarted)
-      return DataUtil.emptyList();
+      return Chord.DEFAULT_INSTANCE;
     return mReceiver.currentChord();
   }
 

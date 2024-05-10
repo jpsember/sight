@@ -66,6 +66,10 @@ public final class Util {
     return msg;
   }
 
+  public static int[] intArray(int... values) {
+    return values;
+  }
+
   private static Map<Integer, String> sStatusByteNames;
 
 }
