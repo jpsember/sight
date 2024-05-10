@@ -3,11 +3,9 @@ package sight;
 import static js.base.Tools.*;
 import static sight.Util.*;
 
-import java.io.IOException;
 import java.util.List;
 
 import javax.sound.midi.InvalidMidiDataException;
-import javax.sound.midi.MidiDevice;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.MidiUnavailableException;
 import javax.sound.midi.ShortMessage;
@@ -32,72 +30,28 @@ public class MidiExp extends BaseObject {
   }
 
   public void run() {
-    try {
+    var m = MidiManager.SHARED_INSTANCE;
+    m.start();
 
-      if (false)
-        playExp();
-      else
-        runAux0();
-    } catch (Throwable t) {
-      throw asRuntimeException(t);
-    }
-  }
-
-  private void runAux0()
-      throws MidiUnavailableException, InvalidMidiDataException, IOException, CoreMidiException {
-
-    pr("Working MIDI Devices:");
-    for (var device : CoreMidiDeviceProvider.getMidiDeviceInfo()) {
-      pr(device);
-    }
-
-    if (isCoreMidiLoaded()) {
-      pr("CoreMIDI4J native library is running.");
-    } else {
-      pr("CoreMIDI4J native library is not available.");
-    }
-
-    var device = findInputDevice();
-
-    var receiver = new OurReceiver();
-    mCloseList.add(receiver);
-
-    device.open();
-
-    mCloseList.add(device);
-
-    var transmitter = device.getTransmitter();
-    mCloseList.add(transmitter);
-
-    // Bind the transmitter to the receiver so the receiver gets input from the transmitter
-    transmitter.setReceiver(receiver);
-
-    pr("now recording for 5s");
-
-    pr("current thread:", Thread.currentThread());
-    //
     List<Integer> prevChord = null;
-    for (int i = 0; i < 25 * 20; i++) {
+    while (true) {
       sleepMs(50);
-      var ch = receiver.currentChord();
+      var ch = m.currentChord();
+
       if (ch != prevChord) {
-        pr("chord:", ch);
         prevChord = ch;
+        if (ch.size() > 0)
+          pr("chord:", ch);
+        if (ch.size() == 1 && ch.get(0) == 36) {
+          pr("DEATH CHORD PRESSED!");
+          break;
+        }
       }
     }
 
-    {
-      var cl = mCloseList;
-      while (!cl.isEmpty()) {
-        var x = pop(cl);
-        autoClose(x);
-      }
-    }
-
-    pr("exiting");
   }
 
-  private void playExp() throws InvalidMidiDataException, MidiUnavailableException {
+  /* private */ void playExp() throws InvalidMidiDataException, MidiUnavailableException {
     var receiver = MidiSystem.getReceiver();
 
     int[] notes = { 60, 64, 67, 60, 65, 67, 55, 59, 62, 55, 60, 62, 53, 57, 60, 53, 58, 60 };
@@ -113,52 +67,6 @@ public class MidiExp extends BaseObject {
       sleepMs(1000);
     }
 
-  }
-
-  private List<AutoCloseable> mCloseList = arrayList();
-
-  private MidiDevice findInputDevice() throws MidiUnavailableException {
-    List<MidiDevice> deviceCandidates = arrayList();
-
-    var midiDevInfoList = MidiSystem.getMidiDeviceInfo();
-    for (var devInfo : midiDevInfoList) {
-      var name = devInfo.getName();
-      var origName = name;
-      name = chompPrefix(name, "CoreMIDI4J - ");
-      if (name == origName)
-        continue;
-      if (!name.equals("CASIO USB-MIDI"))
-        continue;
-
-      var d = MidiSystem.getMidiDevice(devInfo);
-      deviceCandidates.add(d);
-    }
-
-    // Determine which of the candidates is an actual input device
-    MidiDevice inputDevice = null;
-
-    for (var device : deviceCandidates) {
-      try {
-        device.open();
-      } catch (Throwable t) {
-        pr(".......failed to open device:", device.getDeviceInfo().getName());
-        continue;
-      }
-
-      // Determine if device can transmit.  If not, it is not a valid input device
-      try {
-        var transmitter = device.getTransmitter();
-        transmitter.close();
-        inputDevice = device;
-      } catch (MidiUnavailableException e) {
-        log("couldn't get transmitter");
-      }
-      device.close();
-      if (inputDevice != null)
-        return inputDevice;
-    }
-
-    throw badState("Can't find MidiDevice that can transmit");
   }
 
 }

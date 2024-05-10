@@ -39,15 +39,15 @@ public final class Util {
     DateTimeTools.sleepForRealMs(ms);
   }
 
-  public static void autoClose(AutoCloseable... items) {
-    for (var x : items) {
-      if (x != null) {
-        try {
-          x.close();
-        } catch (Throwable t) {
-          throw asRuntimeException(t);
-        }
+  public static void close(AutoCloseable... closeables) {
+    todo("?replace the Files method with this (autocloseable instead of closeable)");
+    try {
+      for (var c : closeables) {
+        if (c != null)
+          c.close();
       }
+    } catch (Exception e) {
+      throw Files.asFileException(e);
     }
   }
 

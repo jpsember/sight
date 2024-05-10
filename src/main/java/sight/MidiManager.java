@@ -11,7 +11,7 @@ import javax.sound.midi.MidiUnavailableException;
 import javax.sound.midi.Transmitter;
 
 import js.base.BaseObject;
-import js.file.Files;
+import js.data.DataUtil;
 import uk.co.xfactorylibrarians.coremidi4j.CoreMidiDeviceProvider;
 
 public class MidiManager extends BaseObject {
@@ -43,20 +43,6 @@ public class MidiManager extends BaseObject {
       // Bind the transmitter to the receiver so the receiver gets input from the transmitter
       mTransmitter.setReceiver(mReceiver);
 
-      pr("now recording for 5s");
-
-      //
-      List<Integer> prevChord = null;
-      for (int i = 0; i < 25 * 20; i++) {
-        sleepMs(50);
-        var ch = mReceiver.currentChord();
-        if (ch != prevChord) {
-          pr("chord:", ch);
-          prevChord = ch;
-        }
-      }
-
-      pr("exiting");
       mStarted = true;
     } catch (Throwable t) {
       throw asRuntimeException(t);
@@ -70,15 +56,10 @@ public class MidiManager extends BaseObject {
     close(mTransmitter, mDevice, mReceiver);
   }
 
-  public static void close(AutoCloseable... closeables) {
-    try {
-      for (var c : closeables) {
-        if (c != null)
-          c.close();
-      }
-    } catch (Exception e) {
-      throw Files.asFileException(e);
-    }
+  public synchronized List<Integer> currentChord() {
+    if (!mStarted)
+      return DataUtil.emptyList();
+    return mReceiver.currentChord();
   }
 
   private MidiDevice findInputDevice() throws MidiUnavailableException {
@@ -132,4 +113,5 @@ public class MidiManager extends BaseObject {
   private OurReceiver mReceiver;
   private MidiDevice mDevice;
   private Transmitter mTransmitter;
+
 }
