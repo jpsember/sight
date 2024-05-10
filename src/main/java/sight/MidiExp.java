@@ -68,109 +68,32 @@ public class MidiExp extends BaseObject {
     //      sleepMs(5000);
     //      pr("...exiting");
     //
-  
 
     var device = findInputDevice();
-    pr("input device:",device);
-    
-    
-    //    //    // How do I access the 'stream' of midi data without storing it in a buffer?
-    //    //    // https://stackoverflow.com/questions/18851866
-    //    //
-    //    //    Receiver receiver = new OurReceiver();
-    //    //
-    //    inputDevice.open();
-    //
-    //    inputDevice.close();
-    //    if (alert("halting early"))
-    //      return;
-
-    //
-    //    // Get the transmitter class from your input device
-    //    var transmitter = inputDevice.getTransmitter();
-    //
-    //    var sequencer = MidiSystem.getSequencer();
-    //    //        // Open a connection to the default sequencer (as specified by MidiSystem)
-    //    sequencer.open();
-    //    // Get the receiver class from your sequencer
-    //    receiver = sequencer.getReceiver();
-    //    // Bind the transmitter to the receiver so the receiver gets input from the transmitter
-    //    transmitter.setReceiver(receiver);
-    //
-    //    // Create a new sequence
-    //    Sequence seq = new Sequence(Sequence.PPQ, 24);
-    //    // And of course a track to record the input on
-    //    Track currentTrack = seq.createTrack();
-    //    // Do some sequencer settings
-    //    sequencer.setSequence(seq);
-    //    sequencer.setTickPosition(0);
-    //    sequencer.recordEnable(currentTrack, -1);
-    //    // And start recording
-    //    sequencer.startRecording();
-    //
-    //    pr("now recording for 5s");
-    //
-    //    DateTimeTools.sleepForRealMs(5000);
-    //
-    //    // Stop recording
-    //    if (sequencer.isRecording()) {
-    //      pr("stopping recording");
-    //      // Tell sequencer to stop recording
-    //      sequencer.stopRecording();
-    //
-    //      // Retrieve the sequence containing the stuff you played on the MIDI instrument
-    //      Sequence tmp = sequencer.getSequence();
-    //
-    //      if (true) {
-    //        // Save to file
-    //        var f = new File("jeff_experiment.mid");
-    //        pr("saving to:", f);
-    //        MidiSystem.write(tmp, 0, f);
-    //        var fmt = MidiSystem.getMidiFileFormat(f);
-    //        pr("MidiFileFormat:", fmt, fmt.properties());
-    //      }
-    //    }
-    //
-    //    pr("closing transmitter");
-    //    autoClose(transmitter);
-    //
-    //    pr("closing input device");
-    //
-    //    autoClose(inputDevice);
-    //    pr("exiting");
-    //
-    //    //    autoClose(transmitter, inputDevice);
-
-  }
-
-  private void runAux() throws MidiUnavailableException, InvalidMidiDataException, IOException {
-
-    // adapted from https://stackoverflow.com/questions/69909883
-
-    List<MidiDevice> deviceCandidates = arrayList();
-    var midiDevInfo = MidiSystem.getMidiDeviceInfo();
-
-    var inputDevice = findInputDevice();
-    if (alert("halting early"))
-      return;
-    // How do I access the 'stream' of midi data without storing it in a buffer?
-    // https://stackoverflow.com/questions/18851866
+    pr("input device:", device);
 
     Receiver receiver = new OurReceiver();
 
-    inputDevice.open();
-
-    // Get the transmitter class from your input device
-    var transmitter = inputDevice.getTransmitter();
-
+    device.open();
+   
+    mCloseList.add(device);
+    
+    var transmitter = device.getTransmitter();
+    mCloseList.add(transmitter);
+    
+    //
     var sequencer = MidiSystem.getSequencer();
-    //        // Open a connection to the default sequencer (as specified by MidiSystem)
+    //    //        // Open a connection to the default sequencer (as specified by MidiSystem)
     sequencer.open();
-    // Get the receiver class from your sequencer
+    mCloseList.add(sequencer);
+    
+    //    // Get the receiver class from your sequencer
     receiver = sequencer.getReceiver();
-    // Bind the transmitter to the receiver so the receiver gets input from the transmitter
+    mCloseList.add(receiver);
+    
+    //    // Bind the transmitter to the receiver so the receiver gets input from the transmitter
     transmitter.setReceiver(receiver);
-
+    //
     // Create a new sequence
     Sequence seq = new Sequence(Sequence.PPQ, 24);
     // And of course a track to record the input on
@@ -181,10 +104,10 @@ public class MidiExp extends BaseObject {
     sequencer.recordEnable(currentTrack, -1);
     // And start recording
     sequencer.startRecording();
-
+    //
     pr("now recording for 5s");
-
-    DateTimeTools.sleepForRealMs(5000);
+    //
+    sleepMs(5000);
 
     // Stop recording
     if (sequencer.isRecording()) {
@@ -205,16 +128,22 @@ public class MidiExp extends BaseObject {
       }
     }
 
-    pr("closing transmitter");
-    autoClose(transmitter);
-
-    pr("closing input device");
-
-    autoClose(inputDevice);
+    {
+      var cl = mCloseList;
+      while (!cl.isEmpty()) {
+        var x = pop(cl);
+        autoClose(x);
+      }
+    }
+//    
+//    autoClose(receiver);
+//    
+//    pr("closing transmitter");
+//    autoClose(transmitter);
+//
+//    pr("closing input device");
+//    autoClose(device);
     pr("exiting");
-
-    //    autoClose(transmitter, inputDevice);
-
   }
 
   private void playExp() throws InvalidMidiDataException, MidiUnavailableException {
@@ -235,6 +164,8 @@ public class MidiExp extends BaseObject {
 
   }
 
+  private List<AutoCloseable> mCloseList = arrayList();
+  
   private MidiDevice findInputDevice() throws MidiUnavailableException {
     List<MidiDevice> deviceCandidates = arrayList();
 
@@ -245,12 +176,14 @@ public class MidiExp extends BaseObject {
 
       var nm = x.getName();
       var nm2 = chompPrefix(nm, "CoreMIDI4J - ");
-      if (nm == nm2) continue;
-      if (!nm2.equals("CASIO USB-MIDI")) continue;
-       
-        var d = MidiSystem.getMidiDevice(x);
-        deviceCandidates.add(d);
-        pr("...found input device candidate");
+      if (nm == nm2)
+        continue;
+      if (!nm2.equals("CASIO USB-MIDI"))
+        continue;
+
+      var d = MidiSystem.getMidiDevice(x);
+      deviceCandidates.add(d);
+      pr("...found input device candidate");
     }
 
     // Determine which of the candidates is an actual input device
@@ -259,8 +192,8 @@ public class MidiExp extends BaseObject {
     int v = INIT_INDEX;
     for (var c : deviceCandidates) {
       v++;
-//      if (v != 1)
-//        continue;
+      //      if (v != 1)
+      //        continue;
 
       pr("counter:", v, "...trying to get transmitter for:", c);
       try {
