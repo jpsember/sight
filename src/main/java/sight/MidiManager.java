@@ -12,13 +12,14 @@ import javax.sound.midi.Transmitter;
 
 import js.base.BaseObject;
 import sight.gen.Chord;
+import sight.gen.SightConfig;
 import uk.co.xfactorylibrarians.coremidi4j.CoreMidiDeviceProvider;
 
 public class MidiManager extends BaseObject {
 
   public static final MidiManager SHARED_INSTANCE = new MidiManager();
 
-  public synchronized void start( ) {
+  public synchronized void start(SightConfig config) {
     todo("ability to send new chords to listener on Swing (or other) thread");
     if (mStarted)
       return;
@@ -34,7 +35,7 @@ public class MidiManager extends BaseObject {
         pr("CoreMIDI4J native library is not available.");
       }
 
-      mReceiver = new MidiReceiver();
+      mReceiver = new MidiReceiver(config);
 
       mDevice = findInputDevice();
       mDevice.open();

@@ -23,6 +23,7 @@ import sight.gen.GuiState;
 import sight.gen.Hand;
 import sight.gen.KeySig;
 import sight.gen.RenderedSet;
+import sight.gen.SightConfig;
 
 public class Sight extends App {
 
@@ -91,7 +92,7 @@ public class Sight extends App {
 
     mTaskManager = new BgndTaskManager();
     var m = MidiManager.SHARED_INSTANCE;
-    m.start();
+    m.start(config());
     mTaskManager.addTask(() -> swingBgndTask());
     mTaskManager.start();
   }
@@ -136,6 +137,18 @@ public class Sight extends App {
         }
       }
     }
+
+    // Switch state if appropriate
+    //
+    {
+      if (mDrillState.status() == DrillStatus.DONE) {
+        long elapsed = System.currentTimeMillis() - mDoneTime;
+        if (elapsed >= config().donePauseTimeMs()) {
+          prepareDrill();
+          canvas().repaint();
+        }
+      }
+    }
   }
 
   private BgndTaskManager mTaskManager;
@@ -157,6 +170,8 @@ public class Sight extends App {
   }
 
   private Chord mPrevChord = Chord.DEFAULT_INSTANCE;
+
+  private long mDoneTime;
 
   private static final Chord DEATH_CHORD = Chord.newBuilder().keyNumbers(intArray(36)).build();
 
@@ -250,6 +265,7 @@ public class Sight extends App {
         b.icons()[b.cursor()] = ICON_POINTER;
       } else {
         b.status(DrillStatus.DONE);
+        mDoneTime = System.currentTimeMillis();
       }
       mDrillState = b.build();
       canvas().repaint();
@@ -261,9 +277,19 @@ public class Sight extends App {
 
   }
 
+  private SightConfig config() {
+    if (mConfig == null) {
+      var f = new File("sight_config.json");
+      mConfig = Files.parseAbstractDataOpt(SightConfig.DEFAULT_INSTANCE, f);
+    }
+    return mConfig;
+  }
+
   private DrillState mDrillState = DrillState.DEFAULT_INSTANCE;
   private FrameWrapper mFrame;
   private Canvas mCanvas;
   private ChordLibrary mChordLibrary;
+
+  private SightConfig mConfig;
 
 }

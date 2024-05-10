@@ -11,12 +11,22 @@ public class SightConfig implements AbstractData {
     return mChords;
   }
 
+  public int donePauseTimeMs() {
+    return mDonePauseTimeMs;
+  }
+
+  public int quiescentChordMs() {
+    return mQuiescentChordMs;
+  }
+
   @Override
   public Builder toBuilder() {
     return new Builder(this);
   }
 
   protected static final String _0 = "chords";
+  protected static final String _1 = "done_pause_time_ms";
+  protected static final String _2 = "quiescent_chord_ms";
 
   @Override
   public String toString() {
@@ -27,6 +37,8 @@ public class SightConfig implements AbstractData {
   public JSMap toJson() {
     JSMap m = new JSMap();
     m.putUnsafe(_0, mChords.toString());
+    m.putUnsafe(_1, mDonePauseTimeMs);
+    m.putUnsafe(_2, mQuiescentChordMs);
     return m;
   }
 
@@ -48,6 +60,8 @@ public class SightConfig implements AbstractData {
         mChords = new File(x);
       }
     }
+    mDonePauseTimeMs = m.opt(_1, 1200);
+    mQuiescentChordMs = m.opt(_2, 125);
   }
 
   public static Builder newBuilder() {
@@ -65,6 +79,10 @@ public class SightConfig implements AbstractData {
       return false;
     if (!(mChords.equals(other.mChords)))
       return false;
+    if (!(mDonePauseTimeMs == other.mDonePauseTimeMs))
+      return false;
+    if (!(mQuiescentChordMs == other.mQuiescentChordMs))
+      return false;
     return true;
   }
 
@@ -74,18 +92,24 @@ public class SightConfig implements AbstractData {
     if (r == 0) {
       r = 1;
       r = r * 37 + mChords.hashCode();
+      r = r * 37 + mDonePauseTimeMs;
+      r = r * 37 + mQuiescentChordMs;
       m__hashcode = r;
     }
     return r;
   }
 
   protected File mChords;
+  protected int mDonePauseTimeMs;
+  protected int mQuiescentChordMs;
   protected int m__hashcode;
 
   public static final class Builder extends SightConfig {
 
     private Builder(SightConfig m) {
       mChords = m.mChords;
+      mDonePauseTimeMs = m.mDonePauseTimeMs;
+      mQuiescentChordMs = m.mQuiescentChordMs;
     }
 
     @Override
@@ -103,11 +127,23 @@ public class SightConfig implements AbstractData {
     public SightConfig build() {
       SightConfig r = new SightConfig();
       r.mChords = mChords;
+      r.mDonePauseTimeMs = mDonePauseTimeMs;
+      r.mQuiescentChordMs = mQuiescentChordMs;
       return r;
     }
 
     public Builder chords(File x) {
       mChords = (x == null) ? Files.DEFAULT : x;
+      return this;
+    }
+
+    public Builder donePauseTimeMs(int x) {
+      mDonePauseTimeMs = x;
+      return this;
+    }
+
+    public Builder quiescentChordMs(int x) {
+      mQuiescentChordMs = x;
       return this;
     }
 
@@ -117,6 +153,8 @@ public class SightConfig implements AbstractData {
 
   private SightConfig() {
     mChords = Files.DEFAULT;
+    mDonePauseTimeMs = 1200;
+    mQuiescentChordMs = 125;
   }
 
 }
