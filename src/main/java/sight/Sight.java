@@ -235,13 +235,13 @@ public class Sight extends App {
     switch (s.status()) {
     case DONE:
       prepareDrill();
+      canvas().repaint();
       break;
     case ACTIVE: {
       var exp = s.notes().renderedChords().get(s.cursor());
       var expChord = exp.chord();
-      pr("chord:", ch);
-      pr("expct:", expChord);
-
+      log("chord:", ch);
+      log("expct:", expChord);
       int newIcon = (expChord.equals(ch)) ? ICON_RIGHT : ICON_WRONG;
       var b = s.toBuilder();
       b.icons()[s.cursor()] = newIcon;
@@ -252,7 +252,6 @@ public class Sight extends App {
         b.status(DrillStatus.DONE);
       }
       mDrillState = b.build();
-      // repaint the canvas
       canvas().repaint();
     }
       break;
