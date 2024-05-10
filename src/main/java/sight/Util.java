@@ -72,4 +72,6 @@ public final class Util {
 
   private static Map<Integer, String> sStatusByteNames;
 
+  public static final int ICON_NONE = 0, ICON_POINTER = 1, ICON_RIGHT = 2, ICON_WRONG = 3;
+
 }

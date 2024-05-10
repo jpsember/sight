@@ -13,7 +13,6 @@ import javax.swing.JPanel;
 import js.file.Files;
 import js.geometry.IRect;
 import js.geometry.Matrix;
-import js.geometry.MyMath;
 import js.graphics.ImgUtil;
 import sight.gen.DrillState;
 import sight.gen.RenderedNotes;
@@ -51,23 +50,23 @@ public class Canvas extends JPanel {
     // Draw the key signature
     drawAtlasImage(g, rn.keysigRect(), mKeySigX);
 
-    pr("# notes:", notes.renderedChords().size());
-
     // Draw up to four notes
     var cx = mChordsX + mChordWidth / 2;
-    var rnd = MyMath.random();
+    int numNotes = Math.min(mMaxNotes, rn.renderedChords().size());
 
-    for (int i = 0; i < mMaxNotes; i++) {
-      int j = rnd.nextInt(rn.renderedChords().size());
-      var ch = rn.renderedChords().get(j);
+    for (int i = 0; i < numNotes; i++) {
+      var ch = rn.renderedChords().get(i);
 
       var r = getImage(ch.rect());
       g.drawImage(r, cx - ch.rect().width / 2, ch.rect().y, null);
 
-      // Draw something in the prompt region
+      // Render icon in prompt region, if appropriate
 
-      var ic = icon(rnd.nextInt(3));
-      g.drawImage(ic, cx - ic.getWidth() / 2, mPromptY, null);
+      var icNum = mDrillState.icons()[i] - 1;
+      if (icNum >= 0) {
+        var ic = icon(icNum);
+        g.drawImage(ic, cx - ic.getWidth() / 2, mPromptY, null);
+      }
 
       cx += mChordWidth;
     }
@@ -113,7 +112,6 @@ public class Canvas extends JPanel {
     int padding = round(staffHeight * .5);
     mAtlasToCanvas = Matrix.getTranslate(padding, padding + extraAbove - rn.staffRect().y);
     mPromptY = canvasHeight - mPromptHeight;
-    //    mCanvasSize = new IPoint(mContentWidth + padding * 2, padding * 2 + canvasHeight);
   }
 
   private BufferedImage icon(int index) {
