@@ -25,8 +25,6 @@ class OurReceiver extends BaseObject implements Receiver {
 
   @Override
   public synchronized void send(MidiMessage message, long timeStamp) {
-//    var t = Thread.currentThread();
-//    pr("OurReceiver.send:", t, "id:", t.getId(), "name:", t.getName());
     var by = message.getMessage();
     //log("MidiMessage:", DataUtil.hexDump(by));
 
@@ -44,8 +42,6 @@ class OurReceiver extends BaseObject implements Receiver {
       pr("*** ill-formed MidiMessage:", DataUtil.hexDump(by));
       return;
     }
-
-    //    log("Receiver send, timestamp:", timeStamp, DataUtil.hex8(status), "status:", midiMessage(status));
 
     var highNyb = status & 0xf0;
     var channel = status & 0x0f;
@@ -75,15 +71,6 @@ class OurReceiver extends BaseObject implements Receiver {
   public void close() {
     log("closing");
   }
-
-  //  private String chordStr() {
-  //    var sb = new StringBuilder();
-  //    for (var x : mKeysPressedSet) {
-  //      sb.append(' ');
-  //      sb.append(x);
-  //    }
-  //    return "[" + sb + " ]";
-  //  }
 
   private static final int QUIESCENT_CHORD_MS = 100;
 
