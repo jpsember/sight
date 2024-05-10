@@ -1,0 +1,6 @@
+fields {
+  enum DrillStatus status;
+  *int icons;
+  int cursor;
+  RenderedNotes notes;
+}

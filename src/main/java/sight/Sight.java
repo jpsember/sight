@@ -17,6 +17,7 @@ import js.file.Files;
 import js.geometry.IRect;
 import js.system.SystemUtil;
 import sight.gen.Chord;
+import sight.gen.DrillState;
 import sight.gen.GuiState;
 import sight.gen.Hand;
 import sight.gen.KeySig;
@@ -66,6 +67,8 @@ public class Sight extends App {
     SwingUtilities.invokeLater(() -> {
       continueStartupWithinSwingThread();
     });
+
+    prepareDrill();
   }
 
   /**
@@ -132,6 +135,8 @@ public class Sight extends App {
     }
   }
 
+  private BgndTaskManager mTaskManager;
+
   private GuiState mGuiState;
   private GuiState mLastWrittenGuiState = GuiState.DEFAULT_INSTANCE;
   private long mGuiStateModTime;
@@ -149,9 +154,8 @@ public class Sight extends App {
   }
 
   private Chord mPrevChord = Chord.DEFAULT_INSTANCE;
-  private static final Chord DEATH_CHORD = Chord.newBuilder().keyNumbers(intArray(36)).build();
 
-  private BgndTaskManager mTaskManager;
+  private static final Chord DEATH_CHORD = Chord.newBuilder().keyNumbers(intArray(36)).build();
 
   //------------------------------------------------------------------
   // Frame
@@ -186,25 +190,30 @@ public class Sight extends App {
    * Add appropriate components to the app frame's parent panel. Default does
    * nothing
    */
-  public void populateFrame(JPanel parentPanel) {
-    mCanvas = new Canvas();
-    //    var b = new JButton("hello");
-    parentPanel.add(mCanvas);
+  private void populateFrame(JPanel parentPanel) {
 
+    parentPanel.add(canvas());
+  }
+
+  private Canvas canvas() {
+    if (mCanvas == null)
+      mCanvas = new Canvas();
+    return mCanvas;
+  }
+
+  private void prepareScore(DrillState.Builder b) {
     var rs = RenderedSet.newBuilder();
     rs.keySig(KeySig.E);
     rs.hand(Hand.RIGHT);
     rs.notes("<gis b dis>4 <gis' b dis gis> <fis, a cis e> <fis a c dis> <c' e g> <d f a> <e g b> <e ges b>");
 
     var r = rs.build();
-    var cl = new ChordLibrary();
-    //cl.ignoreCache();
+    b.notes(chordLibrary().get(r));
 
-    //cl.alertVerbose();
-    var rn = cl.get(r);
-    var sc = mCanvas;
-    sc.setNotes(rn);
-    sc.setSourceImage(rn.imageFile());
+    var ic = new int[b.notes().renderedChords().size()];
+    ic[0] = ICON_POINTER;
+    b.icons(ic);
+
   }
 
   /**
@@ -219,9 +228,38 @@ public class Sight extends App {
   /**
    * Trigger a repaint of various app components
    */
+  @Deprecated // not used?
   public final void performRepaint() {
     // repaintPanels(repaintFlags);
   }
 
   private Canvas mCanvas;
+
+  private ChordLibrary chordLibrary() {
+    if (mChordLibrary == null) {
+      var c = new ChordLibrary();
+      //c.ignoreCache();
+      //c.alertVerbose();
+      mChordLibrary = c;
+    }
+    return mChordLibrary;
+  }
+
+  private ChordLibrary mChordLibrary;
+
+  private static final int ICON_NONE = 0, ICON_POINTER = 1, ICON_RIGHT = 2, ICON_WRONG = 3;
+
+  // ------------------------------------------------------------------
+  // Drill logic
+  // ------------------------------------------------------------------
+
+  private void prepareDrill() {
+    var b = DrillState.newBuilder();
+    prepareScore(b);
+    mDrillState = b.build();
+    canvas().setDrillState(mDrillState);
+  }
+
+  private DrillState mDrillState = DrillState.DEFAULT_INSTANCE;
+
 }

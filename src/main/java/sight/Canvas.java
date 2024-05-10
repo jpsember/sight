@@ -6,7 +6,6 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.util.List;
 
 import javax.swing.JPanel;
@@ -16,26 +15,29 @@ import js.geometry.IRect;
 import js.geometry.Matrix;
 import js.geometry.MyMath;
 import js.graphics.ImgUtil;
+import sight.gen.DrillState;
 import sight.gen.RenderedNotes;
 
 public class Canvas extends JPanel {
 
   public void paintComponent(Graphics graphics) {
-    if (mRenderedNotes == null)
+    if (mDrillState == null)
+      return;
+    var notes = mDrillState.notes();
+    if (notes == null)
       return;
 
     var g = (Graphics2D) graphics;
-    //var g = mCanvasGraphics;
     {
       g.setBackground(Color.white);
       var b = new IRect(g.getClipBounds());
       g.clearRect(0, 0, b.width, b.height);
     }
 
-    calcTransform();
+    calcTransform(notes);
     g.setTransform(mAtlasToCanvas.toAffineTransform());
 
-    var rn = mRenderedNotes;
+    var rn = notes;
 
     // Stretch the staff image (a vertical strip) to fill the horizontal extent of the staff
     {
@@ -48,6 +50,8 @@ public class Canvas extends JPanel {
 
     // Draw the key signature
     drawAtlasImage(g, rn.keysigRect(), mKeySigX);
+
+    pr("# notes:", notes.renderedChords().size());
 
     // Draw up to four notes
     var cx = mChordsX + mChordWidth / 2;
@@ -70,20 +74,19 @@ public class Canvas extends JPanel {
 
   }
 
-  public void setSourceImage(File sourceImage) {
+  public void setDrillState(DrillState s) {
+    mDrillState = s;
+    var sourceImage = s.notes().imageFile();
     mAtlasImage = ImgUtil.read(sourceImage);
-  }
-
-  public void setNotes(RenderedNotes rn) {
-    mRenderedNotes = rn;
   }
 
   /**
    * Calculate the size of the canvas image, and the transform to convert from
    * the atlas image to the canvas image
+   * 
+   * @param rn
    */
-  private void calcTransform() {
-    var rn = mRenderedNotes;
+  private void calcTransform(RenderedNotes rn) {
 
     // We'll set the height to the height of the staff image, multipled by a constant
     var staffHeight = rn.staffRect().height;
@@ -142,7 +145,7 @@ public class Canvas extends JPanel {
     return (int) Math.round(v);
   }
 
-  private RenderedNotes mRenderedNotes;
+  //  private RenderedNotes mRenderedNotes;
   private int mMaxNotes = 4;
   private Matrix mAtlasToCanvas;
   private int mChordWidth;
@@ -150,5 +153,5 @@ public class Canvas extends JPanel {
   private int mPromptHeight;
   private BufferedImage mAtlasImage;
   private int mPromptY;
-
+  private DrillState mDrillState;
 }
