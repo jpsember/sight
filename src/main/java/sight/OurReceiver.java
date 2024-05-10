@@ -24,9 +24,9 @@ class OurReceiver extends BaseObject implements Receiver {
   }
 
   @Override
-  public void send(MidiMessage message, long timeStamp) {
-    var t = Thread.currentThread();
-    pr("OurReceiver.send:", t, "id:", t.getId(), "name:", t.getName());
+  public synchronized void send(MidiMessage message, long timeStamp) {
+//    var t = Thread.currentThread();
+//    pr("OurReceiver.send:", t, "id:", t.getId(), "name:", t.getName());
     var by = message.getMessage();
     //log("MidiMessage:", DataUtil.hexDump(by));
 
@@ -58,7 +58,7 @@ class OurReceiver extends BaseObject implements Receiver {
       // log("...note on, pitch:", pitch);
       mKeysPressedSet.add(pitch);
       mLastPressTimestamp = System.currentTimeMillis();
-      if (verbose())
+      if (false && verbose())
         log("chord:", currentChord());
     } else if (highNyb == 0x80) {
       if (channel != 0)
@@ -66,7 +66,7 @@ class OurReceiver extends BaseObject implements Receiver {
       int pitch = by[1];
       mKeysPressedSet.remove(pitch);
       mLastPressTimestamp = System.currentTimeMillis();
-      if (verbose())
+      if (false && verbose())
         log("chord:", currentChord()); //chordStr());
     }
   }
@@ -76,18 +76,18 @@ class OurReceiver extends BaseObject implements Receiver {
     log("closing");
   }
 
-  private String chordStr() {
-    var sb = new StringBuilder();
-    for (var x : mKeysPressedSet) {
-      sb.append(' ');
-      sb.append(x);
-    }
-    return "[" + sb + " ]";
-  }
+  //  private String chordStr() {
+  //    var sb = new StringBuilder();
+  //    for (var x : mKeysPressedSet) {
+  //      sb.append(' ');
+  //      sb.append(x);
+  //    }
+  //    return "[" + sb + " ]";
+  //  }
 
-  private static final int QUIESCENT_CHORD_MS = 200;
+  private static final int QUIESCENT_CHORD_MS = 100;
 
-  public List<Integer> currentChord() {
+  public synchronized List<Integer> currentChord() {
     // Update the chord if there hasn't been recent action
     if (mLastPressTimestamp != mCurrentChordTimestamp) {
       var tm = System.currentTimeMillis();

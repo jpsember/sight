@@ -60,7 +60,7 @@ public class MidiExp extends BaseObject {
 
     var device = findInputDevice();
 
-    Receiver receiver = new OurReceiver();
+    var receiver = new OurReceiver();
     mCloseList.add(receiver);
 
     device.open();
@@ -77,11 +77,14 @@ public class MidiExp extends BaseObject {
 
     pr("current thread:", Thread.currentThread());
     //
-    for (int i = 0; i < 25; i++) {
-      sleepMs(1000);
-      var t = Thread.currentThread();
-
-      pr("current thread:", t, "id:", t.getId(), "name:", t.getName());
+    List<Integer> prevChord = null;
+    for (int i = 0; i < 25 * 20; i++) {
+      sleepMs(50);
+      var ch = receiver.currentChord();
+      if (ch != prevChord) {
+        pr("chord:", ch);
+        prevChord = ch;
+      }
     }
 
     {
