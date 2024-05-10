@@ -73,60 +73,61 @@ public class MidiExp extends BaseObject {
     pr("input device:", device);
 
     Receiver receiver = new OurReceiver();
+    mCloseList.add(receiver);
 
     device.open();
-   
+
     mCloseList.add(device);
-    
+
     var transmitter = device.getTransmitter();
     mCloseList.add(transmitter);
-    
-    //
-    var sequencer = MidiSystem.getSequencer();
-    //    //        // Open a connection to the default sequencer (as specified by MidiSystem)
-    sequencer.open();
-    mCloseList.add(sequencer);
-    
-    //    // Get the receiver class from your sequencer
-    receiver = sequencer.getReceiver();
-    mCloseList.add(receiver);
-    
+
+//    //
+//    var sequencer = MidiSystem.getSequencer();
+//    //    //        // Open a connection to the default sequencer (as specified by MidiSystem)
+//    sequencer.open();
+//    mCloseList.add(sequencer);
+//
+//    //    // Get the receiver class from your sequencer
+//    receiver = sequencer.getReceiver();
+//    mCloseList.add(receiver);
+
     //    // Bind the transmitter to the receiver so the receiver gets input from the transmitter
     transmitter.setReceiver(receiver);
     //
-    // Create a new sequence
-    Sequence seq = new Sequence(Sequence.PPQ, 24);
-    // And of course a track to record the input on
-    Track currentTrack = seq.createTrack();
-    // Do some sequencer settings
-    sequencer.setSequence(seq);
-    sequencer.setTickPosition(0);
-    sequencer.recordEnable(currentTrack, -1);
-    // And start recording
-    sequencer.startRecording();
+//    // Create a new sequence
+//    Sequence seq = new Sequence(Sequence.PPQ, 24);
+//    // And of course a track to record the input on
+//    Track currentTrack = seq.createTrack();
+//    // Do some sequencer settings
+//    sequencer.setSequence(seq);
+//    sequencer.setTickPosition(0);
+//    sequencer.recordEnable(currentTrack, -1);
+//    // And start recording
+//    sequencer.startRecording();
     //
     pr("now recording for 5s");
     //
     sleepMs(5000);
 
-    // Stop recording
-    if (sequencer.isRecording()) {
-      pr("stopping recording");
-      // Tell sequencer to stop recording
-      sequencer.stopRecording();
-
-      // Retrieve the sequence containing the stuff you played on the MIDI instrument
-      Sequence tmp = sequencer.getSequence();
-
-      if (true) {
-        // Save to file
-        var f = new File("jeff_experiment.mid");
-        pr("saving to:", f);
-        MidiSystem.write(tmp, 0, f);
-        var fmt = MidiSystem.getMidiFileFormat(f);
-        pr("MidiFileFormat:", fmt, fmt.properties());
-      }
-    }
+//    // Stop recording
+//    if (sequencer.isRecording()) {
+//      pr("stopping recording");
+//      // Tell sequencer to stop recording
+//      sequencer.stopRecording();
+//
+//      // Retrieve the sequence containing the stuff you played on the MIDI instrument
+//      Sequence tmp = sequencer.getSequence();
+//
+//      if (true) {
+//        // Save to file
+//        var f = new File("jeff_experiment.mid");
+//        pr("saving to:", f);
+//        MidiSystem.write(tmp, 0, f);
+//        var fmt = MidiSystem.getMidiFileFormat(f);
+//        pr("MidiFileFormat:", fmt, fmt.properties());
+//      }
+//    }
 
     {
       var cl = mCloseList;
@@ -135,14 +136,7 @@ public class MidiExp extends BaseObject {
         autoClose(x);
       }
     }
-//    
-//    autoClose(receiver);
-//    
-//    pr("closing transmitter");
-//    autoClose(transmitter);
-//
-//    pr("closing input device");
-//    autoClose(device);
+
     pr("exiting");
   }
 
@@ -165,7 +159,7 @@ public class MidiExp extends BaseObject {
   }
 
   private List<AutoCloseable> mCloseList = arrayList();
-  
+
   private MidiDevice findInputDevice() throws MidiUnavailableException {
     List<MidiDevice> deviceCandidates = arrayList();
 
