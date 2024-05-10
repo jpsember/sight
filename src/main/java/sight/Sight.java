@@ -80,7 +80,7 @@ public class Sight extends App {
     if (alert("!killing any other instances")) {
       String processExpr = getClass().getName();
       SystemUtil.killProcesses(processExpr);
-      SystemUtil.killAfterDelay(processExpr);
+      // SystemUtil.killAfterDelay(processExpr);
     }
 
     createFrame();

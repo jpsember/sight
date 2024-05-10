@@ -13,6 +13,7 @@ import javax.swing.JPanel;
 import js.file.Files;
 import js.geometry.IRect;
 import js.geometry.Matrix;
+import js.graphics.ImgEffects;
 import js.graphics.ImgUtil;
 import sight.gen.DrillState;
 import sight.gen.RenderedNotes;
@@ -116,13 +117,20 @@ public class Canvas extends JPanel {
   private BufferedImage icon(int index) {
     if (mIcons == null) {
       mIcons = arrayList();
-      for (var name : split("cursor right wrong", ' ')) {
+      var names = "cursor right wrong";
+      if (alert("alternate names"))
+        names = "up-sign checked unchecked";
+      for (var name : split(names, ' ')) {
         var nm = name + ".png";
         var k = getClass();
         byte[] h = null;
         var res = Util.openResource(k, nm);
         h = Files.toByteArray(res, "icon");
-        mIcons.add(ImgUtil.read(h));
+        var img = ImgUtil.read(h);
+        double targetHeight = 64;
+        double f = targetHeight / img.getHeight();
+        var scaled = ImgEffects.scale(img, f);
+        mIcons.add(scaled);
       }
     }
     return mIcons.get(index);
