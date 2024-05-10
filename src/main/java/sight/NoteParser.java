@@ -188,7 +188,6 @@ public class NoteParser extends BaseObject {
    * Read a single note, e.g. "gis", "dis''"; return its number
    */
   private int readNote() {
-    todo("assume relative pitch, except if no start pitch defined");
     log("readNote");
 
     int cStart = mCursor;
@@ -251,6 +250,7 @@ public class NoteParser extends BaseObject {
     return note;
   }
 
+  // 27 represents the index of the C below middle C on an 88-key piano.
   private static final int[] sBareNoteToPianoKeyTable = { 27, 29, 31, 32, 34, 36, 38 };
 
   private int bareNoteToOctave(int bareNote) {

@@ -18,6 +18,7 @@ import js.geometry.IRect;
 import js.system.SystemUtil;
 import sight.gen.Chord;
 import sight.gen.DrillState;
+import sight.gen.DrillStatus;
 import sight.gen.GuiState;
 import sight.gen.Hand;
 import sight.gen.KeySig;
@@ -127,9 +128,11 @@ public class Sight extends App {
       var ch = MidiManager.SHARED_INSTANCE.currentChord();
       if (ch != mPrevChord) {
         mPrevChord = ch;
-        pr("got a new chord:", INDENT, ch);
-        if (ch.equals(DEATH_CHORD)) {
-          halt("DEATH CHORD pressed, quitting");
+        if (!ch.equals(Chord.DEFAULT_INSTANCE)) {
+          if (ch.equals(DEATH_CHORD)) {
+            halt("DEATH CHORD pressed, quitting");
+          }
+          processPlayerChord(ch);
         }
       }
     }
@@ -161,38 +164,20 @@ public class Sight extends App {
   // Frame
   // ------------------------------------------------------------------
 
-  public final FrameWrapper appFrame() {
-    return mFrame;
-  }
-
   private void createFrame() {
     mFrame = new FrameWrapper();
     mFrame.frame().setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-    rebuildFrameContent();
-  }
-
-  public final void rebuildFrameContent() {
 
     // We embed a JPanel that serves as a container for other components, 
     // the main one being the editor window, but others that may include
     // control panels or informational windows
 
     JPanel parentPanel = new JPanel(new BorderLayout());
-    populateFrame(parentPanel);
+    parentPanel.add(canvas());
     contentPane().add(parentPanel);
     // WTF, apparently this is necessary to get repainting to occur; see
     // https://groups.google.com/g/comp.lang.java.gui/c/vCbwLOX9Vow?pli=1
     contentPane().revalidate();
-  }
-
-  /**
-   * Add appropriate components to the app frame's parent panel. Default does
-   * nothing
-   */
-  private void populateFrame(JPanel parentPanel) {
-
-    parentPanel.add(canvas());
   }
 
   private Canvas canvas() {
@@ -205,7 +190,8 @@ public class Sight extends App {
     var rs = RenderedSet.newBuilder();
     rs.keySig(KeySig.E);
     rs.hand(Hand.RIGHT);
-    rs.notes("<gis b dis>4 <gis' b dis gis> <fis, a cis e> <fis a c dis> <c' e g> <d f a> <e g b> <e ges b>");
+    // rs.notes("<gis b dis>4 <gis' b dis gis> <fis, a cis e> <fis a c dis> <c' e g> <d f a> <e g b> <e ges b>");
+    rs.notes("<gis b dis>4 <gis' b dis gis> <fis, a cis e> <fis a c dis> ");
 
     var r = rs.build();
     b.notes(chordLibrary().get(r));
@@ -213,27 +199,14 @@ public class Sight extends App {
     var ic = new int[b.notes().renderedChords().size()];
     ic[0] = ICON_POINTER;
     b.icons(ic);
-
   }
 
   /**
    * Get app frame's content pane
    */
-  public final JComponent contentPane() {
+  private JComponent contentPane() {
     return (JComponent) mFrame.frame().getContentPane();
   }
-
-  private FrameWrapper mFrame;
-
-  /**
-   * Trigger a repaint of various app components
-   */
-  @Deprecated // not used?
-  public final void performRepaint() {
-    // repaintPanels(repaintFlags);
-  }
-
-  private Canvas mCanvas;
 
   private ChordLibrary chordLibrary() {
     if (mChordLibrary == null) {
@@ -245,19 +218,53 @@ public class Sight extends App {
     return mChordLibrary;
   }
 
-  private ChordLibrary mChordLibrary;
-
   // ------------------------------------------------------------------
   // Drill logic
   // ------------------------------------------------------------------
 
   private void prepareDrill() {
     var b = DrillState.newBuilder();
+    b.status(DrillStatus.ACTIVE);
     prepareScore(b);
     mDrillState = b.build();
     canvas().setDrillState(mDrillState);
   }
 
+  private void processPlayerChord(Chord ch) {
+    var s = mDrillState;
+    switch (s.status()) {
+    case DONE:
+      prepareDrill();
+      break;
+    case ACTIVE: {
+      var exp = s.notes().renderedChords().get(s.cursor());
+      var expChord = exp.chord();
+      pr("chord:", ch);
+      pr("expct:", expChord);
+
+      int newIcon = (expChord.equals(ch)) ? ICON_RIGHT : ICON_WRONG;
+      var b = s.toBuilder();
+      b.icons()[s.cursor()] = newIcon;
+      b.cursor(s.cursor() + 1);
+      if (b.cursor() != s.notes().renderedChords().size()) {
+        b.icons()[b.cursor()] = ICON_POINTER;
+      } else {
+        b.status(DrillStatus.DONE);
+      }
+      mDrillState = b.build();
+      // repaint the canvas
+      canvas().repaint();
+    }
+      break;
+    default:
+      badState("unexpected status:", mDrillState);
+    }
+
+  }
+
   private DrillState mDrillState = DrillState.DEFAULT_INSTANCE;
+  private FrameWrapper mFrame;
+  private Canvas mCanvas;
+  private ChordLibrary mChordLibrary;
 
 }

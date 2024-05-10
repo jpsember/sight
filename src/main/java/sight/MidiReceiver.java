@@ -18,6 +18,9 @@ import sight.gen.Chord;
  */
 class MidiReceiver extends BaseObject implements Receiver {
 
+  // We need to convert from MIDI pitches to the index of the key on an 88-key piano.
+  private static final int PITCH_TO_PIANO_KEY_NUMBER_OFFSET = 39 - 60;
+
   public MidiReceiver() {
     setName("OurReceiver");
     // setVerbose(true);
@@ -51,16 +54,22 @@ class MidiReceiver extends BaseObject implements Receiver {
         pr("*** received note on, channel:", channel);
         return;
       }
-      int pitch = by[1];
+      int pitch = pitchToKeyNumber(by[1]);
       mKeysPressedSet.add(pitch);
       mLastPressTimestamp = System.currentTimeMillis();
     } else if (highNyb == 0x80) {
       if (channel != 0)
         return;
-      int pitch = by[1];
+      int pitch = pitchToKeyNumber(by[1]);
       mKeysPressedSet.remove(pitch);
       mLastPressTimestamp = System.currentTimeMillis();
     }
+  }
+
+  private int pitchToKeyNumber(int pitch) {
+    var mod = pitch + PITCH_TO_PIANO_KEY_NUMBER_OFFSET;
+    checkArgument(mod >= 0 && mod < 88, "pitch is outside range of 88-key piano:", pitch);
+    return mod;
   }
 
   @Override

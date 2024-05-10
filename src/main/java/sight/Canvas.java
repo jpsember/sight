@@ -56,7 +56,6 @@ public class Canvas extends JPanel {
 
     for (int i = 0; i < numNotes; i++) {
       var ch = rn.renderedChords().get(i);
-
       var r = getImage(ch.rect());
       g.drawImage(r, cx - ch.rect().width / 2, ch.rect().y, null);
 
