@@ -37,30 +37,9 @@ public class MidiExp extends BaseObject {
     });
   }
 
-  public void auxMain() throws Exception {
-    System.out.println("Working MIDI Devices:");
-    for (javax.sound.midi.MidiDevice.Info device : CoreMidiDeviceProvider.getMidiDeviceInfo()) {
-      System.out.println("  " + device);
-    }
-
-    if (isCoreMidiLoaded()) {
-      pr("CoreMIDI4J native library is running.");
-    } else {
-      pr("CoreMIDI4J native library is not available.");
-    }
-
-    watchForMidiChanges();
-    pr("Watching for MIDI environment changes for several seconds...");
-    sleepMs(5000);
-    pr("...exiting");
-  }
-
   public void run() {
     try {
-      if (true) {
-        auxMain();
-        return;
-      }
+
       if (false)
         playExp();
       else
@@ -70,28 +49,67 @@ public class MidiExp extends BaseObject {
     }
   }
 
-  private void runAux0() throws MidiUnavailableException, InvalidMidiDataException, IOException {
+  private void runAux0()
+      throws MidiUnavailableException, InvalidMidiDataException, IOException, CoreMidiException {
+
+    pr("Working MIDI Devices:");
+    for (var device : CoreMidiDeviceProvider.getMidiDeviceInfo()) {
+      pr(INDENT, device);
+    }
+
+    if (isCoreMidiLoaded()) {
+      pr("CoreMIDI4J native library is running.");
+    } else {
+      pr("CoreMIDI4J native library is not available.");
+    }
+
+    //      watchForMidiChanges();
+    //      pr("Watching for MIDI environment changes for several seconds...");
+    //      sleepMs(5000);
+    //      pr("...exiting");
+    //
+    //    
+    //    
+    //    
+    //    
+    //    
+    //    
+    //    
 
     var midiDevInfo = MidiSystem.getMidiDeviceInfo();
-    var x = midiDevInfo[3];
+    int index = INIT_INDEX;
+    for (var x : midiDevInfo) {
+      index++;
+      if (!x.getName().startsWith("CoreMIDI4J"))
+        continue;
 
-    var d = MidiSystem.getMidiDevice(x);
+      if (index != 1)
+        continue;
+      var d = MidiSystem.getMidiDevice(x);
+      try {
+        d.open();
+        d.close();
+      } catch (Throwable t) {
+        throw asRuntimeException(t);
+      }
 
-    var inputDevice = d;
-
-    pr("inputDevice:", d.getDeviceInfo());
-    pr("isOpen:", d.isOpen());
-
-    //    // How do I access the 'stream' of midi data without storing it in a buffer?
-    //    // https://stackoverflow.com/questions/18851866
+    }
+    //    var d = MidiSystem.getMidiDevice(x);
+    //    var inputDevice = d;
     //
-    //    Receiver receiver = new OurReceiver();
+    //    pr("inputDevice:", d.getDeviceInfo());
+    //    pr("isOpen:", d.isOpen());
     //
-    inputDevice.open();
-
-    inputDevice.close();
-    if (alert("halting early"))
-      return;
+    //    //    // How do I access the 'stream' of midi data without storing it in a buffer?
+    //    //    // https://stackoverflow.com/questions/18851866
+    //    //
+    //    //    Receiver receiver = new OurReceiver();
+    //    //
+    //    inputDevice.open();
+    //
+    //    inputDevice.close();
+    //    if (alert("halting early"))
+    //      return;
 
     //
     //    // Get the transmitter class from your input device
