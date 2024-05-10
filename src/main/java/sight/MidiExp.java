@@ -68,38 +68,12 @@ public class MidiExp extends BaseObject {
     //      sleepMs(5000);
     //      pr("...exiting");
     //
-    //    
-    //    
-    //    
-    //    
-    //    
-    //    
-    //    
+  
 
-    var midiDevInfo = MidiSystem.getMidiDeviceInfo();
-    int index = INIT_INDEX;
-    for (var x : midiDevInfo) {
-      index++;
-      if (!x.getName().startsWith("CoreMIDI4J"))
-        continue;
-
-      if (index != 1)
-        continue;
-      var d = MidiSystem.getMidiDevice(x);
-      try {
-        d.open();
-        d.close();
-      } catch (Throwable t) {
-        throw asRuntimeException(t);
-      }
-
-    }
-    //    var d = MidiSystem.getMidiDevice(x);
-    //    var inputDevice = d;
-    //
-    //    pr("inputDevice:", d.getDeviceInfo());
-    //    pr("isOpen:", d.isOpen());
-    //
+    var device = findInputDevice();
+    pr("input device:",device);
+    
+    
     //    //    // How do I access the 'stream' of midi data without storing it in a buffer?
     //    //    // https://stackoverflow.com/questions/18851866
     //    //
@@ -268,12 +242,15 @@ public class MidiExp extends BaseObject {
     int i = INIT_INDEX;
     for (var x : midiDevInfo) {
       i++;
-      pr("#", i, "name:", quote(x.getName()), "desc:", quote(x.getDescription()));
-      if (x.getName().equals("CASIO USB-MIDI")) {
+
+      var nm = x.getName();
+      var nm2 = chompPrefix(nm, "CoreMIDI4J - ");
+      if (nm == nm2) continue;
+      if (!nm2.equals("CASIO USB-MIDI")) continue;
+       
         var d = MidiSystem.getMidiDevice(x);
         deviceCandidates.add(d);
         pr("...found input device candidate");
-      }
     }
 
     // Determine which of the candidates is an actual input device
@@ -282,8 +259,8 @@ public class MidiExp extends BaseObject {
     int v = INIT_INDEX;
     for (var c : deviceCandidates) {
       v++;
-      if (v != 1)
-        continue;
+//      if (v != 1)
+//        continue;
 
       pr("counter:", v, "...trying to get transmitter for:", c);
       try {
@@ -297,7 +274,6 @@ public class MidiExp extends BaseObject {
         var tr = c.getTransmitter();
         tr.close();
         inputDevice = c;
-
       } catch (MidiUnavailableException e) {
         pr("couldn't get transmitter");
       }
