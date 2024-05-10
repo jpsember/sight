@@ -4,6 +4,7 @@ import static js.base.Tools.*;
 import static sight.Util.*;
 
 import java.awt.BorderLayout;
+import java.io.File;
 
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -12,8 +13,11 @@ import javax.swing.SwingUtilities;
 
 import js.app.App;
 import js.app.AppOper;
+import js.file.Files;
+import js.geometry.IRect;
 import js.system.SystemUtil;
 import sight.gen.Chord;
+import sight.gen.GuiState;
 import sight.gen.Hand;
 import sight.gen.KeySig;
 import sight.gen.RenderedSet;
@@ -21,17 +25,9 @@ import sight.gen.RenderedSet;
 public class Sight extends App {
 
   public static void main(String[] args) {
-    //    if (false) {
-    //      
-    //        (new MidiExp()).run();
-    //        pr("finished MidiExp");
-    //       
-    //      return;
-    //    }
     Sight app = new Sight();
     //app.setCustomArgs("-h");
     app.startApplication(args);
-    //app.exitWithReturnCode();
   }
 
   @Override
@@ -83,26 +79,73 @@ public class Sight extends App {
     }
 
     createFrame();
-
+    var b = guiState().frameBounds();
+    if (b.isValid()) {
+      mFrame.frame().setBounds(b.toRectangle());
+    }
     mFrame.frame().setVisible(true);
 
     mTaskManager = new BgndTaskManager();
     var m = MidiManager.SHARED_INSTANCE;
     m.start();
-    mTaskManager.addTask(() -> watchForChords());
+    mTaskManager.addTask(() -> swingBgndTask());
     mTaskManager.start();
   }
 
-  private void watchForChords() {
-    var ch = MidiManager.SHARED_INSTANCE.currentChord();
-    if (ch != mPrevChord) {
-      mPrevChord = ch;
-      pr("got a new chord:", INDENT, ch);
-      if (ch.equals(DEATH_CHORD)) {
-        halt("DEATH CHORD pressed, quitting");
-      }
+  private void swingBgndTask() {
 
+    var currentTime = System.currentTimeMillis();
+
+    // Watch for changes to frame location
+    {
+      var b = new IRect(mFrame.frame().getBounds());
+      var s = guiState();
+      if (!b.equals(s.frameBounds())) {
+        mGuiState = s.toBuilder().frameBounds(b).build();
+        mGuiStateModTime = currentTime;
+      }
     }
+
+    {
+      var s = guiState();
+      if (s.equals(mLastWrittenGuiState)) {
+        mGuiStateModTime = currentTime;
+      } else {
+        if (currentTime - mGuiStateModTime > 1000) {
+          Files.S.writePretty(guiStateFile(), s);
+          mLastWrittenGuiState = s;
+          mGuiStateModTime = currentTime;
+        }
+      }
+    }
+
+    // Look for changes in the current chord
+    {
+      var ch = MidiManager.SHARED_INSTANCE.currentChord();
+      if (ch != mPrevChord) {
+        mPrevChord = ch;
+        pr("got a new chord:", INDENT, ch);
+        if (ch.equals(DEATH_CHORD)) {
+          halt("DEATH CHORD pressed, quitting");
+        }
+      }
+    }
+  }
+
+  private GuiState mGuiState;
+  private GuiState mLastWrittenGuiState = GuiState.DEFAULT_INSTANCE;
+  private long mGuiStateModTime;
+
+  private GuiState guiState() {
+    if (mGuiState == null) {
+      var f = guiStateFile();
+      mGuiState = Files.parseAbstractDataOpt(GuiState.DEFAULT_INSTANCE, f);
+    }
+    return mGuiState;
+  }
+
+  private File guiStateFile() {
+    return new File(".gui_state.json");
   }
 
   private Chord mPrevChord = Chord.DEFAULT_INSTANCE;
@@ -119,7 +162,6 @@ public class Sight extends App {
   }
 
   private void createFrame() {
-    todo("add a frame listener to persist the location");
     mFrame = new FrameWrapper();
     mFrame.frame().setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
