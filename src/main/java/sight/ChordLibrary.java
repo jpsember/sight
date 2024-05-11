@@ -1,6 +1,7 @@
 package sight;
 
 import static js.base.Tools.*;
+import static sight.Util.*;
 
 import java.io.File;
 import java.util.List;
@@ -13,6 +14,7 @@ import js.file.Files;
 import js.geometry.IRect;
 import js.graphics.ImgUtil;
 import js.parsing.MacroParser;
+import sight.gen.Chord;
 import sight.gen.KeySig;
 import sight.gen.RenderedChord;
 import sight.gen.RenderedNotes;
@@ -52,7 +54,7 @@ public class ChordLibrary extends BaseObject {
     files().deletePeacefully(metadata);
     files().deletePeacefully(imgFile);
 
-    var nparser = new NoteParser();
+    var nparser = new ChordParser();
     nparser.parse(rs.notes());
     var chords = nparser.chords();
 
@@ -71,7 +73,7 @@ public class ChordLibrary extends BaseObject {
 
     var m = map();
     m.put("key", toLilyPond(rs.keySig()));
-    m.put("notes", rs.notes());
+    m.put("notes", encodeLily(chords));
 
     MacroParser parser = new MacroParser();
     parser.withTemplate(template).withMapper(m);
@@ -190,5 +192,65 @@ public class ChordLibrary extends BaseObject {
   private File mCacheDirectory;
   private File mWorkDirectory;
   private boolean mIgnoreCache;
+
+  private String encodeLily(List<Chord> chords) {
+    var sb = new StringBuilder();
+    for (var c : chords) {
+      sb.append(" <");
+      for (var kn : c.keyNumbers()) {
+        sb.append(keyNumberToLilyNote(kn));
+        sb.append(' ');
+      }
+
+      sb.append(">");
+      sb.append("4 ");
+    }
+    return sb.toString();
+  }
+
+  private static String[] sKeyNumToLilyNote;
+  private static String[] sLilyOctaveSuffix = { ",,,", ",,", ",", "", "'", "''", "'''", "''''", "'''''", };
+  private static String[] sLilyNoteName = { "c", "cis", "d", "dis", "e", "f", "fis", "g", "gis", "a", "ais",
+      "b" };
+
+  //  static {
+  //    var x = new String[MAX_KEY_NUMBER];
+  //    sKeyNumToLilyNote = x;
+  //    int oct = 0;
+  //    int noteOff = 12 - 3;
+  //
+  //    for (int i = 0; i < MAX_KEY_NUMBER; i++) {
+  //      pr("i:", i, "noteoff:", noteOff, "oct:", oct);
+  //      var s = sLilyNoteName[noteOff] + sLilyOctaveSuffix[oct];
+  //      x[i] = s;
+  //      if (++noteOff == 12) {
+  //        noteOff = 0;
+  //        oct++;
+  //      }
+  //
+  //    }
+  //
+  //  }
+
+  public static String keyNumberToLilyNote(int keyNumber) {
+    if (sKeyNumToLilyNote == null) {
+      var x = new String[MAX_KEY_NUMBER];
+      sKeyNumToLilyNote = x;
+      int oct = 0;
+      int noteOff = 12 - 3;
+
+      for (int i = 0; i < MAX_KEY_NUMBER; i++) {
+        //pr("i:", i, "noteoff:", noteOff, "oct:", oct);
+        var s = sLilyNoteName[noteOff] + sLilyOctaveSuffix[oct];
+        x[i] = s;
+        if (++noteOff == 12) {
+          noteOff = 0;
+          oct++;
+        }
+
+      }
+    }
+    return sKeyNumToLilyNote[keyNumber];
+  }
 
 }

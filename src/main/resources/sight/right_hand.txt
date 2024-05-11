@@ -12,13 +12,14 @@
 \score {
    \new PianoStaff <<
     \new Staff   <<
-      \relative {
+      {
 
         % This seems to make the notes appear at specific horizontal intervals;
         % See https://lilypond.org/doc/v2.23/Documentation/snippets/spacing
         %
         \override Score.SpacingSpanner.strict-note-spacing = ##t
-        \set Score.proportionalNotationDuration = #(ly:make-moment 1/16)
+        % Not sure why, but I increased this from 1/16 and the clef/first note collision goes away
+        \set Score.proportionalNotationDuration = #(ly:make-moment 2/16)
 
         \key [!key]
         \clef treble

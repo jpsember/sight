@@ -9,6 +9,11 @@ import js.testutil.MyTestCase;
 public class SightTest extends MyTestCase {
 
   @Test
+  public void notes1() {
+    q("68.71.75.80 47.50.54.59");
+  }
+
+  @Test
   public void parser() {
     p("<gis b dis>4 <gis' b dis gis> <fis, a cis e> <fis a c dis>");
   }
@@ -33,6 +38,20 @@ public class SightTest extends MyTestCase {
     var parser = new NoteParser();
     parser.setVerbose(verbose());
     parser.parse(lilyPondExpr);
+    var jsonList = list();
+    for (var cd : parser.chords()) {
+      var kn = list();
+      for (var knum : cd.keyNumbers())
+        kn.add(knum);
+      jsonList.add(kn);
+    }
+    assertMessage(jsonList);
+  }
+
+  private void q(String ourNotesExpr) {
+    var parser = new ChordParser();
+    parser.setVerbose(verbose());
+    parser.parse(ourNotesExpr);
     var jsonList = list();
     for (var cd : parser.chords()) {
       var kn = list();

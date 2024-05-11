@@ -1,6 +1,7 @@
 package sight;
 
 import static js.base.Tools.*;
+import static sight.Util.*;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -9,9 +10,12 @@ import java.util.Map;
 
 import js.base.DateTimeTools;
 import js.file.Files;
+import sight.gen.Chord;
 import sight.gen.SightConfig;
 
 public final class Util {
+
+  public static final int MAX_KEY_NUMBER = 88;
 
   /**
    * Get an input stream to a resource
@@ -85,6 +89,12 @@ public final class Util {
     return sConfig;
   }
 
+  public static Chord chordWith(int... keyNumbers) {
+    var c = Chord.newBuilder();
+    c.keyNumbers(keyNumbers);
+    return c.build();
+  }
+
   private static SightConfig sConfig;
 
   public static ChordLibrary chordLibrary() {
@@ -97,5 +107,16 @@ public final class Util {
     return sChordLibrary;
   }
 
+  public static String encodeChord(Chord c) {
+    var sb = new StringBuilder();
+    for (var kn : c.keyNumbers()) {
+      if (sb.length() != 0)
+        sb.append('.');
+      sb.append(kn);
+    }
+    return sb.toString();
+  }
+
   private static ChordLibrary sChordLibrary;
+
 }

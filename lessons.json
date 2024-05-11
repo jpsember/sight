@@ -17,12 +17,12 @@
 { "key_sig" : "c",
   "description" : "left hand, p 1",
   "hand" : "left",
-  "notes" : "<g a c e> <bes d e a> <a c d f> <f,d'>",
+  "notes" : "36.39.41.44 20.29 36.39.42.45 21.30",
 },
 
 { "key_sig" : "c",
   "description" : "left hand, p 1",
   "hand" : "left",
-  "notes" : "<a c d f> <f, d'> <a' c dis fis> <fis, dis'>",
+  "notes" : "21.30 36.39.42.45 22.31 34.36.39.43 23.33 22.32.36",
 },
  ] }

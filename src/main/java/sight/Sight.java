@@ -132,10 +132,14 @@ public class Sight extends App {
         if (!ch.equals(Chord.DEFAULT_INSTANCE)) {
           if (ch.equals(DEATH_CHORD)) {
             halt("DEATH CHORD pressed, quitting");
-          } 
-          
-          pr("chord:",ch);
-          
+          }
+
+
+          if (ch.equals(CHORD_RESET_SCORE)) {
+            mScore.setLength(0);
+            return;
+          }
+
           if (ch.equals(PREV_LESSON_CHORD)) {
             todo("this is very hacky.");
             if (mDrillState.cursor() == 0) {
@@ -170,6 +174,14 @@ public class Sight extends App {
               return;
             }
           }
+
+          {
+            var s = mScore;
+            s.append("   ");
+            s.append(encodeChord(ch));
+            pr(s.toString().trim());
+          }
+
           processPlayerChord(ch);
         }
       }
@@ -210,9 +222,10 @@ public class Sight extends App {
 
   private long mDoneTime;
 
-  private static final Chord DEATH_CHORD = Chord.newBuilder().keyNumbers(intArray(36)).build();
-  private static final Chord PREV_LESSON_CHORD = Chord.newBuilder().keyNumbers(intArray(74)).build();
-  private static final Chord NEXT_LESSON_CHORD = Chord.newBuilder().keyNumbers(intArray(75)).build();
+  private static final Chord DEATH_CHORD = chordWith(36);
+  private static final Chord PREV_LESSON_CHORD = chordWith(74);
+  private static final Chord NEXT_LESSON_CHORD = chordWith(75);
+  private static final Chord CHORD_RESET_SCORE = chordWith(73);
 
   //------------------------------------------------------------------
   // Frame
@@ -314,5 +327,5 @@ public class Sight extends App {
   private FrameWrapper mFrame;
   private Canvas mCanvas;
   private LessonManager mLessonManager;
-
+  private StringBuilder mScore = new StringBuilder();
 }
