@@ -20,10 +20,6 @@ import sight.gen.Chord;
 import sight.gen.DrillState;
 import sight.gen.DrillStatus;
 import sight.gen.GuiState;
-import sight.gen.Hand;
-import sight.gen.KeySig;
-import sight.gen.RenderedSet;
-import sight.gen.SightConfig;
 
 public class Sight extends App {
 
@@ -64,6 +60,8 @@ public class Sight extends App {
   private void auxPerform() {
     SystemUtil.prepareForConsoleOrGUI(false);
 
+    lessonManager();
+    
     // Continue starting app within the Swing thread
     //
     SwingUtilities.invokeLater(() -> {
@@ -202,14 +200,15 @@ public class Sight extends App {
   }
 
   private void prepareScore(DrillState.Builder b) {
-    var rs = RenderedSet.newBuilder();
-    rs.keySig(KeySig.E);
-    rs.hand(Hand.RIGHT);
-    // rs.notes("<gis b dis>4 <gis' b dis gis> <fis, a cis e> <fis a c dis> <c' e g> <d f a> <e g b> <e ges b>");
-    rs.notes("<gis b dis>4 <gis' b dis gis> <fis, a cis e> <fis a c dis> ");
-
-    var r = rs.build();
-    b.notes(chordLibrary().get(r));
+    var r = lessonManager().choose();
+//    var rs = RenderedSet.newBuilder();
+//    rs.keySig(KeySig.E);
+//    rs.hand(Hand.RIGHT);
+//    // rs.notes("<gis b dis>4 <gis' b dis gis> <fis, a cis e> <fis a c dis> <c' e g> <d f a> <e g b> <e ges b>");
+//    rs.notes("<gis b dis>4 <gis' b dis gis> <fis, a cis e> <fis a c dis> ");
+//
+//    var r = rs.build();
+     b.notes(chordLibrary().get(r));
 
     var ic = new int[b.notes().renderedChords().size()];
     ic[0] = ICON_POINTER;
@@ -233,6 +232,13 @@ public class Sight extends App {
     return mChordLibrary;
   }
 
+  private LessonManager lessonManager() {
+    if (mLessonManager == null) {
+      mLessonManager = new LessonManager();
+      mLessonManager.prepare();
+    }
+    return mLessonManager;
+  }
   // ------------------------------------------------------------------
   // Drill logic
   // ------------------------------------------------------------------
@@ -277,19 +283,12 @@ public class Sight extends App {
 
   }
 
-  private SightConfig config() {
-    if (mConfig == null) {
-      var f = new File("sight_config.json");
-      mConfig = Files.parseAbstractDataOpt(SightConfig.DEFAULT_INSTANCE, f);
-    }
-    return mConfig;
-  }
 
   private DrillState mDrillState = DrillState.DEFAULT_INSTANCE;
   private FrameWrapper mFrame;
   private Canvas mCanvas;
   private ChordLibrary mChordLibrary;
 
-  private SightConfig mConfig;
+  private LessonManager mLessonManager;
 
 }

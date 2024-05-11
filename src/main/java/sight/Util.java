@@ -9,6 +9,7 @@ import java.util.Map;
 
 import js.base.DateTimeTools;
 import js.file.Files;
+import sight.gen.SightConfig;
 
 public final class Util {
 
@@ -74,4 +75,13 @@ public final class Util {
 
   public static final int ICON_NONE = 0, ICON_POINTER = 1, ICON_RIGHT = 2, ICON_WRONG = 3;
 
+  public static SightConfig config() {
+    if (sConfig == null) {
+      var f = new File("sight_config.json");
+      sConfig = Files.parseAbstractDataOpt(SightConfig.DEFAULT_INSTANCE, f);
+    }
+    return sConfig;
+  }
+
+  private static SightConfig sConfig;
 }
