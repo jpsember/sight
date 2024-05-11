@@ -1,7 +1,6 @@
 package sight;
 
 import static js.base.Tools.*;
-import static sight.Util.*;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -16,6 +15,11 @@ import sight.gen.SightConfig;
 public final class Util {
 
   public static final int MAX_KEY_NUMBER = 88;
+  public static final Chord DEATH_CHORD = chordWith(36);
+  public static final Chord PREV_LESSON_CHORD = chordWith(74);
+  public static final Chord NEXT_LESSON_CHORD = chordWith(75);
+  public static final Chord CHORD_RESET_SCORE = chordWith(73);
+  public static final Chord CHORD_REMOVE_LAST = chordWith(71);
 
   /**
    * Get an input stream to a resource

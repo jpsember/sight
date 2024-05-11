@@ -60,6 +60,12 @@ public class Sight extends App {
   }
 
   private void auxPerform() {
+    var ca = cmdLineArgs();
+    if (ca.nextArgIf("create_chords")) {
+      createChords();
+      return;
+    }
+
     SystemUtil.prepareForConsoleOrGUI(false);
 
     lessonManager();
@@ -134,12 +140,6 @@ public class Sight extends App {
             halt("DEATH CHORD pressed, quitting");
           }
 
-
-          if (ch.equals(CHORD_RESET_SCORE)) {
-            mScore.setLength(0);
-            return;
-          }
-
           if (ch.equals(PREV_LESSON_CHORD)) {
             todo("this is very hacky.");
             if (mDrillState.cursor() == 0) {
@@ -173,13 +173,6 @@ public class Sight extends App {
               canvas().repaint();
               return;
             }
-          }
-
-          {
-            var s = mScore;
-            s.append("   ");
-            s.append(encodeChord(ch));
-            pr(s.toString().trim());
           }
 
           processPlayerChord(ch);
@@ -221,11 +214,6 @@ public class Sight extends App {
   private Chord mPrevChord = Chord.DEFAULT_INSTANCE;
 
   private long mDoneTime;
-
-  private static final Chord DEATH_CHORD = chordWith(36);
-  private static final Chord PREV_LESSON_CHORD = chordWith(74);
-  private static final Chord NEXT_LESSON_CHORD = chordWith(75);
-  private static final Chord CHORD_RESET_SCORE = chordWith(73);
 
   //------------------------------------------------------------------
   // Frame
@@ -327,5 +315,47 @@ public class Sight extends App {
   private FrameWrapper mFrame;
   private Canvas mCanvas;
   private LessonManager mLessonManager;
-  private StringBuilder mScore = new StringBuilder();
+
+  private void createChords() {
+    pr("creating chords");
+    SystemUtil.prepareForConsoleOrGUI(true);
+    var m = MidiManager.SHARED_INSTANCE;
+    m.start(config());
+
+    List<Chord> score = arrayList();
+
+    while (true) {
+      sleepMs(50);
+      // Look for changes in the current chord
+
+      var ch = MidiManager.SHARED_INSTANCE.currentChord();
+      if (ch != mPrevChord) {
+        mPrevChord = ch;
+        if (ch.equals(Chord.DEFAULT_INSTANCE))
+          continue;
+        if (ch.equals(DEATH_CHORD)) {
+          halt("DEATH CHORD pressed, quitting");
+        }
+
+        if (ch.equals(CHORD_RESET_SCORE)) {
+          score.clear();
+        } else if (ch.equals(CHORD_REMOVE_LAST)) {
+          if (!score.isEmpty())
+            pop(score);
+        } else
+          score.add(ch);
+
+        {
+          var sb = new StringBuilder();
+          for (var c : score) {
+            if (sb.length() != 0)
+              sb.append("    ");
+            sb.append(encodeChord(c));
+          }
+          pr(sb.toString());
+        }
+      }
+    }
+  }
+
 }
