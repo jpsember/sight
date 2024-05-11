@@ -208,7 +208,7 @@ public class Sight extends App {
     //    rs.notes("<gis b dis>4 <gis' b dis gis> <fis, a cis e> <fis a c dis> ");
     //
     //    var r = rs.build();
-    b.notes(chordLibrary().get(r));
+    b.notes(r);
 
     var ic = new int[b.notes().renderedChords().size()];
     ic[0] = ICON_POINTER;

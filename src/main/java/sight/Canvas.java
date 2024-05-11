@@ -148,7 +148,6 @@ public class Canvas extends JPanel {
     return (int) Math.round(v);
   }
 
-  //  private RenderedNotes mRenderedNotes;
   private int mMaxNotes = 4;
   private Matrix mAtlasToCanvas;
   private int mChordWidth;
