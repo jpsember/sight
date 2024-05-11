@@ -1,8 +1,28 @@
 { "rendered_sets" : [
-   {
+
+  {
     "key_sig" : "e",
     "hand" : "right",
-    "notes" : "<gis b dis>4 <gis' b dis gis> <fis, a cis e> <fis a c dis> <c' e g> <d f a> <e g b> <e ges b>",
+    "notes" : "<gis b dis>4 <gis' b dis gis> <fis, a cis e> <fis a c dis>",
   },
 
+
+
+  {
+    "key_sig" : "c",
+    "hand" : "right",
+    "notes" : "<c' e g>4 <d f a> <e g b> <e ges b>",
+  },
+
+{ "key_sig" : "c",
+  "description" : "left hand, p 1",
+  "hand" : "left",
+  "notes" : "<g a c e> <bes d e a> <a c d f> <f,d'>",
+},
+
+{ "key_sig" : "c",
+  "description" : "left hand, p 1",
+  "hand" : "left",
+  "notes" : "<a c d f> <f, d'> <a' c dis fis> <fis, dis'>",
+},
  ] }

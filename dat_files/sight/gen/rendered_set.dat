@@ -1,4 +1,5 @@
 fields {
+  string description;
   enum Hand hand;
   enum KeySig key_sig;
   string notes;

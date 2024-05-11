@@ -19,6 +19,10 @@ public class SightConfig implements AbstractData {
     return mQuiescentChordMs;
   }
 
+  public boolean viewRecentEdits() {
+    return mViewRecentEdits;
+  }
+
   @Override
   public Builder toBuilder() {
     return new Builder(this);
@@ -27,6 +31,7 @@ public class SightConfig implements AbstractData {
   protected static final String _0 = "chords";
   protected static final String _1 = "done_pause_time_ms";
   protected static final String _2 = "quiescent_chord_ms";
+  protected static final String _3 = "view_recent_edits";
 
   @Override
   public String toString() {
@@ -39,6 +44,7 @@ public class SightConfig implements AbstractData {
     m.putUnsafe(_0, mChords.toString());
     m.putUnsafe(_1, mDonePauseTimeMs);
     m.putUnsafe(_2, mQuiescentChordMs);
+    m.putUnsafe(_3, mViewRecentEdits);
     return m;
   }
 
@@ -61,7 +67,8 @@ public class SightConfig implements AbstractData {
       }
     }
     mDonePauseTimeMs = m.opt(_1, 1200);
-    mQuiescentChordMs = m.opt(_2, 125);
+    mQuiescentChordMs = m.opt(_2, 250);
+    mViewRecentEdits = m.opt(_3, false);
   }
 
   public static Builder newBuilder() {
@@ -83,6 +90,8 @@ public class SightConfig implements AbstractData {
       return false;
     if (!(mQuiescentChordMs == other.mQuiescentChordMs))
       return false;
+    if (!(mViewRecentEdits == other.mViewRecentEdits))
+      return false;
     return true;
   }
 
@@ -94,6 +103,7 @@ public class SightConfig implements AbstractData {
       r = r * 37 + mChords.hashCode();
       r = r * 37 + mDonePauseTimeMs;
       r = r * 37 + mQuiescentChordMs;
+      r = r * 37 + (mViewRecentEdits ? 1 : 0);
       m__hashcode = r;
     }
     return r;
@@ -102,6 +112,7 @@ public class SightConfig implements AbstractData {
   protected File mChords;
   protected int mDonePauseTimeMs;
   protected int mQuiescentChordMs;
+  protected boolean mViewRecentEdits;
   protected int m__hashcode;
 
   public static final class Builder extends SightConfig {
@@ -110,6 +121,7 @@ public class SightConfig implements AbstractData {
       mChords = m.mChords;
       mDonePauseTimeMs = m.mDonePauseTimeMs;
       mQuiescentChordMs = m.mQuiescentChordMs;
+      mViewRecentEdits = m.mViewRecentEdits;
     }
 
     @Override
@@ -129,6 +141,7 @@ public class SightConfig implements AbstractData {
       r.mChords = mChords;
       r.mDonePauseTimeMs = mDonePauseTimeMs;
       r.mQuiescentChordMs = mQuiescentChordMs;
+      r.mViewRecentEdits = mViewRecentEdits;
       return r;
     }
 
@@ -147,6 +160,11 @@ public class SightConfig implements AbstractData {
       return this;
     }
 
+    public Builder viewRecentEdits(boolean x) {
+      mViewRecentEdits = x;
+      return this;
+    }
+
   }
 
   public static final SightConfig DEFAULT_INSTANCE = new SightConfig();
@@ -154,7 +172,7 @@ public class SightConfig implements AbstractData {
   private SightConfig() {
     mChords = Files.DEFAULT;
     mDonePauseTimeMs = 1200;
-    mQuiescentChordMs = 125;
+    mQuiescentChordMs = 250;
   }
 
 }

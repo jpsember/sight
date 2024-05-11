@@ -79,6 +79,8 @@ public final class Util {
     if (sConfig == null) {
       var f = new File("sight_config.json");
       sConfig = Files.parseAbstractDataOpt(SightConfig.DEFAULT_INSTANCE, f);
+      if (!f.exists())
+        Files.S.writePretty(f, sConfig);
     }
     return sConfig;
   }

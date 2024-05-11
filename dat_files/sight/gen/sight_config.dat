@@ -1,5 +1,6 @@
 fields {
   File chords;
   int done_pause_time_ms = 1200;
-  int quiescent_chord_ms = 125;
+  int quiescent_chord_ms = 250;
+  bool view_recent_edits;
 }

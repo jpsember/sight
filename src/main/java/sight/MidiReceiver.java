@@ -23,9 +23,7 @@ class MidiReceiver extends BaseObject implements Receiver {
   private static final int PITCH_TO_PIANO_KEY_NUMBER_OFFSET = 39 - 60;
 
   public MidiReceiver(SightConfig config) {
-    setName("OurReceiver");
     mConfig = config;
-    // setVerbose(true);
     log("constructed");
   }
 
@@ -58,13 +56,23 @@ class MidiReceiver extends BaseObject implements Receiver {
       }
       int pitch = pitchToKeyNumber(by[1]);
       mKeysPressedSet.add(pitch);
+      mChordSet.add(pitch);
       mLastPressTimestamp = System.currentTimeMillis();
+      log("note on, chord set:", mChordSet);
     } else if (highNyb == 0x80) {
       if (channel != 0)
         return;
       int pitch = pitchToKeyNumber(by[1]);
       mKeysPressedSet.remove(pitch);
-      mLastPressTimestamp = System.currentTimeMillis();
+
+      // Update the current chord (which will still include the released key)
+      var cc = constructChord();
+      if (!cc.equals(mCurrentChord)) {
+        mCurrentChord = cc;
+        mCurrentChordTimestamp = mLastPressTimestamp;
+      }
+      if (mKeysPressedSet.isEmpty())
+        mChordSet.clear();
     }
   }
 
@@ -81,16 +89,13 @@ class MidiReceiver extends BaseObject implements Receiver {
 
   public synchronized Chord currentChord() {
     boolean db = false;
-    // Update the chord if there hasn't been recent action
+    // Update the chord if there hasn't been recent key down action
     if (mLastPressTimestamp != mCurrentChordTimestamp) {
       var tm = System.currentTimeMillis();
       if (db)
-        pr("...currentChord; ms since press:", tm - mLastPressTimestamp, "key num:", mKeysPressedSet);
+        pr("...currentChord; ms since press:", tm - mLastPressTimestamp, "key num:", mChordSet);
       if (tm - mLastPressTimestamp >= mConfig.quiescentChordMs()) {
-        List<Integer> x = arrayList();
-        x.addAll(mKeysPressedSet);
-        mCurrentChord = Chord.newBuilder().keyNumbers(DataUtil.intArray(x)).build();
-        mCurrentChordTimestamp = mLastPressTimestamp;
+        updateCurrentChord();
         if (db)
           pr("...... set chord to:", mCurrentChord.keyNumbers());
       }
@@ -98,8 +103,20 @@ class MidiReceiver extends BaseObject implements Receiver {
     return mCurrentChord;
   }
 
+  private Chord constructChord() {
+    List<Integer> x = arrayList();
+    x.addAll(mChordSet);
+    return Chord.newBuilder().keyNumbers(DataUtil.intArray(x)).build();
+  }
+
+  private void updateCurrentChord() {
+    mCurrentChord = constructChord();
+    mCurrentChordTimestamp = mLastPressTimestamp;
+  }
+
   private SightConfig mConfig;
   private SortedSet<Integer> mKeysPressedSet = new TreeSet<>();
+  private SortedSet<Integer> mChordSet = new TreeSet<>();
   private long mLastPressTimestamp;
   private Chord mCurrentChord = Chord.DEFAULT_INSTANCE;
   private long mCurrentChordTimestamp;

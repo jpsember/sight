@@ -5,6 +5,10 @@ import js.json.JSMap;
 
 public class RenderedSet implements AbstractData {
 
+  public String description() {
+    return mDescription;
+  }
+
   public Hand hand() {
     return mHand;
   }
@@ -26,10 +30,11 @@ public class RenderedSet implements AbstractData {
     return new Builder(this);
   }
 
-  protected static final String _0 = "hand";
-  protected static final String _1 = "key_sig";
-  protected static final String _2 = "notes";
-  protected static final String _3 = "resolution";
+  protected static final String _0 = "description";
+  protected static final String _1 = "hand";
+  protected static final String _2 = "key_sig";
+  protected static final String _3 = "notes";
+  protected static final String _4 = "resolution";
 
   @Override
   public String toString() {
@@ -39,10 +44,11 @@ public class RenderedSet implements AbstractData {
   @Override
   public JSMap toJson() {
     JSMap m = new JSMap();
-    m.putUnsafe(_0, mHand.toString().toLowerCase());
-    m.putUnsafe(_1, mKeySig.toString().toLowerCase());
-    m.putUnsafe(_2, mNotes);
-    m.putUnsafe(_3, mResolution);
+    m.putUnsafe(_0, mDescription);
+    m.putUnsafe(_1, mHand.toString().toLowerCase());
+    m.putUnsafe(_2, mKeySig.toString().toLowerCase());
+    m.putUnsafe(_3, mNotes);
+    m.putUnsafe(_4, mResolution);
     return m;
   }
 
@@ -57,16 +63,17 @@ public class RenderedSet implements AbstractData {
   }
 
   private RenderedSet(JSMap m) {
+    mDescription = m.opt(_0, "");
     {
-      String x = m.opt(_0, "");
+      String x = m.opt(_1, "");
       mHand = x.isEmpty() ? Hand.DEFAULT_INSTANCE : Hand.valueOf(x.toUpperCase());
     }
     {
-      String x = m.opt(_1, "");
+      String x = m.opt(_2, "");
       mKeySig = x.isEmpty() ? KeySig.DEFAULT_INSTANCE : KeySig.valueOf(x.toUpperCase());
     }
-    mNotes = m.opt(_2, "");
-    mResolution = m.opt(_3, 300);
+    mNotes = m.opt(_3, "");
+    mResolution = m.opt(_4, 300);
   }
 
   public static Builder newBuilder() {
@@ -81,6 +88,8 @@ public class RenderedSet implements AbstractData {
       return false;
     RenderedSet other = (RenderedSet) object;
     if (other.hashCode() != hashCode())
+      return false;
+    if (!(mDescription.equals(other.mDescription)))
       return false;
     if (!(mHand.equals(other.mHand)))
       return false;
@@ -98,6 +107,7 @@ public class RenderedSet implements AbstractData {
     int r = m__hashcode;
     if (r == 0) {
       r = 1;
+      r = r * 37 + mDescription.hashCode();
       r = r * 37 + mHand.ordinal();
       r = r * 37 + mKeySig.ordinal();
       r = r * 37 + mNotes.hashCode();
@@ -107,6 +117,7 @@ public class RenderedSet implements AbstractData {
     return r;
   }
 
+  protected String mDescription;
   protected Hand mHand;
   protected KeySig mKeySig;
   protected String mNotes;
@@ -116,6 +127,7 @@ public class RenderedSet implements AbstractData {
   public static final class Builder extends RenderedSet {
 
     private Builder(RenderedSet m) {
+      mDescription = m.mDescription;
       mHand = m.mHand;
       mKeySig = m.mKeySig;
       mNotes = m.mNotes;
@@ -136,11 +148,17 @@ public class RenderedSet implements AbstractData {
     @Override
     public RenderedSet build() {
       RenderedSet r = new RenderedSet();
+      r.mDescription = mDescription;
       r.mHand = mHand;
       r.mKeySig = mKeySig;
       r.mNotes = mNotes;
       r.mResolution = mResolution;
       return r;
+    }
+
+    public Builder description(String x) {
+      mDescription = (x == null) ? "" : x;
+      return this;
     }
 
     public Builder hand(Hand x) {
@@ -168,6 +186,7 @@ public class RenderedSet implements AbstractData {
   public static final RenderedSet DEFAULT_INSTANCE = new RenderedSet();
 
   private RenderedSet() {
+    mDescription = "";
     mHand = Hand.DEFAULT_INSTANCE;
     mKeySig = KeySig.DEFAULT_INSTANCE;
     mNotes = "";

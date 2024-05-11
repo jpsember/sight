@@ -36,5 +36,6 @@ project_config
 # Midi files
 *.mid
 .gui_state.json
+sight_config.json
 
 

@@ -1,24 +1,42 @@
-rh = \relative {
-  \key [!key]
-  \clef bass
+ \version "2.24.3"
 
-  %\time 4/4          % Specify time sig
-  % \omit Staff.Clef
-  \omit Staff.TimeSignature
-
-  % \omit Score.BarLine  % hide the bar lines
-
-  [!notes]
-
+\paper {
+  horizontal-shift = -2.0\mm
 }
 
 
 \score {
+   \new PianoStaff <<
     \new Staff   <<
-      \rh
-    >>
-}
+      \relative {
 
+        % This seems to make the notes appear at specific horizontal intervals;
+        % See https://lilypond.org/doc/v2.23/Documentation/snippets/spacing
+        %
+        \override Score.SpacingSpanner.strict-note-spacing = ##t
+
+
+        % This adds some extra space between the clef and the first chord (and elsewhere I assume).
+        % The bass blef was too close to the first chord...
+        \override NoteHead.extra-spacing-width = #'(-2 . 2)
+
+        \set Score.proportionalNotationDuration = #(ly:make-moment 1/16)
+
+        \key [!key]
+        \clef bass
+
+        %\time 4/4          % Specify time sig
+        % \omit Staff.Clef
+        \omit Staff.TimeSignature
+        \omit Score.BarLine  % hide the bar lines
+
+        [!notes]
+
+      }
+
+    >>
+   >>
+}
 
 \header {
   tagline = ""  % removed

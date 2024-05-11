@@ -10,6 +10,7 @@ import js.base.SystemCall;
 import js.data.DataUtil;
 import js.file.FileException;
 import js.file.Files;
+import js.geometry.IRect;
 import js.graphics.ImgUtil;
 import js.parsing.MacroParser;
 import sight.gen.KeySig;
@@ -112,7 +113,7 @@ public class ChordLibrary extends BaseObject {
     ext.setSource(bi);
     var boxes = ext.rects();
 
-    if (false && alert("rendering boxes")) {
+    if (true && alert("rendering boxes")) {
       var bx = ext.plotRects();
       var d = Files.parent(targetFile);
       var bn = Files.basename(targetFile);
@@ -127,9 +128,16 @@ public class ChordLibrary extends BaseObject {
     {
       int numBoxes = boxes.size();
       var hdrRects = ImgExtractor.RECT_HEADER_SIZE;
+
       if (chords.size() != numBoxes - hdrRects) {
-        badState("number of chords:", chords.size(), "number of boxes:", numBoxes, "expected:",
-            chords.size() + hdrRects);
+        if (rs.keySig() == KeySig.C && chords.size() == numBoxes - (hdrRects - 1)) {
+          // Insert a small, empty rect for the key signature, which is not rendered for C major
+          numBoxes++;
+          var b = boxes.get(ImgExtractor.RECT_CLEF);
+          boxes.add(ImgExtractor.RECT_KEYSIG, new IRect(b.x + 3, b.y, 1, 1));
+        } else
+          badState("number of chords:", chords.size(), "number of boxes:", numBoxes, "expected:",
+              chords.size() + hdrRects);
       }
       nb.staffRect(boxes.get(ImgExtractor.RECT_STAFF_LINES));
       nb.clefRect(boxes.get(ImgExtractor.RECT_CLEF));
@@ -158,6 +166,8 @@ public class ChordLibrary extends BaseObject {
       throw notFinished("key sig not supported:", keySig);
     case E:
       return "e \\major";
+    case C:
+      return "c \\major";
     }
   }
 
