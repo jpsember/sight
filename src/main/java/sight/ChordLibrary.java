@@ -15,6 +15,7 @@ import js.geometry.IRect;
 import js.graphics.ImgUtil;
 import js.parsing.MacroParser;
 import sight.gen.Chord;
+import sight.gen.Hand;
 import sight.gen.KeySig;
 import sight.gen.RenderedChord;
 import sight.gen.RenderedNotes;
@@ -58,8 +59,13 @@ public class ChordLibrary extends BaseObject {
     nparser.parse(rs.notes());
     var chords = nparser.chords();
 
+    var hand = rs.hand();
+    if (hand == Hand.UNKNOWN) {
+      hand = inferHandFromNotes(chords);
+    }
+
     String handFragName;
-    switch (rs.hand()) {
+    switch (hand) {
     default:
       throw notFinished("not yet supported:", rs.hand());
     case RIGHT:
@@ -162,6 +168,29 @@ public class ChordLibrary extends BaseObject {
     files().writePretty(metadata, nb);
   }
 
+  private Hand inferHandFromNotes(List<Chord> chords) {
+    //    pr("infer hand from notes:", chords);
+    checkArgument(!chords.isEmpty());
+    int noteMin = chords.get(0).keyNumbers()[0];
+    int noteMax = noteMin;
+    int noteCount = 0;
+    int noteSum = 0;
+    for (var c : chords) {
+      for (var k : c.keyNumbers()) {
+        noteCount++;
+        noteSum += k;
+        noteMin = Math.min(noteMin, k);
+        noteMax = Math.max(noteMax, k);
+      }
+    }
+    int avgNote = noteCount / noteSum;
+    //    pr("avgNote:", avgNote, "min:", noteMin, "max:", noteMax);
+    if (avgNote >= MIDDLE_C)
+      return Hand.RIGHT;
+    return Hand.LEFT;
+
+  }
+
   private String toLilyPond(KeySig keySig) {
     switch (keySig) {
     default:
@@ -213,25 +242,6 @@ public class ChordLibrary extends BaseObject {
   private static String[] sLilyNoteName = { "c", "cis", "d", "dis", "e", "f", "fis", "g", "gis", "a", "ais",
       "b" };
 
-  //  static {
-  //    var x = new String[MAX_KEY_NUMBER];
-  //    sKeyNumToLilyNote = x;
-  //    int oct = 0;
-  //    int noteOff = 12 - 3;
-  //
-  //    for (int i = 0; i < MAX_KEY_NUMBER; i++) {
-  //      pr("i:", i, "noteoff:", noteOff, "oct:", oct);
-  //      var s = sLilyNoteName[noteOff] + sLilyOctaveSuffix[oct];
-  //      x[i] = s;
-  //      if (++noteOff == 12) {
-  //        noteOff = 0;
-  //        oct++;
-  //      }
-  //
-  //    }
-  //
-  //  }
-
   public static String keyNumberToLilyNote(int keyNumber) {
     if (sKeyNumToLilyNote == null) {
       var x = new String[MAX_KEY_NUMBER];
@@ -240,7 +250,6 @@ public class ChordLibrary extends BaseObject {
       int noteOff = 12 - 3;
 
       for (int i = 0; i < MAX_KEY_NUMBER; i++) {
-        //pr("i:", i, "noteoff:", noteOff, "oct:", oct);
         var s = sLilyNoteName[noteOff] + sLilyOctaveSuffix[oct];
         x[i] = s;
         if (++noteOff == 12) {

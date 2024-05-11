@@ -28,6 +28,10 @@ public class ChordParser extends BaseObject {
       var nb = Chord.newBuilder();
       var keynum = IntArray.newBuilder();
 
+      if (!peekIsDigit()) {
+        badArg("trouble parsing:", INDENT, quote(chordsExpr));
+      }
+
       while (peekIsDigit()) {
         var noteNum = readNumber(MAX_KEY_NUMBER);
         keynum.add(noteNum);

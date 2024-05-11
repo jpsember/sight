@@ -2,8 +2,8 @@ package sight.gen;
 
 public enum Hand {
 
-  RIGHT, LEFT, BOTH;
+  UNKNOWN, RIGHT, LEFT, BOTH;
 
-  public static final Hand DEFAULT_INSTANCE = RIGHT;
+  public static final Hand DEFAULT_INSTANCE = UNKNOWN;
 
 }
