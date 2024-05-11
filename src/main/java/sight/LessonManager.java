@@ -8,7 +8,6 @@ import java.util.List;
 
 import js.file.Files;
 import js.geometry.MyMath;
-import js.json.JSMap;
 import sight.gen.LessonCollection;
 import sight.gen.RenderedSet;
 
@@ -25,6 +24,10 @@ public class LessonManager {
 
   public void prepare() {
     getSets();
+
+    // Make sure all the sets are in the chord library
+    for (var rs : getSets())
+      chordLibrary().get(rs);
   }
 
   private static int[][] subsets = { //
@@ -48,21 +51,21 @@ public class LessonManager {
 
         var s = x.notes() + " <";
 
-        // split this into individual chords by splitting at '<' chars
+        // split this into individual chords by splitting at '<' chars.
+        // Append a single '<' to the string to simplify parsing.
+
         List<String> chordStrs = arrayList();
         int cursor = 0;
         while (cursor < s.length()) {
-          pr("scanning str, cursor:", cursor);
           int i = s.indexOf('<', cursor);
           checkState(i >= 0);
           int j = s.indexOf('<', i + 1);
           if (j < 0)
             break;
 
-          var cc = s.substring(i, j).trim();
-          pr("cursor:", cursor, "i:", i);
-          if (cc.length() != 0)
-            chordStrs.add(cc);
+          var substring = s.substring(i, j).trim();
+          if (substring.length() != 0)
+            chordStrs.add(substring);
           cursor = j;
         }
 
@@ -80,7 +83,6 @@ public class LessonManager {
             sb.append(chordStrs.get(j));
           }
           y.notes(sb.toString());
-          pr("extracted:", INDENT, y);
           result.add(y.build());
         }
       }

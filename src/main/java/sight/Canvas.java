@@ -117,9 +117,7 @@ public class Canvas extends JPanel {
   private BufferedImage icon(int index) {
     if (mIcons == null) {
       mIcons = arrayList();
-      var names = "cursor right wrong";
-      if (alert("alternate names"))
-        names = "up-sign checked unchecked";
+      var names = "up-sign checked unchecked";
       for (var name : split(names, ' ')) {
         var nm = name + ".png";
         var k = getClass();

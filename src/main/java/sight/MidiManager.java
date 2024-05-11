@@ -20,19 +20,20 @@ public class MidiManager extends BaseObject {
   public static final MidiManager SHARED_INSTANCE = new MidiManager();
 
   public synchronized void start(SightConfig config) {
-    todo("ability to send new chords to listener on Swing (or other) thread");
     if (mStarted)
       return;
     try {
-      pr("Working MIDI Devices:");
-      for (var device : CoreMidiDeviceProvider.getMidiDeviceInfo()) {
-        pr(device);
+      if (verbose()) {
+        log("Working MIDI Devices:");
+        for (var device : CoreMidiDeviceProvider.getMidiDeviceInfo()) {
+          log(device);
+        }
       }
 
       if (CoreMidiDeviceProvider.isLibraryLoaded()) {
-        pr("CoreMIDI4J native library is running.");
+        log("CoreMIDI4J native library is running.");
       } else {
-        pr("CoreMIDI4J native library is not available.");
+        log("CoreMIDI4J native library is not available.");
       }
 
       mReceiver = new MidiReceiver(config);

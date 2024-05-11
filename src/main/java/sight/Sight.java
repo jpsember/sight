@@ -61,7 +61,7 @@ public class Sight extends App {
     SystemUtil.prepareForConsoleOrGUI(false);
 
     lessonManager();
-    
+
     // Continue starting app within the Swing thread
     //
     SwingUtilities.invokeLater(() -> {
@@ -201,14 +201,14 @@ public class Sight extends App {
 
   private void prepareScore(DrillState.Builder b) {
     var r = lessonManager().choose();
-//    var rs = RenderedSet.newBuilder();
-//    rs.keySig(KeySig.E);
-//    rs.hand(Hand.RIGHT);
-//    // rs.notes("<gis b dis>4 <gis' b dis gis> <fis, a cis e> <fis a c dis> <c' e g> <d f a> <e g b> <e ges b>");
-//    rs.notes("<gis b dis>4 <gis' b dis gis> <fis, a cis e> <fis a c dis> ");
-//
-//    var r = rs.build();
-     b.notes(chordLibrary().get(r));
+    //    var rs = RenderedSet.newBuilder();
+    //    rs.keySig(KeySig.E);
+    //    rs.hand(Hand.RIGHT);
+    //    // rs.notes("<gis b dis>4 <gis' b dis gis> <fis, a cis e> <fis a c dis> <c' e g> <d f a> <e g b> <e ges b>");
+    //    rs.notes("<gis b dis>4 <gis' b dis gis> <fis, a cis e> <fis a c dis> ");
+    //
+    //    var r = rs.build();
+    b.notes(chordLibrary().get(r));
 
     var ic = new int[b.notes().renderedChords().size()];
     ic[0] = ICON_POINTER;
@@ -220,16 +220,6 @@ public class Sight extends App {
    */
   private JComponent contentPane() {
     return (JComponent) mFrame.frame().getContentPane();
-  }
-
-  private ChordLibrary chordLibrary() {
-    if (mChordLibrary == null) {
-      var c = new ChordLibrary();
-      //c.ignoreCache();
-      //c.alertVerbose();
-      mChordLibrary = c;
-    }
-    return mChordLibrary;
   }
 
   private LessonManager lessonManager() {
@@ -283,12 +273,9 @@ public class Sight extends App {
 
   }
 
-
   private DrillState mDrillState = DrillState.DEFAULT_INSTANCE;
   private FrameWrapper mFrame;
   private Canvas mCanvas;
-  private ChordLibrary mChordLibrary;
-
   private LessonManager mLessonManager;
 
 }

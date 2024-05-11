@@ -84,4 +84,16 @@ public final class Util {
   }
 
   private static SightConfig sConfig;
+
+  public static ChordLibrary chordLibrary() {
+    if (sChordLibrary == null) {
+      var c = new ChordLibrary();
+      //c.ignoreCache();
+      //c.alertVerbose();
+      sChordLibrary = c;
+    }
+    return sChordLibrary;
+  }
+
+  private static ChordLibrary sChordLibrary;
 }

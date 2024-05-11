@@ -47,6 +47,7 @@ public class ChordLibrary extends BaseObject {
 
   private void compile(RenderedSet rs, File metadata, File imgFile) {
 
+    pr("...compiling rendered set:", imgFile);
     files().deletePeacefully(metadata);
     files().deletePeacefully(imgFile);
 
@@ -111,7 +112,7 @@ public class ChordLibrary extends BaseObject {
     ext.setSource(bi);
     var boxes = ext.rects();
 
-    if (alert("rendering boxes")) {
+    if (false && alert("rendering boxes")) {
       var bx = ext.plotRects();
       var d = Files.parent(targetFile);
       var bn = Files.basename(targetFile);
