@@ -64,22 +64,26 @@ public class ChordLibrary extends BaseObject {
       hand = inferHandFromNotes(chords);
     }
 
-    String handFragName;
-    switch (hand) {
-    default:
-      throw notFinished("not yet supported:", rs.hand());
-    case RIGHT:
-      handFragName = "right_hand.txt";
-      break;
-    case LEFT:
-      handFragName = "left_hand.txt";
-      break;
-    }
-    var template = frag(handFragName);
+    if (hand == Hand.BOTH)
+      throw notSupported("BOTH is not supported yet");
+    //    String handFragName;
+    //    switch (hand) {
+    //    default:
+    //      throw notFinished("not yet supported:", rs.hand());
+    //    case RIGHT:
+    //      handFragName = "right_hand.txt";
+    //      break;
+    //    case LEFT:
+    //      handFragName = "left_hand.txt";
+    //      break;
+    //    }
+    var template = frag("score_template.txt");
 
+    pr("template:",INDENT,template);
     var m = map();
     m.put("key", toLilyPond(rs.keySig()));
     m.put("notes", encodeLily(chords));
+    m.put("clef", hand == Hand.LEFT ? "bass" : "treble");
 
     MacroParser parser = new MacroParser();
     parser.withTemplate(template).withMapper(m);
@@ -92,6 +96,7 @@ public class ChordLibrary extends BaseObject {
     var sourceFile = new File(mWorkDirectory, "input.ly");
 
     files().writeString(sourceFile, script);
+    pr(VERT_SP, "compiling lily:", CR, script);
 
     {
 
