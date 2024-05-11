@@ -5,6 +5,7 @@ import static sight.Util.*;
 
 import java.awt.BorderLayout;
 import java.io.File;
+import java.util.List;
 
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -20,6 +21,7 @@ import sight.gen.Chord;
 import sight.gen.DrillState;
 import sight.gen.DrillStatus;
 import sight.gen.GuiState;
+import sight.gen.RenderedNotes;
 
 public class Sight extends App {
 
@@ -130,6 +132,43 @@ public class Sight extends App {
         if (!ch.equals(Chord.DEFAULT_INSTANCE)) {
           if (ch.equals(DEATH_CHORD)) {
             halt("DEATH CHORD pressed, quitting");
+          } 
+          
+          pr("chord:",ch);
+          
+          if (ch.equals(PREV_LESSON_CHORD)) {
+            todo("this is very hacky.");
+            if (mDrillState.cursor() == 0) {
+              if (lessonHistory.size() > 1) {
+                pop(lessonHistory);
+
+                var b = DrillState.newBuilder();
+                b.status(DrillStatus.ACTIVE);
+
+                var r = last(lessonHistory);
+                b.notes(r);
+
+                var ic = new int[b.notes().renderedChords().size()];
+                ic[0] = ICON_POINTER;
+                b.icons(ic);
+
+                mDrillState = b.build();
+                canvas().setDrillState(mDrillState);
+                canvas().repaint();
+                return;
+              }
+            } else {
+              var b = DrillState.newBuilder();
+              b.status(DrillStatus.ACTIVE);
+              b.notes(mDrillState.notes());
+              var ic = new int[b.notes().renderedChords().size()];
+              ic[0] = ICON_POINTER;
+              b.icons(ic);
+              mDrillState = b.build();
+              canvas().setDrillState(mDrillState);
+              canvas().repaint();
+              return;
+            }
           }
           processPlayerChord(ch);
         }
@@ -172,6 +211,8 @@ public class Sight extends App {
   private long mDoneTime;
 
   private static final Chord DEATH_CHORD = Chord.newBuilder().keyNumbers(intArray(36)).build();
+  private static final Chord PREV_LESSON_CHORD = Chord.newBuilder().keyNumbers(intArray(74)).build();
+  private static final Chord NEXT_LESSON_CHORD = Chord.newBuilder().keyNumbers(intArray(75)).build();
 
   //------------------------------------------------------------------
   // Frame
@@ -199,15 +240,11 @@ public class Sight extends App {
     return mCanvas;
   }
 
+  private List<RenderedNotes> lessonHistory = arrayList();
+
   private void prepareScore(DrillState.Builder b) {
     var r = lessonManager().choose();
-    //    var rs = RenderedSet.newBuilder();
-    //    rs.keySig(KeySig.E);
-    //    rs.hand(Hand.RIGHT);
-    //    // rs.notes("<gis b dis>4 <gis' b dis gis> <fis, a cis e> <fis a c dis> <c' e g> <d f a> <e g b> <e ges b>");
-    //    rs.notes("<gis b dis>4 <gis' b dis gis> <fis, a cis e> <fis a c dis> ");
-    //
-    //    var r = rs.build();
+    lessonHistory.add(r);
     b.notes(r);
 
     var ic = new int[b.notes().renderedChords().size()];
