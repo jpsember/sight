@@ -23,6 +23,10 @@ public final class Util {
   public static final Chord CHORD_RESET_SCORE = chordWith(73);
   public static final Chord CHORD_REMOVE_LAST = chordWith(71);
 
+  public static void z(Object... msg) {
+    pr(msg);
+  }
+
   /**
    * Get an input stream to a resource
    */

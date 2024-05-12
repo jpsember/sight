@@ -136,6 +136,7 @@ public class Sight extends App {
       var ch = MidiManager.SHARED_INSTANCE.currentChord();
       if (ch != mPrevChord) {
         mPrevChord = ch;
+        z("chord changed to:", ch);
 
         if (!ch.equals(Chord.DEFAULT_INSTANCE)) {
           if (ch.equals(DEATH_CHORD)) {
@@ -191,6 +192,7 @@ public class Sight extends App {
         if (pctRight == 100)
           pt /= 3;
         long elapsed = System.currentTimeMillis() - mDoneTime;
+        z("done, elapsed:", elapsed, ">=?", pt);
         if (elapsed >= pt) {
           prepareDrill();
           canvas().repaint();
@@ -259,7 +261,9 @@ public class Sight extends App {
   private List<RenderedNotes> lessonHistory = arrayList();
 
   private void prepareScore(DrillState.Builder b) {
+    z("choosing lesson");
     var r = lessonManager().choose();
+    z("chose:", r.description());
     lessonHistory.add(r);
     b.notes(r);
     pr("Lesson:", r.description());
@@ -296,7 +300,9 @@ public class Sight extends App {
   }
 
   private void processPlayerChord(Chord ch) {
+
     var s = mDrillState;
+    z("processPlayerChord:", ch, "status:", s.status());
     switch (s.status()) {
     case DONE:
       prepareDrill();
@@ -318,6 +324,7 @@ public class Sight extends App {
         mDoneTime = System.currentTimeMillis();
       }
       mDrillState = b.build();
+      z("new drill state:", mDrillState.notes().imageFile());
       canvas().repaint();
     }
       break;

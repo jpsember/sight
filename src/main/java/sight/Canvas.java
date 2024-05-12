@@ -23,6 +23,7 @@ import sight.gen.RenderedNotes;
 public class Canvas extends JPanel {
 
   public void paintComponent(Graphics graphics) {
+    z("painting canvas");
     if (mDrillState == null)
       return;
     var notes = mDrillState.notes();

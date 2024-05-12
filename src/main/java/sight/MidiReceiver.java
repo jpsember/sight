@@ -64,15 +64,15 @@ class MidiReceiver extends BaseObject implements Receiver {
         return;
       int pitch = pitchToKeyNumber(by[1]);
       mKeysPressedSet.remove(pitch);
-
+      if (mKeysPressedSet.isEmpty())
+        mChordSet.clear();
       // Update the current chord (which will still include the released key)
       var cc = constructChord();
       if (!cc.equals(mCurrentChord)) {
         mCurrentChord = cc;
         mCurrentChordTimestamp = mLastPressTimestamp;
       }
-      if (mKeysPressedSet.isEmpty())
-        mChordSet.clear();
+      
     }
   }
 
@@ -88,7 +88,7 @@ class MidiReceiver extends BaseObject implements Receiver {
   }
 
   public synchronized Chord currentChord() {
-    boolean db = false;
+    boolean db = true;
     // Update the chord if there hasn't been recent key down action
     if (mLastPressTimestamp != mCurrentChordTimestamp) {
       var tm = System.currentTimeMillis();
@@ -97,7 +97,7 @@ class MidiReceiver extends BaseObject implements Receiver {
       if (tm - mLastPressTimestamp >= mConfig.quiescentChordMs()) {
         updateCurrentChord();
         if (db)
-          pr("...... set chord to:", mCurrentChord.keyNumbers());
+          pr("...... set chord to:", mCurrentChord.keyNumbers(),"timestamp:",mCurrentChordTimestamp);
       }
     }
     return mCurrentChord;
