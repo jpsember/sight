@@ -8,4 +8,5 @@ fields {
   enum Hand hand;
   enum KeySig key;
   bool inspect_boxes;
+  int seed = 1965;
 }

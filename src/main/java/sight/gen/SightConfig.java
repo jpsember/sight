@@ -37,6 +37,10 @@ public class SightConfig implements AbstractData {
     return mInspectBoxes;
   }
 
+  public int seed() {
+    return mSeed;
+  }
+
   @Override
   public Builder toBuilder() {
     return new Builder(this);
@@ -50,6 +54,7 @@ public class SightConfig implements AbstractData {
   protected static final String _5 = "hand";
   protected static final String _6 = "key";
   protected static final String _7 = "inspect_boxes";
+  protected static final String _8 = "seed";
 
   @Override
   public String toString() {
@@ -67,6 +72,7 @@ public class SightConfig implements AbstractData {
     m.putUnsafe(_5, mHand.toString().toLowerCase());
     m.putUnsafe(_6, mKey.toString().toLowerCase());
     m.putUnsafe(_7, mInspectBoxes);
+    m.putUnsafe(_8, mSeed);
     return m;
   }
 
@@ -95,6 +101,7 @@ public class SightConfig implements AbstractData {
       mKey = x.isEmpty() ? KeySig.DEFAULT_INSTANCE : KeySig.valueOf(x.toUpperCase());
     }
     mInspectBoxes = m.opt(_7, false);
+    mSeed = m.opt(_8, 1965);
   }
 
   public static Builder newBuilder() {
@@ -126,6 +133,8 @@ public class SightConfig implements AbstractData {
       return false;
     if (!(mInspectBoxes == other.mInspectBoxes))
       return false;
+    if (!(mSeed == other.mSeed))
+      return false;
     return true;
   }
 
@@ -142,6 +151,7 @@ public class SightConfig implements AbstractData {
       r = r * 37 + mHand.ordinal();
       r = r * 37 + mKey.ordinal();
       r = r * 37 + (mInspectBoxes ? 1 : 0);
+      r = r * 37 + mSeed;
       m__hashcode = r;
     }
     return r;
@@ -155,6 +165,7 @@ public class SightConfig implements AbstractData {
   protected Hand mHand;
   protected KeySig mKey;
   protected boolean mInspectBoxes;
+  protected int mSeed;
   protected int m__hashcode;
 
   public static final class Builder extends SightConfig {
@@ -168,6 +179,7 @@ public class SightConfig implements AbstractData {
       mHand = m.mHand;
       mKey = m.mKey;
       mInspectBoxes = m.mInspectBoxes;
+      mSeed = m.mSeed;
     }
 
     @Override
@@ -192,6 +204,7 @@ public class SightConfig implements AbstractData {
       r.mHand = mHand;
       r.mKey = mKey;
       r.mInspectBoxes = mInspectBoxes;
+      r.mSeed = mSeed;
       return r;
     }
 
@@ -235,6 +248,11 @@ public class SightConfig implements AbstractData {
       return this;
     }
 
+    public Builder seed(int x) {
+      mSeed = x;
+      return this;
+    }
+
   }
 
   public static final SightConfig DEFAULT_INSTANCE = new SightConfig();
@@ -245,6 +263,7 @@ public class SightConfig implements AbstractData {
     mNoteScale = 1.0;
     mHand = Hand.DEFAULT_INSTANCE;
     mKey = KeySig.DEFAULT_INSTANCE;
+    mSeed = 1965;
   }
 
 }

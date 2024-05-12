@@ -51,7 +51,7 @@ public class LessonManager {
 
       var f = new File("lessons.json");
 
-      mRand = new Random(1965);
+      mRand = new Random(config().seed());
       mLessonCollection = Files.parseAbstractDataOpt(LessonCollection.DEFAULT_INSTANCE, f);
       checkArgument(mLessonCollection.renderedSets().size() != 0, "no chord sets found in lesson collection:",
           f, INDENT, mLessonCollection);
@@ -115,21 +115,24 @@ public class LessonManager {
     List<RenderedSet> out = arrayList();
 
     var noteStrs = source.notes().split(" +");
-
-    pr("split:", INDENT, source.notes(), CR, "to:", CR, noteStrs);
+    int numNotes = noteStrs.length;
 
     final int NOTES_PER_LESSON = 4;
-    for (int perm = 0; perm < 2; perm++) {
+    int numPerms = 1;
+    if (numNotes > 3)
+      numPerms = 5;
 
-      int[] strs2 = new int[noteStrs.length];
-      for (int i = 0; i < strs2.length; i++)
+    for (int perm = 0; perm < numPerms; perm++) {
+
+      int[] strs2 = new int[numNotes];
+      for (int i = 0; i < numNotes; i++)
         strs2[i] = i;
 
       if (perm != 0) {
-        strs2 = permutation(strs2.length);
+        strs2 = permutation(numNotes);
       }
 
-      for (int i = 0; i <= strs2.length - NOTES_PER_LESSON; i += NOTES_PER_LESSON) {
+      for (int i = 0; i <= numNotes - NOTES_PER_LESSON; i += NOTES_PER_LESSON) {
         var b = source.toBuilder();
         b.description(source.description() + " " + perm + ":" + i);
         var sb = new StringBuilder();
