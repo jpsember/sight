@@ -23,6 +23,10 @@ public class SightConfig implements AbstractData {
     return mViewRecentEdits;
   }
 
+  public double noteScale() {
+    return mNoteScale;
+  }
+
   @Override
   public Builder toBuilder() {
     return new Builder(this);
@@ -32,6 +36,7 @@ public class SightConfig implements AbstractData {
   protected static final String _1 = "done_pause_time_ms";
   protected static final String _2 = "quiescent_chord_ms";
   protected static final String _3 = "view_recent_edits";
+  protected static final String _4 = "note_scale";
 
   @Override
   public String toString() {
@@ -45,6 +50,7 @@ public class SightConfig implements AbstractData {
     m.putUnsafe(_1, mDonePauseTimeMs);
     m.putUnsafe(_2, mQuiescentChordMs);
     m.putUnsafe(_3, mViewRecentEdits);
+    m.putUnsafe(_4, mNoteScale);
     return m;
   }
 
@@ -69,6 +75,7 @@ public class SightConfig implements AbstractData {
     mDonePauseTimeMs = m.opt(_1, 1200);
     mQuiescentChordMs = m.opt(_2, 250);
     mViewRecentEdits = m.opt(_3, false);
+    mNoteScale = m.opt(_4, 1.0);
   }
 
   public static Builder newBuilder() {
@@ -92,6 +99,8 @@ public class SightConfig implements AbstractData {
       return false;
     if (!(mViewRecentEdits == other.mViewRecentEdits))
       return false;
+    if (!(mNoteScale == other.mNoteScale))
+      return false;
     return true;
   }
 
@@ -104,6 +113,7 @@ public class SightConfig implements AbstractData {
       r = r * 37 + mDonePauseTimeMs;
       r = r * 37 + mQuiescentChordMs;
       r = r * 37 + (mViewRecentEdits ? 1 : 0);
+      r = r * 37 + (int) mNoteScale;
       m__hashcode = r;
     }
     return r;
@@ -113,6 +123,7 @@ public class SightConfig implements AbstractData {
   protected int mDonePauseTimeMs;
   protected int mQuiescentChordMs;
   protected boolean mViewRecentEdits;
+  protected double mNoteScale;
   protected int m__hashcode;
 
   public static final class Builder extends SightConfig {
@@ -122,6 +133,7 @@ public class SightConfig implements AbstractData {
       mDonePauseTimeMs = m.mDonePauseTimeMs;
       mQuiescentChordMs = m.mQuiescentChordMs;
       mViewRecentEdits = m.mViewRecentEdits;
+      mNoteScale = m.mNoteScale;
     }
 
     @Override
@@ -142,6 +154,7 @@ public class SightConfig implements AbstractData {
       r.mDonePauseTimeMs = mDonePauseTimeMs;
       r.mQuiescentChordMs = mQuiescentChordMs;
       r.mViewRecentEdits = mViewRecentEdits;
+      r.mNoteScale = mNoteScale;
       return r;
     }
 
@@ -165,6 +178,11 @@ public class SightConfig implements AbstractData {
       return this;
     }
 
+    public Builder noteScale(double x) {
+      mNoteScale = x;
+      return this;
+    }
+
   }
 
   public static final SightConfig DEFAULT_INSTANCE = new SightConfig();
@@ -173,6 +191,7 @@ public class SightConfig implements AbstractData {
     mChords = Files.DEFAULT;
     mDonePauseTimeMs = 1200;
     mQuiescentChordMs = 250;
+    mNoteScale = 1.0;
   }
 
 }

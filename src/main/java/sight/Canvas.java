@@ -1,10 +1,12 @@
 package sight;
 
 import static js.base.Tools.*;
+import static sight.Util.*;
 
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.util.List;
 
@@ -28,6 +30,7 @@ public class Canvas extends JPanel {
       return;
 
     var g = (Graphics2D) graphics;
+
     {
       g.setBackground(Color.white);
       var b = new IRect(g.getClipBounds());
@@ -36,9 +39,10 @@ public class Canvas extends JPanel {
 
     calcTransform(notes);
     g.setTransform(mAtlasToCanvas.toAffineTransform());
-
     var rn = notes;
-
+    g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+    g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+    
     // Stretch the staff image (a vertical strip) to fill the horizontal extent of the staff
     {
       var sr = rn.staffRect();
@@ -111,6 +115,8 @@ public class Canvas extends JPanel {
 
     int padding = round(staffHeight * .5);
     mAtlasToCanvas = Matrix.getTranslate(padding, padding + extraAbove - rn.staffRect().y);
+    var scaleTfm = Matrix.getScale((float) config().noteScale());
+    mAtlasToCanvas = Matrix.preMultiply(mAtlasToCanvas, scaleTfm);
     mPromptY = canvasHeight - mPromptHeight;
   }
 
