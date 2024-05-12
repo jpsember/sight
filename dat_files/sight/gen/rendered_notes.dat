@@ -1,6 +1,7 @@
 fields {
   File image_file;
   *RenderedChord rendered_chords;
+  string description;
 
   IRect staff_rect;
   IRect clef_rect;

@@ -66,20 +66,9 @@ public class ChordLibrary extends BaseObject {
 
     if (hand == Hand.BOTH)
       throw notSupported("BOTH is not supported yet");
-    //    String handFragName;
-    //    switch (hand) {
-    //    default:
-    //      throw notFinished("not yet supported:", rs.hand());
-    //    case RIGHT:
-    //      handFragName = "right_hand.txt";
-    //      break;
-    //    case LEFT:
-    //      handFragName = "left_hand.txt";
-    //      break;
-    //    }
+
     var template = frag("score_template.txt");
 
-    pr("template:",INDENT,template);
     var m = map();
     m.put("key", toLilyPond(rs.keySig()));
     m.put("notes", encodeLily(chords));
@@ -96,7 +85,7 @@ public class ChordLibrary extends BaseObject {
     var sourceFile = new File(mWorkDirectory, "input.ly");
 
     files().writeString(sourceFile, script);
-    pr(VERT_SP, "compiling lily:", CR, script);
+  //  pr(VERT_SP, "compiling lily:", CR, script);
 
     {
 
@@ -155,7 +144,7 @@ public class ChordLibrary extends BaseObject {
       nb.staffRect(boxes.get(ImgExtractor.RECT_STAFF_LINES));
       nb.clefRect(boxes.get(ImgExtractor.RECT_CLEF));
       nb.keysigRect(boxes.get(ImgExtractor.RECT_KEYSIG));
-
+      nb.description(rs.description());
       List<RenderedChord> renderedChordsList = arrayList();
 
       var j = INIT_INDEX;
@@ -174,7 +163,8 @@ public class ChordLibrary extends BaseObject {
   }
 
   private Hand inferHandFromNotes(List<Chord> chords) {
-    //    pr("infer hand from notes:", chords);
+       final var db = false
+           ;if (db)pr("infer hand from notes:", chords);
     checkArgument(!chords.isEmpty());
     int noteMin = chords.get(0).keyNumbers()[0];
     int noteMax = noteMin;
@@ -188,8 +178,8 @@ public class ChordLibrary extends BaseObject {
         noteMax = Math.max(noteMax, k);
       }
     }
-    int avgNote = noteCount / noteSum;
-    //    pr("avgNote:", avgNote, "min:", noteMin, "max:", noteMax);
+    int avgNote = noteSum/noteCount;
+    if (db)   pr("avgNote:", avgNote, "min:", noteMin, "max:", noteMax);
     if (avgNote >= MIDDLE_C)
       return Hand.RIGHT;
     return Hand.LEFT;

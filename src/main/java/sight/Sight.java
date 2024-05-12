@@ -5,6 +5,7 @@ import static sight.Util.*;
 
 import java.awt.BorderLayout;
 import java.io.File;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.JComponent;
@@ -135,42 +136,43 @@ public class Sight extends App {
       var ch = MidiManager.SHARED_INSTANCE.currentChord();
       if (ch != mPrevChord) {
         mPrevChord = ch;
+
         if (!ch.equals(Chord.DEFAULT_INSTANCE)) {
           if (ch.equals(DEATH_CHORD)) {
             halt("DEATH CHORD pressed, quitting");
           }
 
+          if (ch.equals(CHORD_BACKUP)) {
+            if (mDrillState.cursor() != 0) {
+              createWork();
+              setCursor(mTempDrillState.cursor() - 1);
+              writeWork();
+            }
+            return;
+          }
           if (ch.equals(PREV_LESSON_CHORD)) {
             todo("this is very hacky.");
             if (mDrillState.cursor() == 0) {
               if (lessonHistory.size() > 1) {
                 pop(lessonHistory);
 
-                var b = DrillState.newBuilder();
+                var b = createWork();
+                // var b = DrillState.newBuilder();
                 b.status(DrillStatus.ACTIVE);
 
                 var r = last(lessonHistory);
                 b.notes(r);
 
-                var ic = new int[b.notes().renderedChords().size()];
-                ic[0] = ICON_POINTER;
-                b.icons(ic);
+                setCursor(0);
+                writeWork();
 
-                mDrillState = b.build();
-                canvas().setDrillState(mDrillState);
-                canvas().repaint();
                 return;
               }
             } else {
-              var b = DrillState.newBuilder();
+              var b = createWork();
               b.status(DrillStatus.ACTIVE);
-              b.notes(mDrillState.notes());
-              var ic = new int[b.notes().renderedChords().size()];
-              ic[0] = ICON_POINTER;
-              b.icons(ic);
-              mDrillState = b.build();
-              canvas().setDrillState(mDrillState);
-              canvas().repaint();
+              setCursor(0);
+              writeWork();
               return;
             }
           }
@@ -184,13 +186,26 @@ public class Sight extends App {
     //
     {
       if (mDrillState.status() == DrillStatus.DONE) {
+        int pctRight = calcPercentRight(mDrillState);
+        int pt = config().donePauseTimeMs();
+        if (pctRight == 100)
+          pt /= 3;
         long elapsed = System.currentTimeMillis() - mDoneTime;
-        if (elapsed >= config().donePauseTimeMs()) {
+        if (elapsed >= pt) {
           prepareDrill();
           canvas().repaint();
         }
       }
     }
+  }
+
+  private int calcPercentRight(DrillState s) {
+    checkArgument(s.cursor() != 0);
+    int c = 0;
+    for (int i = 0; i < s.cursor(); i++)
+      if (s.icons()[i] == ICON_RIGHT)
+        c++;
+    return (c * 100) / s.cursor();
   }
 
   private BgndTaskManager mTaskManager;
@@ -247,6 +262,7 @@ public class Sight extends App {
     var r = lessonManager().choose();
     lessonHistory.add(r);
     b.notes(r);
+    pr("Lesson:", r.description());
 
     var ic = new int[b.notes().renderedChords().size()];
     ic[0] = ICON_POINTER;
@@ -357,5 +373,40 @@ public class Sight extends App {
       }
     }
   }
+
+  // ------------------------------------------------------------------
+  // Convenience methods for manipulating DrillState
+  // ------------------------------------------------------------------
+
+  /**
+   * Construct a builder from a copy of the drill stater
+   */
+  private DrillState.Builder createWork() {
+    mTempDrillState = mDrillState.build().toBuilder();
+    var ic = mTempDrillState.icons();
+    mTempDrillState.icons(Arrays.copyOf(ic, ic.length));
+    return mTempDrillState;
+  }
+
+  /**
+   * Replace drill state with the work version, and trigger a repaint
+   */
+  private void writeWork() {
+    mDrillState = mTempDrillState.build();
+    canvas().setDrillState(mDrillState);
+    canvas().repaint();
+  }
+
+  private void setCursor(int newCursorLocation) {
+    var w = mTempDrillState;
+    checkState(newCursorLocation >= 0 && newCursorLocation < w.icons().length);
+    var ic = w.icons();
+    ic[newCursorLocation] = ICON_POINTER;
+    for (int j = newCursorLocation + 1; j < ic.length; j++)
+      ic[j] = ICON_NONE;
+    w.cursor(newCursorLocation);
+  }
+
+  private DrillState.Builder mTempDrillState;
 
 }

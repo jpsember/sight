@@ -1,4 +1,4 @@
- \version "2.24.3"
+\version "2.24.3"
 
 \paper {
   horizontal-shift = -2.0\mm
@@ -6,25 +6,37 @@
 
 \score {
 
-\new Staff {
-      \key [!key]
-      \clef [!clef]
+  \new Staff {
 
-      \omit Staff.TimeSignature
-      \omit Score.BarLine  % hide the bar lines
+    \clef [!clef]
+    \omit Score.BarLine
+    \omit Staff.TimeSignature
 
+    % Add extra space between the key signature and the first note
+    %
+
+    \override Staff.KeySignature.space-alist.first-note = #'(extra-space . 8)
+    % In case there is no key signature, add space from clef
+    \override Staff.Clef.space-alist.first-note = #'(extra-space . 8)
+
+    \key [!key]
     [!notes]
 }
 
 
- \layout {
+% I think this is to increase the separation between adjacent notes (chords)
+%
+\layout {
     \context {
       \Score
-      \override SpacingSpanner.base-shortest-duration = #(ly:make-moment 1/4)
+      \override SpacingSpanner.base-shortest-duration = #(ly:make-moment 1/64)
     }
    }
 }
 
+
+% Suppress the footer
+%
 \header {
   tagline = ""  % removed
 }

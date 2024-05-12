@@ -17,6 +17,7 @@ public final class Util {
   public static final int MAX_KEY_NUMBER = 88;
   public static final int MIDDLE_C = 39;
   public static final Chord DEATH_CHORD = chordWith(36);
+  public static final Chord CHORD_BACKUP = chordWith(72);
   public static final Chord PREV_LESSON_CHORD = chordWith(74);
   public static final Chord NEXT_LESSON_CHORD = chordWith(75);
   public static final Chord CHORD_RESET_SCORE = chordWith(73);

@@ -19,6 +19,10 @@ public class RenderedNotes implements AbstractData {
     return mRenderedChords;
   }
 
+  public String description() {
+    return mDescription;
+  }
+
   public IRect staffRect() {
     return mStaffRect;
   }
@@ -38,9 +42,10 @@ public class RenderedNotes implements AbstractData {
 
   protected static final String _0 = "image_file";
   protected static final String _1 = "rendered_chords";
-  protected static final String _2 = "staff_rect";
-  protected static final String _3 = "clef_rect";
-  protected static final String _4 = "keysig_rect";
+  protected static final String _2 = "description";
+  protected static final String _3 = "staff_rect";
+  protected static final String _4 = "clef_rect";
+  protected static final String _5 = "keysig_rect";
 
   @Override
   public String toString() {
@@ -57,9 +62,10 @@ public class RenderedNotes implements AbstractData {
         j.add(x.toJson());
       m.put(_1, j);
     }
-    m.putUnsafe(_2, mStaffRect.toJson());
-    m.putUnsafe(_3, mClefRect.toJson());
-    m.putUnsafe(_4, mKeysigRect.toJson());
+    m.putUnsafe(_2, mDescription);
+    m.putUnsafe(_3, mStaffRect.toJson());
+    m.putUnsafe(_4, mClefRect.toJson());
+    m.putUnsafe(_5, mKeysigRect.toJson());
     return m;
   }
 
@@ -82,23 +88,24 @@ public class RenderedNotes implements AbstractData {
       }
     }
     mRenderedChords = DataUtil.parseListOfObjects(RenderedChord.DEFAULT_INSTANCE, m.optJSList(_1), false);
+    mDescription = m.opt(_2, "");
     {
       mStaffRect = IRect.DEFAULT_INSTANCE;
-      Object x = m.optUnsafe(_2);
+      Object x = m.optUnsafe(_3);
       if (x != null) {
         mStaffRect = IRect.DEFAULT_INSTANCE.parse(x);
       }
     }
     {
       mClefRect = IRect.DEFAULT_INSTANCE;
-      Object x = m.optUnsafe(_3);
+      Object x = m.optUnsafe(_4);
       if (x != null) {
         mClefRect = IRect.DEFAULT_INSTANCE.parse(x);
       }
     }
     {
       mKeysigRect = IRect.DEFAULT_INSTANCE;
-      Object x = m.optUnsafe(_4);
+      Object x = m.optUnsafe(_5);
       if (x != null) {
         mKeysigRect = IRect.DEFAULT_INSTANCE.parse(x);
       }
@@ -122,6 +129,8 @@ public class RenderedNotes implements AbstractData {
       return false;
     if (!(mRenderedChords.equals(other.mRenderedChords)))
       return false;
+    if (!(mDescription.equals(other.mDescription)))
+      return false;
     if (!(mStaffRect.equals(other.mStaffRect)))
       return false;
     if (!(mClefRect.equals(other.mClefRect)))
@@ -140,6 +149,7 @@ public class RenderedNotes implements AbstractData {
       for (RenderedChord x : mRenderedChords)
         if (x != null)
           r = r * 37 + x.hashCode();
+      r = r * 37 + mDescription.hashCode();
       r = r * 37 + mStaffRect.hashCode();
       r = r * 37 + mClefRect.hashCode();
       r = r * 37 + mKeysigRect.hashCode();
@@ -150,6 +160,7 @@ public class RenderedNotes implements AbstractData {
 
   protected File mImageFile;
   protected List<RenderedChord> mRenderedChords;
+  protected String mDescription;
   protected IRect mStaffRect;
   protected IRect mClefRect;
   protected IRect mKeysigRect;
@@ -160,6 +171,7 @@ public class RenderedNotes implements AbstractData {
     private Builder(RenderedNotes m) {
       mImageFile = m.mImageFile;
       mRenderedChords = DataUtil.mutableCopyOf(m.mRenderedChords);
+      mDescription = m.mDescription;
       mStaffRect = m.mStaffRect;
       mClefRect = m.mClefRect;
       mKeysigRect = m.mKeysigRect;
@@ -181,6 +193,7 @@ public class RenderedNotes implements AbstractData {
       RenderedNotes r = new RenderedNotes();
       r.mImageFile = mImageFile;
       r.mRenderedChords = DataUtil.immutableCopyOf(mRenderedChords);
+      r.mDescription = mDescription;
       r.mStaffRect = mStaffRect;
       r.mClefRect = mClefRect;
       r.mKeysigRect = mKeysigRect;
@@ -194,6 +207,11 @@ public class RenderedNotes implements AbstractData {
 
     public Builder renderedChords(List<RenderedChord> x) {
       mRenderedChords = DataUtil.mutableCopyOf((x == null) ? DataUtil.emptyList() : x);
+      return this;
+    }
+
+    public Builder description(String x) {
+      mDescription = (x == null) ? "" : x;
       return this;
     }
 
@@ -219,6 +237,7 @@ public class RenderedNotes implements AbstractData {
   private RenderedNotes() {
     mImageFile = Files.DEFAULT;
     mRenderedChords = DataUtil.emptyList();
+    mDescription = "";
     mStaffRect = IRect.DEFAULT_INSTANCE;
     mClefRect = IRect.DEFAULT_INSTANCE;
     mKeysigRect = IRect.DEFAULT_INSTANCE;
