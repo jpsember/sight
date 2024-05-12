@@ -192,7 +192,6 @@ public class Sight extends App {
         if (pctRight == 100)
           pt /= 3;
         long elapsed = System.currentTimeMillis() - mDoneTime;
-        z("done, elapsed:", elapsed, ">=?", pt);
         if (elapsed >= pt) {
           prepareDrill();
           canvas().repaint();

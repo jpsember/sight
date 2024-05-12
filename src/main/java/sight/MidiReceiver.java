@@ -13,6 +13,7 @@ import js.base.BaseObject;
 import js.data.DataUtil;
 import sight.gen.Chord;
 import sight.gen.SightConfig;
+import static sight.Util.*;
 
 /**
  * This must be thread safe!
@@ -30,12 +31,14 @@ class MidiReceiver extends BaseObject implements Receiver {
   @Override
   public synchronized void send(MidiMessage message, long timeStamp) {
     var by = message.getMessage();
-    //log("MidiMessage:", DataUtil.hexDump(by));
+    if (verbose() && false)
+      log("MidiMessage:", DataUtil.hexDump(by));
 
     if (by.length < 2) {
       pr("*** unexpected MidiMessage length:", DataUtil.hexDump(by));
       return;
     }
+
     var status = by[0];
     var data1 = by[1];
     var data2 = 0;
@@ -47,6 +50,8 @@ class MidiReceiver extends BaseObject implements Receiver {
       return;
     }
 
+    long ourTimestamp = System.currentTimeMillis();
+
     var highNyb = status & 0xf0;
     var channel = status & 0x0f;
     if (highNyb == 0x90) {
@@ -55,30 +60,42 @@ class MidiReceiver extends BaseObject implements Receiver {
         return;
       }
       int pitch = pitchToKeyNumber(by[1]);
-      mKeysPressedSet.add(pitch);
-      mChordSet.add(pitch);
-      mLastPressTimestamp = System.currentTimeMillis();
-      log("note on, chord set:", mChordSet);
+
+      mDownSet.add(pitch);
+      switch (mState) {
+      case STATE_ALLUP:
+        mChordSet.add(pitch);
+        setState(STATE_SOMEDOWN, "key down");
+        mState = STATE_SOMEDOWN;
+        mActionTime = ourTimestamp;
+        break;
+      case STATE_SOMEDOWN:
+        mChordSet.add(pitch);
+        mActionTime = ourTimestamp;
+        break;
+      }
     } else if (highNyb == 0x80) {
       if (channel != 0)
         return;
       int pitch = pitchToKeyNumber(by[1]);
-      mKeysPressedSet.remove(pitch);
-      if (mKeysPressedSet.isEmpty())
-        mChordSet.clear();
-      // Update the current chord (which will still include the released key)
-      var cc = constructChord();
-      if (!cc.equals(mCurrentChord)) {
-        mCurrentChord = cc;
-        mCurrentChordTimestamp = mLastPressTimestamp;
+
+      mDownSet.remove(pitch);
+      switch (mState) {
+      case STATE_SOMEDOWN:
+        constructChordFromChordKeys();
+        setState(mDownSet.isEmpty() ? STATE_ALLUP : STATE_WAITUP, "key up");
+        break;
+      case STATE_WAITUP:
+        if (mDownSet.isEmpty())
+          setState(STATE_ALLUP, "all keys up");
+        break;
       }
-      
     }
   }
 
   private int pitchToKeyNumber(int pitch) {
     var mod = pitch + PITCH_TO_PIANO_KEY_NUMBER_OFFSET;
-    checkArgument(mod >= 0 && mod < 88, "pitch is outside range of 88-key piano:", pitch);
+    checkArgument(mod >= 0 && mod < MAX_KEY_NUMBER, "pitch is outside range of 88-key piano:", pitch);
     return mod;
   }
 
@@ -88,36 +105,42 @@ class MidiReceiver extends BaseObject implements Receiver {
   }
 
   public synchronized Chord currentChord() {
-    boolean db = true;
-    // Update the chord if there hasn't been recent key down action
-    if (mLastPressTimestamp != mCurrentChordTimestamp) {
-      var tm = System.currentTimeMillis();
-      if (db)
-        pr("...currentChord; ms since press:", tm - mLastPressTimestamp, "key num:", mChordSet);
-      if (tm - mLastPressTimestamp >= mConfig.quiescentChordMs()) {
-        updateCurrentChord();
-        if (db)
-          pr("...... set chord to:", mCurrentChord.keyNumbers(),"timestamp:",mCurrentChordTimestamp);
+    if (mState == STATE_SOMEDOWN) {
+      checkState(mActionTime != 0);
+      long currTime = System.currentTimeMillis();
+      if (currTime - mActionTime >= mConfig.quiescentChordMs()) {
+        constructChordFromChordKeys();
+        setState(STATE_WAITUP, "delay elapsed since action time");
       }
     }
     return mCurrentChord;
   }
 
-  private Chord constructChord() {
+  private void constructChordFromChordKeys() {
     List<Integer> x = arrayList();
     x.addAll(mChordSet);
-    return Chord.newBuilder().keyNumbers(DataUtil.intArray(x)).build();
+    mCurrentChord = Chord.newBuilder().keyNumbers(DataUtil.intArray(x)).build();
+    mChordSet.clear();
   }
 
-  private void updateCurrentChord() {
-    mCurrentChord = constructChord();
-    mCurrentChordTimestamp = mLastPressTimestamp;
+  private static final int STATE_ALLUP = 0, STATE_SOMEDOWN = 1, STATE_WAITUP = 2;
+
+  private void setState(int newState, String cause) {
+    log("state changing from", stateName(mState), "==>", stateName(newState), "; cause:", cause);
+    mState = newState;
+  }
+
+  private static List<String> sStateNames = split("ALLUP SOMEDOWN WAITUP", ' ');
+
+  private static String stateName(int s) {
+    return sStateNames.get(s);
   }
 
   private SightConfig mConfig;
-  private SortedSet<Integer> mKeysPressedSet = new TreeSet<>();
+  private SortedSet<Integer> mDownSet = new TreeSet<>();
   private SortedSet<Integer> mChordSet = new TreeSet<>();
-  private long mLastPressTimestamp;
   private Chord mCurrentChord = Chord.DEFAULT_INSTANCE;
-  private long mCurrentChordTimestamp;
+  private int mState;
+  private long mActionTime;
+
 }
