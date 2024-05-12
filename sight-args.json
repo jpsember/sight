@@ -1,6 +1,6 @@
-{    "hand" : "right",
-  "key_sig" : "e",
-    "notes" : "<gis b dis>4 <gis' b dis gis> <fis, a cis e> <fis a c dis>",
-    "resolution" : 300,
+{             "chords" : "",
+  "done_pause_time_ms" : 1200,
+  "quiescent_chord_ms" : 250,
+  "view_recent_edits" : false,
+  "note_scale" : 0.60,
 }
-

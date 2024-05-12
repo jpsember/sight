@@ -67,6 +67,9 @@ public class ChordLibrary extends BaseObject {
     if (hand == Hand.BOTH)
       throw notSupported("BOTH is not supported yet");
 
+    if (rs.keySig() == KeySig.UNDEFINED)
+      badArg("no key signature defined");
+
     var template = frag("score_template.txt");
 
     var m = map();
@@ -85,7 +88,7 @@ public class ChordLibrary extends BaseObject {
     var sourceFile = new File(mWorkDirectory, "input.ly");
 
     files().writeString(sourceFile, script);
-  //  pr(VERT_SP, "compiling lily:", CR, script);
+    //  pr(VERT_SP, "compiling lily:", CR, script);
 
     {
 
@@ -115,7 +118,7 @@ public class ChordLibrary extends BaseObject {
     ext.setSource(bi);
     var boxes = ext.rects();
 
-    if (true && alert("rendering boxes")) {
+    if (config().inspectBoxes()) {
       var bx = ext.plotRects();
       var d = Files.parent(targetFile);
       var bn = Files.basename(targetFile);
@@ -160,30 +163,6 @@ public class ChordLibrary extends BaseObject {
     }
 
     files().writePretty(metadata, nb);
-  }
-
-  private Hand inferHandFromNotes(List<Chord> chords) {
-       final var db = false
-           ;if (db)pr("infer hand from notes:", chords);
-    checkArgument(!chords.isEmpty());
-    int noteMin = chords.get(0).keyNumbers()[0];
-    int noteMax = noteMin;
-    int noteCount = 0;
-    int noteSum = 0;
-    for (var c : chords) {
-      for (var k : c.keyNumbers()) {
-        noteCount++;
-        noteSum += k;
-        noteMin = Math.min(noteMin, k);
-        noteMax = Math.max(noteMax, k);
-      }
-    }
-    int avgNote = noteSum/noteCount;
-    if (db)   pr("avgNote:", avgNote, "min:", noteMin, "max:", noteMax);
-    if (avgNote >= MIDDLE_C)
-      return Hand.RIGHT;
-    return Hand.LEFT;
-
   }
 
   private String toLilyPond(KeySig keySig) {

@@ -1,15 +1,18 @@
 package sight;
 
 import static js.base.Tools.*;
+import static sight.Util.*;
 
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Map;
 
 import js.base.DateTimeTools;
 import js.file.Files;
 import sight.gen.Chord;
+import sight.gen.Hand;
 import sight.gen.SightConfig;
 
 public final class Util {
@@ -94,13 +97,17 @@ public final class Util {
 
   public static final int ICON_NONE = 0, ICON_POINTER = 1, ICON_RIGHT = 2, ICON_WRONG = 3;
 
+  public static void setConfig(SightConfig c) {
+    sConfig = c.build();
+  }
+
   public static SightConfig config() {
-    if (sConfig == null) {
-      var f = new File("sight_config.json");
-      sConfig = Files.parseAbstractDataOpt(SightConfig.DEFAULT_INSTANCE, f);
-      if (!f.exists())
-        Files.S.writePretty(f, sConfig);
-    }
+    //    if (sConfig == null) {
+    //      var f = new File("sight_config.json");
+    //      sConfig = Files.parseAbstractDataOpt(SightConfig.DEFAULT_INSTANCE, f);
+    //      if (!f.exists())
+    //        Files.S.writePretty(f, sConfig);
+    //    }
     return sConfig;
   }
 
@@ -130,6 +137,32 @@ public final class Util {
       sb.append(kn);
     }
     return sb.toString();
+  }
+
+  public static Hand inferHandFromNotes(List<Chord> chords) {
+    final var db = false;
+    if (db)
+      pr("infer hand from notes:", chords);
+    checkArgument(!chords.isEmpty());
+    int noteMin = chords.get(0).keyNumbers()[0];
+    int noteMax = noteMin;
+    int noteCount = 0;
+    int noteSum = 0;
+    for (var c : chords) {
+      for (var k : c.keyNumbers()) {
+        noteCount++;
+        noteSum += k;
+        noteMin = Math.min(noteMin, k);
+        noteMax = Math.max(noteMax, k);
+      }
+    }
+    int avgNote = noteSum / noteCount;
+    if (db)
+      pr("avgNote:", avgNote, "min:", noteMin, "max:", noteMax);
+    if (avgNote >= MIDDLE_C)
+      return Hand.RIGHT;
+    return Hand.LEFT;
+
   }
 
   private static ChordLibrary sChordLibrary;

@@ -23,6 +23,7 @@ import sight.gen.DrillState;
 import sight.gen.DrillStatus;
 import sight.gen.GuiState;
 import sight.gen.RenderedNotes;
+import sight.gen.SightConfig;
 
 public class Sight extends App {
 
@@ -45,11 +46,17 @@ public class Sight extends App {
     registerOper(new AppOper() {
       @Override
       public String userCommand() {
-        return "_sight_oper_";
+        return "sight";
+      }
+
+      @Override
+      public SightConfig defaultArgs() {
+        return SightConfig.DEFAULT_INSTANCE;
       }
 
       @Override
       public void perform() {
+        setConfig(config());
         auxPerform();
       }
 
@@ -61,8 +68,7 @@ public class Sight extends App {
   }
 
   private void auxPerform() {
-    var ca = cmdLineArgs();
-    if (ca.nextArgIf("create_chords")) {
+    if (config().createChords()) {
       createChords();
       return;
     }

@@ -1,15 +1,9 @@
 package sight.gen;
 
-import java.io.File;
 import js.data.AbstractData;
-import js.file.Files;
 import js.json.JSMap;
 
 public class SightConfig implements AbstractData {
-
-  public File chords() {
-    return mChords;
-  }
 
   public int donePauseTimeMs() {
     return mDonePauseTimeMs;
@@ -27,16 +21,35 @@ public class SightConfig implements AbstractData {
     return mNoteScale;
   }
 
+  public boolean createChords() {
+    return mCreateChords;
+  }
+
+  public Hand hand() {
+    return mHand;
+  }
+
+  public KeySig key() {
+    return mKey;
+  }
+
+  public boolean inspectBoxes() {
+    return mInspectBoxes;
+  }
+
   @Override
   public Builder toBuilder() {
     return new Builder(this);
   }
 
-  protected static final String _0 = "chords";
-  protected static final String _1 = "done_pause_time_ms";
-  protected static final String _2 = "quiescent_chord_ms";
-  protected static final String _3 = "view_recent_edits";
-  protected static final String _4 = "note_scale";
+  protected static final String _0 = "done_pause_time_ms";
+  protected static final String _1 = "quiescent_chord_ms";
+  protected static final String _2 = "view_recent_edits";
+  protected static final String _3 = "note_scale";
+  protected static final String _4 = "create_chords";
+  protected static final String _5 = "hand";
+  protected static final String _6 = "key";
+  protected static final String _7 = "inspect_boxes";
 
   @Override
   public String toString() {
@@ -46,11 +59,14 @@ public class SightConfig implements AbstractData {
   @Override
   public JSMap toJson() {
     JSMap m = new JSMap();
-    m.putUnsafe(_0, mChords.toString());
-    m.putUnsafe(_1, mDonePauseTimeMs);
-    m.putUnsafe(_2, mQuiescentChordMs);
-    m.putUnsafe(_3, mViewRecentEdits);
-    m.putUnsafe(_4, mNoteScale);
+    m.putUnsafe(_0, mDonePauseTimeMs);
+    m.putUnsafe(_1, mQuiescentChordMs);
+    m.putUnsafe(_2, mViewRecentEdits);
+    m.putUnsafe(_3, mNoteScale);
+    m.putUnsafe(_4, mCreateChords);
+    m.putUnsafe(_5, mHand.toString().toLowerCase());
+    m.putUnsafe(_6, mKey.toString().toLowerCase());
+    m.putUnsafe(_7, mInspectBoxes);
     return m;
   }
 
@@ -65,17 +81,20 @@ public class SightConfig implements AbstractData {
   }
 
   private SightConfig(JSMap m) {
+    mDonePauseTimeMs = m.opt(_0, 1200);
+    mQuiescentChordMs = m.opt(_1, 250);
+    mViewRecentEdits = m.opt(_2, false);
+    mNoteScale = m.opt(_3, 1.0);
+    mCreateChords = m.opt(_4, false);
     {
-      mChords = Files.DEFAULT;
-      String x = m.opt(_0, (String) null);
-      if (x != null) {
-        mChords = new File(x);
-      }
+      String x = m.opt(_5, "");
+      mHand = x.isEmpty() ? Hand.DEFAULT_INSTANCE : Hand.valueOf(x.toUpperCase());
     }
-    mDonePauseTimeMs = m.opt(_1, 1200);
-    mQuiescentChordMs = m.opt(_2, 250);
-    mViewRecentEdits = m.opt(_3, false);
-    mNoteScale = m.opt(_4, 1.0);
+    {
+      String x = m.opt(_6, "");
+      mKey = x.isEmpty() ? KeySig.DEFAULT_INSTANCE : KeySig.valueOf(x.toUpperCase());
+    }
+    mInspectBoxes = m.opt(_7, false);
   }
 
   public static Builder newBuilder() {
@@ -91,8 +110,6 @@ public class SightConfig implements AbstractData {
     SightConfig other = (SightConfig) object;
     if (other.hashCode() != hashCode())
       return false;
-    if (!(mChords.equals(other.mChords)))
-      return false;
     if (!(mDonePauseTimeMs == other.mDonePauseTimeMs))
       return false;
     if (!(mQuiescentChordMs == other.mQuiescentChordMs))
@@ -100,6 +117,14 @@ public class SightConfig implements AbstractData {
     if (!(mViewRecentEdits == other.mViewRecentEdits))
       return false;
     if (!(mNoteScale == other.mNoteScale))
+      return false;
+    if (!(mCreateChords == other.mCreateChords))
+      return false;
+    if (!(mHand.equals(other.mHand)))
+      return false;
+    if (!(mKey.equals(other.mKey)))
+      return false;
+    if (!(mInspectBoxes == other.mInspectBoxes))
       return false;
     return true;
   }
@@ -109,31 +134,40 @@ public class SightConfig implements AbstractData {
     int r = m__hashcode;
     if (r == 0) {
       r = 1;
-      r = r * 37 + mChords.hashCode();
       r = r * 37 + mDonePauseTimeMs;
       r = r * 37 + mQuiescentChordMs;
       r = r * 37 + (mViewRecentEdits ? 1 : 0);
       r = r * 37 + (int) mNoteScale;
+      r = r * 37 + (mCreateChords ? 1 : 0);
+      r = r * 37 + mHand.ordinal();
+      r = r * 37 + mKey.ordinal();
+      r = r * 37 + (mInspectBoxes ? 1 : 0);
       m__hashcode = r;
     }
     return r;
   }
 
-  protected File mChords;
   protected int mDonePauseTimeMs;
   protected int mQuiescentChordMs;
   protected boolean mViewRecentEdits;
   protected double mNoteScale;
+  protected boolean mCreateChords;
+  protected Hand mHand;
+  protected KeySig mKey;
+  protected boolean mInspectBoxes;
   protected int m__hashcode;
 
   public static final class Builder extends SightConfig {
 
     private Builder(SightConfig m) {
-      mChords = m.mChords;
       mDonePauseTimeMs = m.mDonePauseTimeMs;
       mQuiescentChordMs = m.mQuiescentChordMs;
       mViewRecentEdits = m.mViewRecentEdits;
       mNoteScale = m.mNoteScale;
+      mCreateChords = m.mCreateChords;
+      mHand = m.mHand;
+      mKey = m.mKey;
+      mInspectBoxes = m.mInspectBoxes;
     }
 
     @Override
@@ -150,17 +184,15 @@ public class SightConfig implements AbstractData {
     @Override
     public SightConfig build() {
       SightConfig r = new SightConfig();
-      r.mChords = mChords;
       r.mDonePauseTimeMs = mDonePauseTimeMs;
       r.mQuiescentChordMs = mQuiescentChordMs;
       r.mViewRecentEdits = mViewRecentEdits;
       r.mNoteScale = mNoteScale;
+      r.mCreateChords = mCreateChords;
+      r.mHand = mHand;
+      r.mKey = mKey;
+      r.mInspectBoxes = mInspectBoxes;
       return r;
-    }
-
-    public Builder chords(File x) {
-      mChords = (x == null) ? Files.DEFAULT : x;
-      return this;
     }
 
     public Builder donePauseTimeMs(int x) {
@@ -183,15 +215,36 @@ public class SightConfig implements AbstractData {
       return this;
     }
 
+    public Builder createChords(boolean x) {
+      mCreateChords = x;
+      return this;
+    }
+
+    public Builder hand(Hand x) {
+      mHand = (x == null) ? Hand.DEFAULT_INSTANCE : x;
+      return this;
+    }
+
+    public Builder key(KeySig x) {
+      mKey = (x == null) ? KeySig.DEFAULT_INSTANCE : x;
+      return this;
+    }
+
+    public Builder inspectBoxes(boolean x) {
+      mInspectBoxes = x;
+      return this;
+    }
+
   }
 
   public static final SightConfig DEFAULT_INSTANCE = new SightConfig();
 
   private SightConfig() {
-    mChords = Files.DEFAULT;
     mDonePauseTimeMs = 1200;
     mQuiescentChordMs = 250;
     mNoteScale = 1.0;
+    mHand = Hand.DEFAULT_INSTANCE;
+    mKey = KeySig.DEFAULT_INSTANCE;
   }
 
 }

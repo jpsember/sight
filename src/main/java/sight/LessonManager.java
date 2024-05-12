@@ -9,6 +9,8 @@ import java.util.Random;
 
 import js.file.Files;
 import js.geometry.MyMath;
+import sight.gen.Hand;
+import sight.gen.KeySig;
 import sight.gen.LessonCollection;
 import sight.gen.RenderedNotes;
 import sight.gen.RenderedSet;
@@ -54,13 +56,41 @@ public class LessonManager {
       checkArgument(mLessonCollection.renderedSets().size() != 0, "no chord sets found in lesson collection:",
           f, INDENT, mLessonCollection);
 
+      var hand = config().hand();
+      if (hand == Hand.UNKNOWN)
+        hand = Hand.BOTH;
+
       for (var x : mLessonCollection.renderedSets()) {
+
+        {
+
+          if (x.hand() == Hand.UNKNOWN) {
+            var nparser = new ChordParser();
+            nparser.parse(x.notes());
+            var chords = nparser.chords();
+            x = x.toBuilder().hand(inferHandFromNotes(chords)).build();
+          }
+        }
+
+        if (!(hand == Hand.BOTH || hand == x.hand())) {
+          pr("...lesson hand", x.hand(), "not desired", hand);
+          continue;
+        }
+
+        if (config().key() != KeySig.UNDEFINED && config().key() != x.keySig()) {
+          pr("...lesson key", x.keySig(), "not desired", config().key());
+          continue;
+        }
+
         var y = generateLessonsFromChordSet(x);
         for (var z : y) {
           var rn = chordLibrary().get(z);
           result.add(rn);
         }
       }
+
+      if (result.isEmpty())
+        throw badState("no lessons match desired key signature + hand combination:", INDENT, config());
       mSets = result;
     }
     return mSets;
@@ -86,8 +116,8 @@ public class LessonManager {
 
     var noteStrs = source.notes().split(" +");
 
-    pr("split:",INDENT,source.notes(),CR,"to:",CR,noteStrs);
-    
+    pr("split:", INDENT, source.notes(), CR, "to:", CR, noteStrs);
+
     final int NOTES_PER_LESSON = 4;
     for (int perm = 0; perm < 2; perm++) {
 
