@@ -154,7 +154,9 @@ public class LessonManager extends BaseObject {
         b.description(source.description() + " " + perm + ":" + i);
         var sb = new StringBuilder();
         for (var j = i; j < i + NOTES_PER_LESSON; j++) {
-          sb.append(permuted.get(j));
+          var chordStr = permuted.get(j);
+          var chordStr2 = randomlyOmitNotes(chordStr, rand);
+          sb.append(chordStr2);
           sb.append(' ');
         }
         b.notes(sb.toString().trim());
@@ -163,6 +165,22 @@ public class LessonManager extends BaseObject {
       }
     }
     return out;
+  }
+
+  private String randomlyOmitNotes(String chordStr, Random rand) {
+    var noteNums = split(chordStr, '.');
+    List<String> out = arrayList();
+    for (var x : noteNums) {
+      if (rand.nextInt(30) >= 10)
+        out.add(x);
+    }
+    String result;
+    if (out.isEmpty())
+      result = chordStr;
+    else
+      result = String.join(".", out);
+    log("randomly omit notes:", INDENT, chordStr, CR, result);
+    return result;
   }
 
   public void prepare() {
