@@ -23,15 +23,24 @@ import sight.gen.RenderedSet;
 
 public class LessonManager extends BaseObject {
 
-  private boolean prepared() {
-    return mFolder != null;
+  public void prepare() {
+    alertVerbose();
+    if (prepared())
+      return;
+
+    mLessonSelectionRand = new Random(1965);
+    log("chose random number generators");
+
+    var f = folderFile();
+    mFolder = Files.parseAbstractDataOpt(LessonFolder.DEFAULT_INSTANCE, f).toBuilder();
+    mFolderMod = false;
   }
 
   public String choose() {
     log("choose lesson");
     checkState(prepared());
 
-    addActiveLessons();
+    updateActiveLessonList();
     var list = mFolder.activeLessons();
     checkState(list.size() != 0, "no active lessons");
 
@@ -51,11 +60,6 @@ public class LessonManager extends BaseObject {
 
   }
 
-  private Map<String, RenderedSet> renderedSetMap() {
-    getSets();
-    return mRenderedSetMap;
-  }
-
   public RenderedNotes renderedNotes(String key) {
     var m = getSets();
     var r = m.get(key);
@@ -63,62 +67,71 @@ public class LessonManager extends BaseObject {
     return r;
   }
 
+  public RenderedSet getLesson(String key) {
+    var m = renderedSetMap();
+    var r = m.get(key);
+    checkState(r != null, "no RenderedSet found for key:", key);
+    return r;
+  }
+
+  private Map<String, RenderedSet> renderedSetMap() {
+    getSets();
+    return mRenderedSetMap;
+  }
+
   private Map<String, RenderedNotes> getSets() {
-    if (mSets == null) {
+    if (mSets == null)
+      mSets = constructSets();
+    return mSets;
+  }
 
-      Map<String, RenderedNotes> result = hashMap();
+  private Map<String, RenderedNotes> constructSets() {
+    var f = new File("lessons.json");
+    mLessonCollection = Files.parseAbstractDataOpt(LessonCollection.DEFAULT_INSTANCE, f);
+    checkArgument(mLessonCollection.renderedSets().size() != 0, "no chord sets found in lesson collection:",
+        f, INDENT, mLessonCollection);
 
-      var f = new File("lessons.json");
+    var hand = config().hand();
+    if (hand == Hand.UNKNOWN)
+      hand = Hand.BOTH;
 
-      mLessonCollection = Files.parseAbstractDataOpt(LessonCollection.DEFAULT_INSTANCE, f);
-      checkArgument(mLessonCollection.renderedSets().size() != 0, "no chord sets found in lesson collection:",
-          f, INDENT, mLessonCollection);
+    Map<String, RenderedNotes> result = hashMap();
 
-      var hand = config().hand();
-      if (hand == Hand.UNKNOWN)
-        hand = Hand.BOTH;
+    mRenderedSetMap = hashMap();
+    var renderMap = mRenderedSetMap;
 
-      mRenderedSetMap = hashMap();
+    for (var x : mLessonCollection.renderedSets()) {
 
-      for (var x : mLessonCollection.renderedSets()) {
-
-        {
-
-          if (x.hand() == Hand.UNKNOWN) {
-            var nparser = new ChordParser();
-            nparser.parse(x.notes());
-            var chords = nparser.chords();
-            x = x.toBuilder().hand(inferHandFromNotes(chords)).build();
-          }
-        }
-
-        if (!(hand == Hand.BOTH || hand == x.hand())) {
-          pr("...lesson hand", x.hand(), "not desired", hand);
-          continue;
-        }
-
-        if (config().key() != KeySig.UNDEFINED && config().key() != x.keySig()) {
-          pr("...lesson key", x.keySig(), "not desired", config().key());
-          continue;
-        }
-
-        log(VERT_SP, "generating lessons from chord set:", x.id(), x.notes());
-
-        var y = generateLessonsFromChordSet(x);
-        for (var z : y) {
-          var key = z.id();
-          mRenderedSetMap.put(key, z);
-          log("...getting cached value");
-          var rn = chordLibrary().get(z);
-          result.put(key, rn);
-        }
+      if (x.hand() == Hand.UNKNOWN) {
+        var nparser = new ChordParser();
+        nparser.parse(x.notes());
+        var chords = nparser.chords();
+        x = x.toBuilder().hand(inferHandFromNotes(chords)).build();
       }
 
-      if (result.isEmpty())
-        throw badState("no lessons match desired key signature + hand combination:", INDENT, config());
-      mSets = result;
+      if (!(hand == Hand.BOTH || hand == x.hand())) {
+        log("...lesson hand", x.hand(), "not desired", hand);
+        continue;
+      }
+
+      if (config().key() != KeySig.UNDEFINED && config().key() != x.keySig()) {
+        log("...lesson key", x.keySig(), "not desired", config().key());
+        continue;
+      }
+
+      log(VERT_SP, "generating lessons from chord set:", x.id(), x.notes());
+
+      var y = generateLessonsFromChordSet(x);
+      for (var z : y) {
+        var key = z.id();
+        renderMap.put(key, z);
+        result.put(key, chordLibrary().get(z));
+      }
     }
-    return mSets;
+
+    if (result.isEmpty())
+      throw badState("no lessons match desired key signature + hand combination:", INDENT, config());
+    return result;
   }
 
   private List<RenderedSet> generateLessonsFromChordSet(RenderedSet source) {
@@ -183,60 +196,52 @@ public class LessonManager extends BaseObject {
     return result;
   }
 
-  public void prepare() {
-    if (prepared())
-      return;
-
-    mLessonSelectionRand = new Random(1965);
-    log("chose random number generators");
-
-    var f = folderFile();
-    mFolder = Files.parseAbstractDataOpt(LessonFolder.DEFAULT_INSTANCE, f).toBuilder();
-    mFolderMod = false;
-  }
-
   private File folderFile() {
     return new File("lesson_folder.json");
   }
 
   /**
-   * Add active lesson if the current ones all have high accuracy
+   * Modify active lesson list by culling high accuracy items if too full, or
+   * adding low accuracy ones if too empty
    */
-  private void addActiveLessons() {
+  private void updateActiveLessonList() {
     var b = mFolder;
 
     // build list of active lessons, sorted by accuracy
-    List<String> ls = arrayList();
-    ls.addAll(b.activeLessons());
-    ls.sort(new Comparator<String>() {
+    List<String> activeList = arrayList();
+    activeList.addAll(b.activeLessons());
+
+    activeList.sort(new Comparator<String>() {
       @Override
       public int compare(String h1, String h2) {
-
         var s1 = mFolder.stats().getOrDefault(h1, LessonStat.DEFAULT_INSTANCE);
         var s2 = mFolder.stats().getOrDefault(h2, LessonStat.DEFAULT_INSTANCE);
         int acc1 = calcAccuracy(s1);
         int acc2 = calcAccuracy(s2);
-
         int diff = Integer.compare(acc1, acc2);
         if (diff == 0)
           diff = Integer.compare(h1.hashCode(), h2.hashCode());
         return diff;
       }
     });
-    log("active lessons currently:", ls);
 
-    final int MAX_ACTIVE_LESSONS = 8;
-    final int MIN_ACTIVE_LESSONS = 4;
+    if (verbose()) {
+      log("active lessons currently:", activeList);
+      for (var id : activeList) {
+        var rs = getLesson(id);
+      }
+    }
 
-    while (ls.size() > MAX_ACTIVE_LESSONS) {
-      pop(ls);
+    // If there are too many, remove the ones with the highest accuracy
+    while (activeList.size() > MAX_ACTIVE_LESSONS) {
+      pop(activeList);
       setModified("trimming active lessons down");
     }
 
     List<String> lessonKeys = arrayList();
     lessonKeys.addAll(renderedSetMap().keySet());
 
-    while (ls.size() < MIN_ACTIVE_LESSONS && availLessonsCount() > ls.size()) {
+    while (activeList.size() < MIN_ACTIVE_LESSONS && availLessonsCount() > activeList.size()) {
       // Choose a lesson that is not in the list
       String key = null;
       while (true) {
@@ -246,10 +251,10 @@ public class LessonManager extends BaseObject {
         if (!b.activeLessons().contains(key))
           break;
       }
-      ls.add(key);
+      activeList.add(key);
       setModified("added new lesson to active list");
     }
-    b.activeLessons(ls);
+    b.activeLessons(activeList);
     log("active lessons now:", INDENT, b.activeLessons());
   }
 
@@ -270,13 +275,15 @@ public class LessonManager extends BaseObject {
     }
   }
 
-  private boolean mFolderMod;
+  private boolean prepared() {
+    return mFolder != null;
+  }
 
+  private boolean mFolderMod;
   private Random mLessonSelectionRand;
   private Map<String, RenderedNotes> mSets;
   private LessonCollection mLessonCollection;
   private String mLastLessonKey;
-
   private LessonFolder.Builder mFolder;
   private Map<String, RenderedSet> mRenderedSetMap;
 

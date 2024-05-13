@@ -33,6 +33,9 @@ public final class Util {
   public static final Chord CHORD_RESET_SCORE = chordWith(CASIO_KEY_LAST - 2);
   public static final Chord CHORD_REMOVE_LAST = chordWith(CASIO_KEY_LAST - 4);
 
+  public static final int MAX_ACTIVE_LESSONS = 8;
+  public static final int MIN_ACTIVE_LESSONS = 4;
+
   public static void z(Object... msg) {
     if (false && alert("z messages in effect"))
       pr(msg);
