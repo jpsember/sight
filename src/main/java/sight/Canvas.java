@@ -26,7 +26,8 @@ public class Canvas extends JPanel {
     z("painting canvas");
     if (mDrillState == null)
       return;
-    var notes = mDrillState.notes();
+
+    var notes = lessonManager().renderedNotes(mDrillState.lessonKey());
     if (notes == null)
       return;
 
@@ -43,7 +44,7 @@ public class Canvas extends JPanel {
     var rn = notes;
     g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
     g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-    
+
     // Stretch the staff image (a vertical strip) to fill the horizontal extent of the staff
     {
       var sr = rn.staffRect();
@@ -80,7 +81,8 @@ public class Canvas extends JPanel {
 
   public void setDrillState(DrillState s) {
     mDrillState = s;
-    var sourceImage = s.notes().imageFile();
+    var notes = lessonManager().renderedNotes(s.lessonKey());
+    var sourceImage = notes.imageFile();
     mAtlasImage = ImgUtil.read(sourceImage);
   }
 

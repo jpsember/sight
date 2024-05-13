@@ -9,7 +9,6 @@ import java.util.Random;
 
 import js.base.BaseObject;
 import js.base.SystemCall;
-import js.data.DataUtil;
 import js.file.FileException;
 import js.file.Files;
 import js.geometry.IRect;
@@ -37,16 +36,21 @@ public class ChordLibrary extends BaseObject {
     return this;
   }
 
-  public RenderedNotes get(RenderedSet rs, Random rand) {
-    todo("?use a hash code with more resolution");
-    mRand = rand;
-    var key = rs.hashCode();
-    var baseName = DataUtil.hex32(key);
+  public RenderedNotes get(RenderedSet rs) {
+    // Use the supplied random number generator to generate a deterministic random instance,
+    // just in case we need them
+
+    int seed = idToInteger(rs.id()) | 1;
+    mRand2 = new Random(seed);
+
+    var baseName = rs.id();
 
     var metadata = new File(mCacheDirectory, baseName + ".json");
     var imgFile = new File(mCacheDirectory, baseName + ".png");
-    if (mIgnoreCache || !metadata.exists() || !imgFile.exists())
+    if (mIgnoreCache || !metadata.exists() || !imgFile.exists()) {
+      // checkState(!wtf,"not in cache:",baseName);
       compile(rs, metadata, imgFile);
+    }
     var rn = Files.parseAbstractData(RenderedNotes.DEFAULT_INSTANCE, metadata).toBuilder();
     rn.imageFile(new File(mCacheDirectory, rn.imageFile().toString()));
     return rn.build();
@@ -54,7 +58,8 @@ public class ChordLibrary extends BaseObject {
 
   private void compile(RenderedSet rs, File metadata, File imgFile) {
 
-    pr("...compiling rendered set:", imgFile);
+    pr(VERT_SP, "set is not in cache, compiling:", Files.basename(imgFile));
+
     files().deletePeacefully(metadata);
     files().deletePeacefully(imgFile);
 
@@ -203,17 +208,17 @@ public class ChordLibrary extends BaseObject {
       "4 4 4 4", //
       "4. 8 4 4", //
       "4. 4. 8 4", //
-      "2 2 4 4",//
+      "2 2 4 4", //
       "1 3 3 3", //
   };
 
-  
   private String encodeLily(List<Chord> chords) {
-    checkArgument(chords.size() == NOTES_PER_LESSON, "expected",NOTES_PER_LESSON,"chords, got:", chords.size());
+    checkArgument(chords.size() == NOTES_PER_LESSON, "expected", NOTES_PER_LESSON, "chords, got:",
+        chords.size());
 
-    var durs = sDurations[mRand.nextInt(NOTES_PER_LESSON)];
+    var durs = sDurations[mRand2.nextInt(NOTES_PER_LESSON)];
     var durstr = split(durs, ' ');
-    var ord = MyMath.permute(durstr, mRand);
+    var ord = MyMath.permute(durstr, mRand2);
 
     var sb = new StringBuilder();
     var i = INIT_INDEX;
@@ -257,6 +262,6 @@ public class ChordLibrary extends BaseObject {
     return sKeyNumToLilyNote[keyNumber];
   }
 
-  private Random mRand;
+  private Random mRand2;
 
 }

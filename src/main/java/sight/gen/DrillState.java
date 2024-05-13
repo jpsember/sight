@@ -19,8 +19,8 @@ public class DrillState implements AbstractData {
     return mCursor;
   }
 
-  public RenderedNotes notes() {
-    return mNotes;
+  public String lessonKey() {
+    return mLessonKey;
   }
 
   @Override
@@ -31,7 +31,7 @@ public class DrillState implements AbstractData {
   protected static final String _0 = "status";
   protected static final String _1 = "icons";
   protected static final String _2 = "cursor";
-  protected static final String _3 = "notes";
+  protected static final String _3 = "lesson_key";
 
   @Override
   public String toString() {
@@ -44,7 +44,7 @@ public class DrillState implements AbstractData {
     m.putUnsafe(_0, mStatus.toString().toLowerCase());
     m.putUnsafe(_1, DataUtil.encodeBase64Maybe(mIcons));
     m.putUnsafe(_2, mCursor);
-    m.putUnsafe(_3, mNotes.toJson());
+    m.putUnsafe(_3, mLessonKey);
     return m;
   }
 
@@ -71,13 +71,7 @@ public class DrillState implements AbstractData {
       }
     }
     mCursor = m.opt(_2, 0);
-    {
-      mNotes = RenderedNotes.DEFAULT_INSTANCE;
-      Object x = m.optUnsafe(_3);
-      if (x != null) {
-        mNotes = RenderedNotes.DEFAULT_INSTANCE.parse(x);
-      }
-    }
+    mLessonKey = m.opt(_3, "");
   }
 
   public static Builder newBuilder() {
@@ -99,7 +93,7 @@ public class DrillState implements AbstractData {
       return false;
     if (!(mCursor == other.mCursor))
       return false;
-    if (!(mNotes.equals(other.mNotes)))
+    if (!(mLessonKey.equals(other.mLessonKey)))
       return false;
     return true;
   }
@@ -112,7 +106,7 @@ public class DrillState implements AbstractData {
       r = r * 37 + mStatus.ordinal();
       r = r * 37 + Arrays.hashCode(mIcons);
       r = r * 37 + mCursor;
-      r = r * 37 + mNotes.hashCode();
+      r = r * 37 + mLessonKey.hashCode();
       m__hashcode = r;
     }
     return r;
@@ -121,7 +115,7 @@ public class DrillState implements AbstractData {
   protected DrillStatus mStatus;
   protected int[] mIcons;
   protected int mCursor;
-  protected RenderedNotes mNotes;
+  protected String mLessonKey;
   protected int m__hashcode;
 
   public static final class Builder extends DrillState {
@@ -130,7 +124,7 @@ public class DrillState implements AbstractData {
       mStatus = m.mStatus;
       mIcons = m.mIcons;
       mCursor = m.mCursor;
-      mNotes = m.mNotes;
+      mLessonKey = m.mLessonKey;
     }
 
     @Override
@@ -150,7 +144,7 @@ public class DrillState implements AbstractData {
       r.mStatus = mStatus;
       r.mIcons = mIcons;
       r.mCursor = mCursor;
-      r.mNotes = mNotes;
+      r.mLessonKey = mLessonKey;
       return r;
     }
 
@@ -169,8 +163,8 @@ public class DrillState implements AbstractData {
       return this;
     }
 
-    public Builder notes(RenderedNotes x) {
-      mNotes = (x == null) ? RenderedNotes.DEFAULT_INSTANCE : x.build();
+    public Builder lessonKey(String x) {
+      mLessonKey = (x == null) ? "" : x;
       return this;
     }
 
@@ -181,7 +175,7 @@ public class DrillState implements AbstractData {
   private DrillState() {
     mStatus = DrillStatus.DEFAULT_INSTANCE;
     mIcons = DataUtil.EMPTY_INT_ARRAY;
-    mNotes = RenderedNotes.DEFAULT_INSTANCE;
+    mLessonKey = "";
   }
 
 }

@@ -22,7 +22,6 @@ import sight.gen.Chord;
 import sight.gen.DrillState;
 import sight.gen.DrillStatus;
 import sight.gen.GuiState;
-import sight.gen.RenderedNotes;
 import sight.gen.SightConfig;
 
 public class Sight extends App {
@@ -75,8 +74,8 @@ public class Sight extends App {
 
     SystemUtil.prepareForConsoleOrGUI(false);
 
-    lessonManager();
-
+     lessonManager().prepare();
+     
     // Continue starting app within the Swing thread
     //
     SwingUtilities.invokeLater(() -> {
@@ -168,7 +167,8 @@ public class Sight extends App {
                 b.status(DrillStatus.ACTIVE);
 
                 var r = last(lessonHistory);
-                b.notes(r);
+                b.lessonKey(r);
+                //                b.notes(r);
 
                 setCursor(0);
                 writeWork();
@@ -199,6 +199,7 @@ public class Sight extends App {
           pt /= 3;
         long elapsed = System.currentTimeMillis() - mDoneTime;
         if (elapsed >= pt) {
+          lessonManager().recordResult(pctRight);
           prepareDrill();
           canvas().repaint();
         }
@@ -263,17 +264,20 @@ public class Sight extends App {
     return mCanvas;
   }
 
-  private List<RenderedNotes> lessonHistory = arrayList();
+  private List<String> lessonHistory = arrayList();
 
   private void prepareScore(DrillState.Builder b) {
     z("choosing lesson");
-    var r = lessonManager().choose();
+    var key = lessonManager().choose();
+    var r = lessonManager().renderedNotes(key);
     z("chose:", r.description());
-    lessonHistory.add(r);
-    b.notes(r);
+    lessonHistory.add(key);
+    b.lessonKey(key);
+    //b.notes(r);
     pr("Lesson:", r.description());
 
-    var ic = new int[b.notes().renderedChords().size()];
+    var notes = lessonManager().renderedNotes(key);
+    var ic = new int[notes.renderedChords().size()];
     ic[0] = ICON_POINTER;
     b.icons(ic);
   }
@@ -285,13 +289,6 @@ public class Sight extends App {
     return (JComponent) mFrame.frame().getContentPane();
   }
 
-  private LessonManager lessonManager() {
-    if (mLessonManager == null) {
-      mLessonManager = new LessonManager();
-      mLessonManager.prepare();
-    }
-    return mLessonManager;
-  }
   // ------------------------------------------------------------------
   // Drill logic
   // ------------------------------------------------------------------
@@ -314,7 +311,8 @@ public class Sight extends App {
       canvas().repaint();
       break;
     case ACTIVE: {
-      var exp = s.notes().renderedChords().get(s.cursor());
+      var notes = lessonManager().renderedNotes(s.lessonKey());
+      var exp = notes.renderedChords().get(s.cursor());
       var expChord = exp.chord();
       log("chord:", ch);
       log("expct:", expChord);
@@ -322,14 +320,16 @@ public class Sight extends App {
       var b = s.toBuilder();
       b.icons()[s.cursor()] = newIcon;
       b.cursor(s.cursor() + 1);
-      if (b.cursor() != s.notes().renderedChords().size()) {
+      if (b.cursor() != notes.renderedChords().size()) {
         b.icons()[b.cursor()] = ICON_POINTER;
       } else {
         b.status(DrillStatus.DONE);
         mDoneTime = System.currentTimeMillis();
       }
       mDrillState = b.build();
-      z("new drill state:", mDrillState.notes().imageFile());
+
+      notes = lessonManager().renderedNotes(mDrillState.lessonKey());
+      z("new drill state:", notes.imageFile());
       canvas().repaint();
     }
       break;
@@ -342,7 +342,7 @@ public class Sight extends App {
   private DrillState mDrillState = DrillState.DEFAULT_INSTANCE;
   private FrameWrapper mFrame;
   private Canvas mCanvas;
-  private LessonManager mLessonManager;
+  //  private LessonManager mLessonManager;
 
   private void createChords() {
     pr("creating chords");

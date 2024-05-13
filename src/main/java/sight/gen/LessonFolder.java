@@ -1,19 +1,20 @@
 package sight.gen;
 
-import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import js.data.AbstractData;
 import js.data.DataUtil;
+import js.json.JSList;
 import js.json.JSMap;
 
 public class LessonFolder implements AbstractData {
 
-  public Map<Integer, LessonStat> stats() {
+  public Map<String, LessonStat> stats() {
     return mStats;
   }
 
-  public int[] activeLessons() {
+  public List<String> activeLessons() {
     return mActiveLessons;
   }
 
@@ -35,11 +36,16 @@ public class LessonFolder implements AbstractData {
     JSMap m = new JSMap();
     {
       JSMap j = new JSMap();
-      for (Map.Entry<Integer, LessonStat> e : mStats.entrySet())
-        j.put(e.getKey().toString(), e.getValue().toJson());
+      for (Map.Entry<String, LessonStat> e : mStats.entrySet())
+        j.put(e.getKey(), e.getValue().toJson());
       m.put(_0, j);
     }
-    m.putUnsafe(_1, DataUtil.encodeBase64Maybe(mActiveLessons));
+    {
+      JSList j = new JSList();
+      for (String x : mActiveLessons)
+        j.add(x);
+      m.put(_1, j);
+    }
     return m;
   }
 
@@ -59,20 +65,14 @@ public class LessonFolder implements AbstractData {
       {
         JSMap m2 = m.optJSMap("stats");
         if (m2 != null && !m2.isEmpty()) {
-          Map<Integer, LessonStat> mp = new ConcurrentHashMap<>();
+          Map<String, LessonStat> mp = new ConcurrentHashMap<>();
           for (Map.Entry<String, Object> e : m2.wrappedMap().entrySet())
-            mp.put(Integer.parseInt(e.getKey()), LessonStat.DEFAULT_INSTANCE.parse((JSMap) e.getValue()));
+            mp.put(e.getKey(), LessonStat.DEFAULT_INSTANCE.parse((JSMap) e.getValue()));
           mStats = mp;
         }
       }
     }
-    {
-      mActiveLessons = DataUtil.EMPTY_INT_ARRAY;
-      Object x = m.optUnsafe(_1);
-      if (x != null) {
-        mActiveLessons = DataUtil.parseIntsFromArrayOrBase64(x);
-      }
-    }
+    mActiveLessons = DataUtil.parseListOfObjects(m.optJSList(_1), false);
   }
 
   public static Builder newBuilder() {
@@ -90,7 +90,7 @@ public class LessonFolder implements AbstractData {
       return false;
     if (!(mStats.equals(other.mStats)))
       return false;
-    if (!(Arrays.equals(mActiveLessons, other.mActiveLessons)))
+    if (!(mActiveLessons.equals(other.mActiveLessons)))
       return false;
     return true;
   }
@@ -101,21 +101,23 @@ public class LessonFolder implements AbstractData {
     if (r == 0) {
       r = 1;
       r = r * 37 + mStats.hashCode();
-      r = r * 37 + Arrays.hashCode(mActiveLessons);
+      for (String x : mActiveLessons)
+        if (x != null)
+          r = r * 37 + x.hashCode();
       m__hashcode = r;
     }
     return r;
   }
 
-  protected Map<Integer, LessonStat> mStats;
-  protected int[] mActiveLessons;
+  protected Map<String, LessonStat> mStats;
+  protected List<String> mActiveLessons;
   protected int m__hashcode;
 
   public static final class Builder extends LessonFolder {
 
     private Builder(LessonFolder m) {
       mStats = DataUtil.mutableCopyOf(m.mStats);
-      mActiveLessons = m.mActiveLessons;
+      mActiveLessons = DataUtil.mutableCopyOf(m.mActiveLessons);
     }
 
     @Override
@@ -133,17 +135,17 @@ public class LessonFolder implements AbstractData {
     public LessonFolder build() {
       LessonFolder r = new LessonFolder();
       r.mStats = DataUtil.immutableCopyOf(mStats);
-      r.mActiveLessons = mActiveLessons;
+      r.mActiveLessons = DataUtil.immutableCopyOf(mActiveLessons);
       return r;
     }
 
-    public Builder stats(Map<Integer, LessonStat> x) {
+    public Builder stats(Map<String, LessonStat> x) {
       mStats = DataUtil.mutableCopyOf((x == null) ? DataUtil.emptyMap() : x);
       return this;
     }
 
-    public Builder activeLessons(int[] x) {
-      mActiveLessons = (x == null) ? DataUtil.EMPTY_INT_ARRAY : x;
+    public Builder activeLessons(List<String> x) {
+      mActiveLessons = DataUtil.mutableCopyOf((x == null) ? DataUtil.emptyList() : x);
       return this;
     }
 
@@ -153,7 +155,7 @@ public class LessonFolder implements AbstractData {
 
   private LessonFolder() {
     mStats = DataUtil.emptyMap();
-    mActiveLessons = DataUtil.EMPTY_INT_ARRAY;
+    mActiveLessons = DataUtil.emptyList();
   }
 
 }

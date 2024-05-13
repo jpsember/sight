@@ -9,14 +9,18 @@ import java.util.List;
 import java.util.Map;
 
 import js.base.DateTimeTools;
+import js.data.DataUtil;
 import js.file.Files;
 import sight.gen.Chord;
 import sight.gen.Hand;
+import sight.gen.RenderedSet;
 import sight.gen.SightConfig;
 
 public final class Util {
 
-  public static final boolean SMALL = false && alert("small lessons for dev");
+  public static boolean wtf = false;
+
+  public static final boolean SMALL = true && alert("small lessons for dev");
 
   public static final int NOTES_PER_LESSON = 4;
   public static final int MAX_KEY_NUMBER = 88;
@@ -167,6 +171,55 @@ public final class Util {
 
   }
 
+  public static String calcHashForSet(RenderedSet rs) {
+    todo("?use a hash code with more resolution");
+    int x = 0;
+    x = hc(x, rs.keySig().toString());
+    x = hc(x, rs.hand().toString());
+    x = hc(x, rs.notes());
+    return DataUtil.hex32(x);
+  }
+
+  public static int idToInteger(String id) {
+    checkArgument(id.length() <= 8);
+    long val = 0;
+    pr("id:", id);
+    for (int i = 0; i < id.length(); i++) {
+      int c = id.charAt(i);
+      if (c >= 'a' && c <= 'f')
+        c = c - 'a' + 10;
+      else if (c >= '0' && c <= '9')
+        c = c - '0';
+      else
+        badArg("failed to parse:", id);
+      val = (val << 4) + c;
+    }
+    return (int) val;
+  }
+
+  private static int hc(int x, String s) {
+    for (int i = 0; i < s.length(); i++) {
+      int j = s.charAt(i);
+      x = (x * 17283 + j);
+    }
+    return x;
+  }
+
+  //  public static String hashForSet(RenderedSet rs) {
+  //    return rs.id();
+  ////    todo("?use a hash code with more resolution");
+  ////    var key = rs.hashCode();
+  ////    return DataUtil.hex32(key);
+  //  }
+
   private static ChordLibrary sChordLibrary;
 
+  public static LessonManager lessonManager() {
+    if (mLessonManager == null) {
+      mLessonManager = new LessonManager();
+    }
+    return mLessonManager;
+  }
+
+  private static LessonManager mLessonManager;
 }

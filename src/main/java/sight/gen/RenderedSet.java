@@ -5,6 +5,10 @@ import js.json.JSMap;
 
 public class RenderedSet implements AbstractData {
 
+  public String id() {
+    return mId;
+  }
+
   public String description() {
     return mDescription;
   }
@@ -30,11 +34,12 @@ public class RenderedSet implements AbstractData {
     return new Builder(this);
   }
 
-  protected static final String _0 = "description";
-  protected static final String _1 = "hand";
-  protected static final String _2 = "key_sig";
-  protected static final String _3 = "notes";
-  protected static final String _4 = "resolution";
+  protected static final String _0 = "id";
+  protected static final String _1 = "description";
+  protected static final String _2 = "hand";
+  protected static final String _3 = "key_sig";
+  protected static final String _4 = "notes";
+  protected static final String _5 = "resolution";
 
   @Override
   public String toString() {
@@ -44,11 +49,12 @@ public class RenderedSet implements AbstractData {
   @Override
   public JSMap toJson() {
     JSMap m = new JSMap();
-    m.putUnsafe(_0, mDescription);
-    m.putUnsafe(_1, mHand.toString().toLowerCase());
-    m.putUnsafe(_2, mKeySig.toString().toLowerCase());
-    m.putUnsafe(_3, mNotes);
-    m.putUnsafe(_4, mResolution);
+    m.putUnsafe(_0, mId);
+    m.putUnsafe(_1, mDescription);
+    m.putUnsafe(_2, mHand.toString().toLowerCase());
+    m.putUnsafe(_3, mKeySig.toString().toLowerCase());
+    m.putUnsafe(_4, mNotes);
+    m.putUnsafe(_5, mResolution);
     return m;
   }
 
@@ -63,17 +69,18 @@ public class RenderedSet implements AbstractData {
   }
 
   private RenderedSet(JSMap m) {
-    mDescription = m.opt(_0, "");
+    mId = m.opt(_0, "");
+    mDescription = m.opt(_1, "");
     {
-      String x = m.opt(_1, "");
+      String x = m.opt(_2, "");
       mHand = x.isEmpty() ? Hand.DEFAULT_INSTANCE : Hand.valueOf(x.toUpperCase());
     }
     {
-      String x = m.opt(_2, "");
+      String x = m.opt(_3, "");
       mKeySig = x.isEmpty() ? KeySig.DEFAULT_INSTANCE : KeySig.valueOf(x.toUpperCase());
     }
-    mNotes = m.opt(_3, "");
-    mResolution = m.opt(_4, 300);
+    mNotes = m.opt(_4, "");
+    mResolution = m.opt(_5, 300);
   }
 
   public static Builder newBuilder() {
@@ -88,6 +95,8 @@ public class RenderedSet implements AbstractData {
       return false;
     RenderedSet other = (RenderedSet) object;
     if (other.hashCode() != hashCode())
+      return false;
+    if (!(mId.equals(other.mId)))
       return false;
     if (!(mDescription.equals(other.mDescription)))
       return false;
@@ -107,6 +116,7 @@ public class RenderedSet implements AbstractData {
     int r = m__hashcode;
     if (r == 0) {
       r = 1;
+      r = r * 37 + mId.hashCode();
       r = r * 37 + mDescription.hashCode();
       r = r * 37 + mHand.ordinal();
       r = r * 37 + mKeySig.ordinal();
@@ -117,6 +127,7 @@ public class RenderedSet implements AbstractData {
     return r;
   }
 
+  protected String mId;
   protected String mDescription;
   protected Hand mHand;
   protected KeySig mKeySig;
@@ -127,6 +138,7 @@ public class RenderedSet implements AbstractData {
   public static final class Builder extends RenderedSet {
 
     private Builder(RenderedSet m) {
+      mId = m.mId;
       mDescription = m.mDescription;
       mHand = m.mHand;
       mKeySig = m.mKeySig;
@@ -148,12 +160,18 @@ public class RenderedSet implements AbstractData {
     @Override
     public RenderedSet build() {
       RenderedSet r = new RenderedSet();
+      r.mId = mId;
       r.mDescription = mDescription;
       r.mHand = mHand;
       r.mKeySig = mKeySig;
       r.mNotes = mNotes;
       r.mResolution = mResolution;
       return r;
+    }
+
+    public Builder id(String x) {
+      mId = (x == null) ? "" : x;
+      return this;
     }
 
     public Builder description(String x) {
@@ -186,6 +204,7 @@ public class RenderedSet implements AbstractData {
   public static final RenderedSet DEFAULT_INSTANCE = new RenderedSet();
 
   private RenderedSet() {
+    mId = "";
     mDescription = "";
     mHand = Hand.DEFAULT_INSTANCE;
     mKeySig = KeySig.DEFAULT_INSTANCE;
