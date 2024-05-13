@@ -1,0 +1,7 @@
+fields {
+
+  map int LessonStat stats;
+
+  * int active_lessons;
+
+}

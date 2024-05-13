@@ -1,0 +1,4 @@
+fields {
+  int frequency;  // # times user has completed the lesson
+  int correct;    // # times user answered lesson perfectly
+}
