@@ -27,7 +27,7 @@ public class Canvas extends JPanel {
     if (mDrillState == null)
       return;
 
-    var notes = lessonManager().renderedNotes(mDrillState.lessonKey());
+    var notes = lessonManager().renderedNotes(mDrillState.lessonId());
     if (notes == null)
       return;
 
@@ -81,7 +81,7 @@ public class Canvas extends JPanel {
 
   public void setDrillState(DrillState s) {
     mDrillState = s;
-    var notes = lessonManager().renderedNotes(s.lessonKey());
+    var notes = lessonManager().renderedNotes(s.lessonId());
     var sourceImage = notes.imageFile();
     mAtlasImage = ImgUtil.read(sourceImage);
   }

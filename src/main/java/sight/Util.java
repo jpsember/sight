@@ -12,7 +12,7 @@ import js.base.DateTimeTools;
 import js.file.Files;
 import sight.gen.Chord;
 import sight.gen.Hand;
-import sight.gen.RenderedSet;
+import sight.gen.Lesson;
 import sight.gen.SightConfig;
 
 public final class Util {
@@ -165,7 +165,7 @@ public final class Util {
 
   }
 
-  public static int calcHashFor(RenderedSet rs) {
+  public static int calcHashFor(Lesson rs) {
     todo("?use a hash code with more resolution");
     int x = 0;
     x = hc(x, rs.keySig().toString());

@@ -163,12 +163,10 @@ public class Sight extends App {
                 pop(lessonHistory);
 
                 var b = createWork();
-                // var b = DrillState.newBuilder();
                 b.status(DrillStatus.ACTIVE);
 
                 var r = last(lessonHistory);
-                b.lessonKey(r);
-                //                b.notes(r);
+                b.lessonId(r);
 
                 setCursor(0);
                 writeWork();
@@ -199,7 +197,7 @@ public class Sight extends App {
           pt /= 3;
         long elapsed = System.currentTimeMillis() - mDoneTime;
         if (elapsed >= pt) {
-          lessonManager().recordResult(pctRight);
+          lessonManager().recordResult(mDrillState.lessonId(),pctRight);
           prepareDrill();
           canvas().repaint();
         }
@@ -272,8 +270,7 @@ public class Sight extends App {
     var r = lessonManager().renderedNotes(key);
     z("chose:", r.description());
     lessonHistory.add(key);
-    b.lessonKey(key);
-    //b.notes(r);
+    b.lessonId(key);
     pr("Lesson:", r.description());
 
     var notes = lessonManager().renderedNotes(key);
@@ -311,7 +308,7 @@ public class Sight extends App {
       canvas().repaint();
       break;
     case ACTIVE: {
-      var notes = lessonManager().renderedNotes(s.lessonKey());
+      var notes = lessonManager().renderedNotes(s.lessonId());
       var exp = notes.renderedChords().get(s.cursor());
       var expChord = exp.chord();
       log("chord:", ch);
@@ -328,7 +325,7 @@ public class Sight extends App {
       }
       mDrillState = b.build();
 
-      notes = lessonManager().renderedNotes(mDrillState.lessonKey());
+      notes = lessonManager().renderedNotes(mDrillState.lessonId());
       z("new drill state:", notes.imageFile());
       canvas().repaint();
     }

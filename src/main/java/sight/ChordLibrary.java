@@ -20,7 +20,7 @@ import sight.gen.Hand;
 import sight.gen.KeySig;
 import sight.gen.RenderedChord;
 import sight.gen.RenderedNotes;
-import sight.gen.RenderedSet;
+import sight.gen.Lesson;
 
 public class ChordLibrary extends BaseObject {
 
@@ -36,7 +36,7 @@ public class ChordLibrary extends BaseObject {
     return this;
   }
 
-  public RenderedNotes get(RenderedSet rs) {
+  public RenderedNotes get(Lesson rs) {
     var baseName = rs.id();
 
     var metadata = new File(mCacheDirectory, baseName + ".json");
@@ -52,7 +52,7 @@ public class ChordLibrary extends BaseObject {
     return rn.build();
   }
 
-  private void compile(RenderedSet rs, File metadata, File imgFile) {
+  private void compile(Lesson rs, File metadata, File imgFile) {
     files().deletePeacefully(metadata);
     files().deletePeacefully(imgFile);
 

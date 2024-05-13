@@ -19,7 +19,7 @@ import sight.gen.LessonCollection;
 import sight.gen.LessonFolder;
 import sight.gen.LessonStat;
 import sight.gen.RenderedNotes;
-import sight.gen.RenderedSet;
+import sight.gen.Lesson;
 
 public class LessonManager extends BaseObject {
 
@@ -55,9 +55,15 @@ public class LessonManager extends BaseObject {
     return key;
   }
 
-  public void recordResult(int pctRight) {
-    todo("have it pass in the hash code for the lesson");
-
+  public void recordResult(String lessonId, int pctRight) {
+    var stat = lessonStat(lessonId).toBuilder();
+    stat.frequency(stat.frequency() + 1);
+    if (pctRight == 100)
+      stat.correct(stat.correct() + 1);
+    log("recorded result for", lessonId, "% right:", pctRight, INDENT, stat);
+    mFolder.stats().put(lessonId, stat);
+    setModified("recorded result for lesson");
+    flushFolder();
   }
 
   public RenderedNotes renderedNotes(String key) {
@@ -67,14 +73,14 @@ public class LessonManager extends BaseObject {
     return r;
   }
 
-  public RenderedSet getLesson(String key) {
+  private Lesson getLesson(String key) {
     var m = renderedSetMap();
     var r = m.get(key);
     checkState(r != null, "no RenderedSet found for key:", key);
     return r;
   }
 
-  private Map<String, RenderedSet> renderedSetMap() {
+  private Map<String, Lesson> renderedSetMap() {
     getSets();
     return mRenderedSetMap;
   }
@@ -88,8 +94,8 @@ public class LessonManager extends BaseObject {
   private Map<String, RenderedNotes> constructSets() {
     var f = new File("lessons.json");
     mLessonCollection = Files.parseAbstractDataOpt(LessonCollection.DEFAULT_INSTANCE, f);
-    checkArgument(mLessonCollection.renderedSets().size() != 0, "no chord sets found in lesson collection:",
-        f, INDENT, mLessonCollection);
+    checkArgument(mLessonCollection.lessons().size() != 0, "no chord sets found in lesson collection:", f,
+        INDENT, mLessonCollection);
 
     var hand = config().hand();
     if (hand == Hand.UNKNOWN)
@@ -100,7 +106,7 @@ public class LessonManager extends BaseObject {
     mRenderedSetMap = hashMap();
     var renderMap = mRenderedSetMap;
 
-    for (var x : mLessonCollection.renderedSets()) {
+    for (var x : mLessonCollection.lessons()) {
 
       if (x.hand() == Hand.UNKNOWN) {
         var nparser = new ChordParser();
@@ -134,12 +140,12 @@ public class LessonManager extends BaseObject {
     return result;
   }
 
-  private List<RenderedSet> generateLessonsFromChordSet(RenderedSet source) {
+  private List<Lesson> generateLessonsFromChordSet(Lesson source) {
 
     // We need a distinct random number generator for each set we're generating
     var rand = new Random(calcHashFor(source));
 
-    List<RenderedSet> out = arrayList();
+    List<Lesson> out = arrayList();
 
     var noteStrs = arrayList(source.notes().split(" +"));
 
@@ -200,6 +206,10 @@ public class LessonManager extends BaseObject {
     return new File("lesson_folder.json");
   }
 
+  private LessonStat lessonStat(String lessonId) {
+    return mFolder.stats().getOrDefault(lessonId, LessonStat.DEFAULT_INSTANCE);
+  }
+
   /**
    * Modify active lesson list by culling high accuracy items if too full, or
    * adding low accuracy ones if too empty
@@ -214,8 +224,8 @@ public class LessonManager extends BaseObject {
     activeList.sort(new Comparator<String>() {
       @Override
       public int compare(String h1, String h2) {
-        var s1 = mFolder.stats().getOrDefault(h1, LessonStat.DEFAULT_INSTANCE);
-        var s2 = mFolder.stats().getOrDefault(h2, LessonStat.DEFAULT_INSTANCE);
+        var s1 = lessonStat(h1);
+        var s2 = lessonStat(h2);
         int acc1 = calcAccuracy(s1);
         int acc2 = calcAccuracy(s2);
         int diff = Integer.compare(acc1, acc2);
@@ -229,13 +239,16 @@ public class LessonManager extends BaseObject {
       log("active lessons currently:", activeList);
       for (var id : activeList) {
         var rs = getLesson(id);
+        log(INDENT, id, ":", calcAccuracy(lessonStat(id)), ";", rs.description());
       }
     }
 
     // If there are too many, remove the ones with the highest accuracy
     while (activeList.size() > MAX_ACTIVE_LESSONS) {
-      pop(activeList);
-      setModified("trimming active lessons down");
+      var out = pop(activeList);
+      var prompt = "removing lesson with highest accuracy";
+      dumpLessonStat(out, prompt);
+      setModified(prompt);
     }
 
     List<String> lessonKeys = arrayList();
@@ -245,17 +258,25 @@ public class LessonManager extends BaseObject {
       // Choose a lesson that is not in the list
       String key = null;
       while (true) {
-        //  pr("choosing lesson not in list");
         int k = mLessonSelectionRand.nextInt(availLessonsCount());
         key = lessonKeys.get(k);
         if (!b.activeLessons().contains(key))
           break;
       }
       activeList.add(key);
-      setModified("added new lesson to active list");
+      var prompt = "adding new lesson to active list";
+      dumpLessonStat(key, prompt);
+      setModified(prompt);
     }
     b.activeLessons(activeList);
     log("active lessons now:", INDENT, b.activeLessons());
+  }
+
+  private void dumpLessonStat(String lessonId, String prompt) {
+    if (!verbose())
+      return;
+    var rs = getLesson(lessonId);
+    log(prompt, INDENT, "id:", lessonId, "accuracy:", lessonStat(lessonId), "desc:", rs.description());
   }
 
   private int calcAccuracy(LessonStat stat) {
@@ -279,12 +300,22 @@ public class LessonManager extends BaseObject {
     return mFolder != null;
   }
 
+  private void flushFolder() {
+    if (!mFolderMod)
+      return;
+
+    var f = folderFile();
+    Files.S.writePretty(f, mFolder);
+    log("...flushed lesson folder", INDENT, mFolder);
+    mFolderMod = false;
+  }
+
   private boolean mFolderMod;
   private Random mLessonSelectionRand;
   private Map<String, RenderedNotes> mSets;
   private LessonCollection mLessonCollection;
   private String mLastLessonKey;
   private LessonFolder.Builder mFolder;
-  private Map<String, RenderedSet> mRenderedSetMap;
+  private Map<String, Lesson> mRenderedSetMap;
 
 }

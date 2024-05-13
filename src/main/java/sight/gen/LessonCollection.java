@@ -8,8 +8,8 @@ import js.json.JSMap;
 
 public class LessonCollection implements AbstractData {
 
-  public List<RenderedSet> renderedSets() {
-    return mRenderedSets;
+  public List<Lesson> lessons() {
+    return mLessons;
   }
 
   @Override
@@ -17,7 +17,7 @@ public class LessonCollection implements AbstractData {
     return new Builder(this);
   }
 
-  protected static final String _0 = "rendered_sets";
+  protected static final String _0 = "lessons";
 
   @Override
   public String toString() {
@@ -29,7 +29,7 @@ public class LessonCollection implements AbstractData {
     JSMap m = new JSMap();
     {
       JSList j = new JSList();
-      for (RenderedSet x : mRenderedSets)
+      for (Lesson x : mLessons)
         j.add(x.toJson());
       m.put(_0, j);
     }
@@ -47,7 +47,7 @@ public class LessonCollection implements AbstractData {
   }
 
   private LessonCollection(JSMap m) {
-    mRenderedSets = DataUtil.parseListOfObjects(RenderedSet.DEFAULT_INSTANCE, m.optJSList(_0), false);
+    mLessons = DataUtil.parseListOfObjects(Lesson.DEFAULT_INSTANCE, m.optJSList(_0), false);
   }
 
   public static Builder newBuilder() {
@@ -63,7 +63,7 @@ public class LessonCollection implements AbstractData {
     LessonCollection other = (LessonCollection) object;
     if (other.hashCode() != hashCode())
       return false;
-    if (!(mRenderedSets.equals(other.mRenderedSets)))
+    if (!(mLessons.equals(other.mLessons)))
       return false;
     return true;
   }
@@ -73,7 +73,7 @@ public class LessonCollection implements AbstractData {
     int r = m__hashcode;
     if (r == 0) {
       r = 1;
-      for (RenderedSet x : mRenderedSets)
+      for (Lesson x : mLessons)
         if (x != null)
           r = r * 37 + x.hashCode();
       m__hashcode = r;
@@ -81,13 +81,13 @@ public class LessonCollection implements AbstractData {
     return r;
   }
 
-  protected List<RenderedSet> mRenderedSets;
+  protected List<Lesson> mLessons;
   protected int m__hashcode;
 
   public static final class Builder extends LessonCollection {
 
     private Builder(LessonCollection m) {
-      mRenderedSets = DataUtil.mutableCopyOf(m.mRenderedSets);
+      mLessons = DataUtil.mutableCopyOf(m.mLessons);
     }
 
     @Override
@@ -104,12 +104,12 @@ public class LessonCollection implements AbstractData {
     @Override
     public LessonCollection build() {
       LessonCollection r = new LessonCollection();
-      r.mRenderedSets = DataUtil.immutableCopyOf(mRenderedSets);
+      r.mLessons = DataUtil.immutableCopyOf(mLessons);
       return r;
     }
 
-    public Builder renderedSets(List<RenderedSet> x) {
-      mRenderedSets = DataUtil.mutableCopyOf((x == null) ? DataUtil.emptyList() : x);
+    public Builder lessons(List<Lesson> x) {
+      mLessons = DataUtil.mutableCopyOf((x == null) ? DataUtil.emptyList() : x);
       return this;
     }
 
@@ -118,7 +118,7 @@ public class LessonCollection implements AbstractData {
   public static final LessonCollection DEFAULT_INSTANCE = new LessonCollection();
 
   private LessonCollection() {
-    mRenderedSets = DataUtil.emptyList();
+    mLessons = DataUtil.emptyList();
   }
 
 }

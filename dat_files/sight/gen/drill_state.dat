@@ -2,5 +2,5 @@ fields {
   enum DrillStatus status;
   *int icons;
   int cursor;
-  string lesson_key;
+  string lesson_id;
 }

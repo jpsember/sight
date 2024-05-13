@@ -3,7 +3,7 @@ package sight.gen;
 import js.data.AbstractData;
 import js.json.JSMap;
 
-public class RenderedSet implements AbstractData {
+public class Lesson implements AbstractData {
 
   public String id() {
     return mId;
@@ -59,16 +59,16 @@ public class RenderedSet implements AbstractData {
   }
 
   @Override
-  public RenderedSet build() {
+  public Lesson build() {
     return this;
   }
 
   @Override
-  public RenderedSet parse(Object obj) {
-    return new RenderedSet((JSMap) obj);
+  public Lesson parse(Object obj) {
+    return new Lesson((JSMap) obj);
   }
 
-  private RenderedSet(JSMap m) {
+  private Lesson(JSMap m) {
     mId = m.opt(_0, "");
     mDescription = m.opt(_1, "");
     {
@@ -91,9 +91,9 @@ public class RenderedSet implements AbstractData {
   public boolean equals(Object object) {
     if (this == object)
       return true;
-    if (object == null || !(object instanceof RenderedSet))
+    if (object == null || !(object instanceof Lesson))
       return false;
-    RenderedSet other = (RenderedSet) object;
+    Lesson other = (Lesson) object;
     if (other.hashCode() != hashCode())
       return false;
     if (!(mId.equals(other.mId)))
@@ -135,9 +135,9 @@ public class RenderedSet implements AbstractData {
   protected int mResolution;
   protected int m__hashcode;
 
-  public static final class Builder extends RenderedSet {
+  public static final class Builder extends Lesson {
 
-    private Builder(RenderedSet m) {
+    private Builder(Lesson m) {
       mId = m.mId;
       mDescription = m.mDescription;
       mHand = m.mHand;
@@ -158,8 +158,8 @@ public class RenderedSet implements AbstractData {
     }
 
     @Override
-    public RenderedSet build() {
-      RenderedSet r = new RenderedSet();
+    public Lesson build() {
+      Lesson r = new Lesson();
       r.mId = mId;
       r.mDescription = mDescription;
       r.mHand = mHand;
@@ -201,9 +201,9 @@ public class RenderedSet implements AbstractData {
 
   }
 
-  public static final RenderedSet DEFAULT_INSTANCE = new RenderedSet();
+  public static final Lesson DEFAULT_INSTANCE = new Lesson();
 
-  private RenderedSet() {
+  private Lesson() {
     mId = "";
     mDescription = "";
     mHand = Hand.DEFAULT_INSTANCE;
