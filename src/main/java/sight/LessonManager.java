@@ -84,7 +84,7 @@ public class LessonManager {
 
         var y = generateLessonsFromChordSet(x);
         for (var z : y) {
-          var rn = chordLibrary().get(z);
+          var rn = chordLibrary().get(z, mRand);
           result.add(rn);
         }
       }
@@ -96,48 +96,34 @@ public class LessonManager {
     return mSets;
   }
 
-  private int[] permutation(int size) {
-    var random = mRand;
-    int[] p = new int[size];
-    for (int i = 0; i < size; i++)
-      p[i] = i;
-    for (int i = size - 1; i >= 1; i--) {
-      int j = random.nextInt(i + 1);
-      int tmp = p[i];
-      p[i] = p[j];
-      p[j] = tmp;
-    }
-    return p;
-  }
-
   private List<RenderedSet> generateLessonsFromChordSet(RenderedSet source) {
 
     List<RenderedSet> out = arrayList();
 
-    var noteStrs = source.notes().split(" +");
-    int numNotes = noteStrs.length;
+    var noteStrs = arrayList(source.notes().split(" +"));
 
-    final int NOTES_PER_LESSON = 4;
+    int numNotes = noteStrs.size();
+
     int numPerms = 1;
     if (numNotes > 3)
       numPerms = 5;
 
     for (int perm = 0; perm < numPerms; perm++) {
+      if (SMALL && perm != 0)
+        break;
 
-      int[] strs2 = new int[numNotes];
-      for (int i = 0; i < numNotes; i++)
-        strs2[i] = i;
-
-      if (perm != 0) {
-        strs2 = permutation(numNotes);
-      }
+      List<String> permuted = noteStrs;
+      if (perm != 0)
+        permuted = MyMath.permute(noteStrs, mRand);
 
       for (int i = 0; i <= numNotes - NOTES_PER_LESSON; i += NOTES_PER_LESSON) {
+        if (SMALL && i != 0)
+          break;
         var b = source.toBuilder();
         b.description(source.description() + " " + perm + ":" + i);
         var sb = new StringBuilder();
         for (var j = i; j < i + NOTES_PER_LESSON; j++) {
-          sb.append(noteStrs[strs2[j]]);
+          sb.append(permuted.get(j));
           sb.append(' ');
         }
         b.notes(sb.toString().trim());

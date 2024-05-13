@@ -16,6 +16,9 @@ import sight.gen.SightConfig;
 
 public final class Util {
 
+  public static final boolean SMALL = false && alert("small lessons for dev");
+
+  public static final int NOTES_PER_LESSON = 4;
   public static final int MAX_KEY_NUMBER = 88;
   public static final int CASIO_KEY_FIRST = 15;
   public static final int CASIO_KEY_LAST = 75;

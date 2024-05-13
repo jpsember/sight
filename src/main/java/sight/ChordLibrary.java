@@ -5,6 +5,7 @@ import static sight.Util.*;
 
 import java.io.File;
 import java.util.List;
+import java.util.Random;
 
 import js.base.BaseObject;
 import js.base.SystemCall;
@@ -12,6 +13,7 @@ import js.data.DataUtil;
 import js.file.FileException;
 import js.file.Files;
 import js.geometry.IRect;
+import js.geometry.MyMath;
 import js.graphics.ImgUtil;
 import js.parsing.MacroParser;
 import sight.gen.Chord;
@@ -35,8 +37,9 @@ public class ChordLibrary extends BaseObject {
     return this;
   }
 
-  public RenderedNotes get(RenderedSet rs) {
+  public RenderedNotes get(RenderedSet rs, Random rand) {
     todo("?use a hash code with more resolution");
+    mRand = rand;
     var key = rs.hashCode();
     var baseName = DataUtil.hex32(key);
 
@@ -176,7 +179,7 @@ public class ChordLibrary extends BaseObject {
     }
   }
 
-  public String frag(String resourceName) {
+  private String frag(String resourceName) {
     try {
       return Files.readString(getClass(), resourceName);
     } catch (FileException e) {
@@ -196,9 +199,26 @@ public class ChordLibrary extends BaseObject {
   private File mWorkDirectory;
   private boolean mIgnoreCache;
 
+  private static String[] sDurations = { //
+      "4 4 4 4", //
+      "4. 8 4 4", //
+      "4. 4. 8 4", //
+      "2 2 4 4",//
+      "1 3 3 3", //
+  };
+
+  
   private String encodeLily(List<Chord> chords) {
+    checkArgument(chords.size() == NOTES_PER_LESSON, "expected",NOTES_PER_LESSON,"chords, got:", chords.size());
+
+    var durs = sDurations[mRand.nextInt(NOTES_PER_LESSON)];
+    var durstr = split(durs, ' ');
+    var ord = MyMath.permute(durstr, mRand);
+
     var sb = new StringBuilder();
+    var i = INIT_INDEX;
     for (var c : chords) {
+      i++;
       sb.append(" <");
       for (var kn : c.keyNumbers()) {
         sb.append(keyNumberToLilyNote(kn));
@@ -206,7 +226,8 @@ public class ChordLibrary extends BaseObject {
       }
 
       sb.append(">");
-      sb.append("4 ");
+      sb.append(ord.get(i));
+      sb.append(' ');
     }
     return sb.toString();
   }
@@ -216,7 +237,7 @@ public class ChordLibrary extends BaseObject {
   private static String[] sLilyNoteName = { "c", "cis", "d", "dis", "e", "f", "fis", "g", "gis", "a", "ais",
       "b" };
 
-  public static String keyNumberToLilyNote(int keyNumber) {
+  private static String keyNumberToLilyNote(int keyNumber) {
     if (sKeyNumToLilyNote == null) {
       var x = new String[MAX_KEY_NUMBER];
       sKeyNumToLilyNote = x;
@@ -235,5 +256,7 @@ public class ChordLibrary extends BaseObject {
     }
     return sKeyNumToLilyNote[keyNumber];
   }
+
+  private Random mRand;
 
 }
