@@ -37,18 +37,14 @@ public class ChordLibrary extends BaseObject {
   }
 
   public RenderedNotes get(RenderedSet rs) {
-    // Use the supplied random number generator to generate a deterministic random instance,
-    // just in case we need them
-
-    int seed = idToInteger(rs.id()) | 1;
-    mRand2 = new Random(seed);
-
     var baseName = rs.id();
 
     var metadata = new File(mCacheDirectory, baseName + ".json");
     var imgFile = new File(mCacheDirectory, baseName + ".png");
     if (mIgnoreCache || !metadata.exists() || !imgFile.exists()) {
-      // checkState(!wtf,"not in cache:",baseName);
+      // We need a distinct random number generator for each set we're generating
+      int seed = idToInteger(rs.id()) | 1;
+      mOurRand = new Random(seed);
       compile(rs, metadata, imgFile);
     }
     var rn = Files.parseAbstractData(RenderedNotes.DEFAULT_INSTANCE, metadata).toBuilder();
@@ -57,9 +53,6 @@ public class ChordLibrary extends BaseObject {
   }
 
   private void compile(RenderedSet rs, File metadata, File imgFile) {
-
-    pr(VERT_SP, "set is not in cache, compiling:", Files.basename(imgFile));
-
     files().deletePeacefully(metadata);
     files().deletePeacefully(imgFile);
 
@@ -96,8 +89,6 @@ public class ChordLibrary extends BaseObject {
     var sourceFile = new File(mWorkDirectory, "input.ly");
 
     files().writeString(sourceFile, script);
-    //  pr(VERT_SP, "compiling lily:", CR, script);
-
     {
 
       var s = new SystemCall();
@@ -122,7 +113,6 @@ public class ChordLibrary extends BaseObject {
     var bi = ImgUtil.read(targetFile);
 
     var ext = new ImgExtractor();
-    //    ext.alertVerbose();
     ext.setSource(bi);
     var boxes = ext.rects();
 
@@ -216,9 +206,9 @@ public class ChordLibrary extends BaseObject {
     checkArgument(chords.size() == NOTES_PER_LESSON, "expected", NOTES_PER_LESSON, "chords, got:",
         chords.size());
 
-    var durs = sDurations[mRand2.nextInt(NOTES_PER_LESSON)];
+    var durs = sDurations[mOurRand.nextInt(NOTES_PER_LESSON)];
     var durstr = split(durs, ' ');
-    var ord = MyMath.permute(durstr, mRand2);
+    var ord = MyMath.permute(durstr, mOurRand);
 
     var sb = new StringBuilder();
     var i = INIT_INDEX;
@@ -262,6 +252,6 @@ public class ChordLibrary extends BaseObject {
     return sKeyNumToLilyNote[keyNumber];
   }
 
-  private Random mRand2;
+  private Random mOurRand;
 
 }

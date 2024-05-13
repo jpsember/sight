@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Random;
 
 import js.base.BaseObject;
+import js.data.DataUtil;
 import js.file.Files;
 import js.geometry.MyMath;
 import sight.gen.Hand;
@@ -105,7 +106,6 @@ public class LessonManager extends BaseObject {
 
         var y = generateLessonsFromChordSet(x);
         for (var z : y) {
-          pr("id:", z.id());
           var key = z.id();
           mRenderedSetMap.put(key, z);
           log("...getting cached value");
@@ -123,6 +123,9 @@ public class LessonManager extends BaseObject {
 
   private List<RenderedSet> generateLessonsFromChordSet(RenderedSet source) {
 
+    // We need a distinct random number generator for each set we're generating
+    var rand = new Random(calcHashFor(source));
+
     List<RenderedSet> out = arrayList();
 
     var noteStrs = arrayList(source.notes().split(" +"));
@@ -139,12 +142,10 @@ public class LessonManager extends BaseObject {
         continue;
 
       List<String> permuted = noteStrs;
-      checkState(mLessonConstructRand != null);
+      checkState(rand != null);
       if (perm != 0) {
-        pr("lessonConstructRand next value:", mLessonConstructRand.nextInt(1000));
-        permuted = MyMath.permute(noteStrs, mLessonConstructRand);
+        permuted = MyMath.permute(noteStrs, rand);
       }
-      pr("source:", source.notes(), INDENT, "perm:", perm, "s:", permuted);
 
       for (int i = 0; i <= numNotes - NOTES_PER_LESSON; i += NOTES_PER_LESSON) {
         if (SMALL && i != 0)
@@ -157,8 +158,7 @@ public class LessonManager extends BaseObject {
           sb.append(' ');
         }
         b.notes(sb.toString().trim());
-        b.id(calcHashForSet(b));
-        pr("notes:", b.notes(), "id:", b.id());
+        b.id(DataUtil.hex32(calcHashFor(b)));
         out.add(b.build());
       }
     }
@@ -169,18 +169,12 @@ public class LessonManager extends BaseObject {
     if (prepared())
       return;
 
-    setVerbose();
-
     mLessonSelectionRand = new Random(1965);
-    mLessonConstructRand = new Random(config().seed());
     log("chose random number generators");
 
     var f = folderFile();
     mFolder = Files.parseAbstractDataOpt(LessonFolder.DEFAULT_INSTANCE, f).toBuilder();
     mFolderMod = false;
-
-    wtf = true;
-
   }
 
   private File folderFile() {
@@ -228,10 +222,9 @@ public class LessonManager extends BaseObject {
       // Choose a lesson that is not in the list
       String key = null;
       while (true) {
-        pr("choosing lesson not in list");
+        //  pr("choosing lesson not in list");
         int k = mLessonSelectionRand.nextInt(availLessonsCount());
         key = lessonKeys.get(k);
-        pr("...key:", key);
         if (!b.activeLessons().contains(key))
           break;
       }
@@ -261,7 +254,6 @@ public class LessonManager extends BaseObject {
 
   private boolean mFolderMod;
 
-  private Random mLessonConstructRand;
   private Random mLessonSelectionRand;
   private Map<String, RenderedNotes> mSets;
   private LessonCollection mLessonCollection;
