@@ -250,8 +250,8 @@ public class LessonManager extends BaseObject {
   }
 
   private void prepareLessonSet() {
-
-    pr(VERT_SP, "===================== preparing lesson set");
+    if (SMALL)
+      pr(VERT_SP, "===================== preparing lesson set");
     var rand = mLessonSelectionRand;
 
     if (mLessonSet == null) {
