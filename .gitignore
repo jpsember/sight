@@ -37,5 +37,5 @@ project_config
 *.mid
 .gui_state.json
 sight_config.json
-
+lesson_folder.json
 

@@ -198,7 +198,8 @@ public class LessonManager extends BaseObject {
       result = chordStr;
     else
       result = String.join(".", out);
-    log("randomly omit notes:", INDENT, chordStr, CR, result);
+    if (false)
+      log("randomly omit notes:", INDENT, chordStr, CR, result);
     return result;
   }
 
