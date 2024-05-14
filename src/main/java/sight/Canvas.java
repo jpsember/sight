@@ -4,6 +4,8 @@ import static js.base.Tools.*;
 import static sight.Util.*;
 
 import java.awt.Color;
+import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -12,6 +14,7 @@ import java.util.List;
 
 import javax.swing.JPanel;
 
+import js.base.BasePrinter;
 import js.file.Files;
 import js.geometry.IRect;
 import js.geometry.Matrix;
@@ -23,7 +26,6 @@ import sight.gen.RenderedNotes;
 public class Canvas extends JPanel {
 
   public void paintComponent(Graphics graphics) {
-    z("painting canvas");
     if (mDrillState == null)
       return;
 
@@ -39,42 +41,57 @@ public class Canvas extends JPanel {
       g.clearRect(0, 0, b.width, b.height);
     }
 
-    calcTransform(notes);
-    g.setTransform(mAtlasToCanvas.toAffineTransform());
-    var rn = notes;
     g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
     g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 
-    // Stretch the staff image (a vertical strip) to fill the horizontal extent of the staff
-    {
-      var sr = rn.staffRect();
-      var staffImg = getImage(sr);
-      g.drawImage(staffImg, 0, sr.y, mContentWidth, sr.height, null);
+    calcTransform(notes);
+
+    var orig = g.getTransform();
+
+    if (!nullOrEmpty(mMessage)) {
+      g.transform(mMessageMatrix.toAffineTransform());
+      g.setColor(mMessageColor);
+      g.setFont(font(g));
+      g.drawString(mMessage, 10, 10 + mFontMetrics.getAscent());
+      g.setTransform(orig);
     }
-    // Draw the clef
-    drawAtlasImage(g, rn.clefRect(), mClefX);
 
-    // Draw the key signature
-    drawAtlasImage(g, rn.keysigRect(), mKeySigX);
+    {
+      g.transform(mAtlasToCanvas.toAffineTransform());
+      var rn = notes;
 
-    // Draw up to four notes
-    var cx = mChordsX + mChordWidth / 2;
-    int numNotes = Math.min(mMaxNotes, rn.renderedChords().size());
-
-    for (int i = 0; i < numNotes; i++) {
-      var ch = rn.renderedChords().get(i);
-      var r = getImage(ch.rect());
-      g.drawImage(r, cx - ch.rect().width / 2, ch.rect().y, null);
-
-      // Render icon in prompt region, if appropriate
-
-      var icNum = mDrillState.icons()[i] - 1;
-      if (icNum >= 0) {
-        var ic = icon(icNum);
-        g.drawImage(ic, cx - ic.getWidth() / 2, mPromptY, null);
+      // Stretch the staff image (a vertical strip) to fill the horizontal extent of the staff
+      {
+        var sr = rn.staffRect();
+        var staffImg = getImage(sr);
+        g.drawImage(staffImg, 0, sr.y, mContentWidth, sr.height, null);
       }
+      // Draw the clef
+      drawAtlasImage(g, rn.clefRect(), mClefX);
 
-      cx += mChordWidth;
+      // Draw the key signature
+      drawAtlasImage(g, rn.keysigRect(), mKeySigX);
+
+      // Draw up to four notes
+      var cx = mChordsX + mChordWidth / 2;
+      int numNotes = Math.min(mMaxNotes, rn.renderedChords().size());
+
+      for (int i = 0; i < numNotes; i++) {
+        var ch = rn.renderedChords().get(i);
+        var r = getImage(ch.rect());
+        g.drawImage(r, cx - ch.rect().width / 2, ch.rect().y, null);
+
+        // Render icon in prompt region, if appropriate
+
+        var icNum = mDrillState.icons()[i] - 1;
+        if (icNum >= 0) {
+          var ic = icon(icNum);
+          g.drawImage(ic, cx - ic.getWidth() / 2, mPromptY, null);
+        }
+
+        cx += mChordWidth;
+      }
+      g.setTransform(orig);
     }
 
   }
@@ -86,16 +103,27 @@ public class Canvas extends JPanel {
     mAtlasImage = ImgUtil.read(sourceImage);
   }
 
+  public void clearMessage() {
+    mMessage = null;
+  }
+
+  public void setMessage(Color color, Object... message) {
+    mMessageColor = color;
+    mMessage = BasePrinter.toString(message);
+  }
+
   /**
    * Calculate the size of the canvas image, and the transform to convert from
    * the atlas image to the canvas image
-   * 
-   * @param rn
    */
   private void calcTransform(RenderedNotes rn) {
+    if (rn.equals(mCachedRenderedNotesForTfm))
+      return;
+    mCachedRenderedNotesForTfm = rn;
 
     // We'll set the height to the height of the staff image, multipled by a constant
     var staffHeight = rn.staffRect().height;
+
     var extraAbove = round(staffHeight * 1.2);
     var extraBelow = round(staffHeight * 1.2);
 
@@ -116,10 +144,17 @@ public class Canvas extends JPanel {
 
     mContentWidth = round(mChordsX + mChordWidth * mMaxNotes + xpad);
 
+    var messageHeight = round(staffHeight * .1);
+
     int padding = round(staffHeight * .5);
+
+    mMessageMatrix = Matrix.getTranslate(20, messageHeight * .75f);
+
     mAtlasToCanvas = Matrix.getTranslate(padding, padding + extraAbove - rn.staffRect().y);
     var scaleTfm = Matrix.getScale((float) config().noteScale());
     mAtlasToCanvas = Matrix.preMultiply(mAtlasToCanvas, scaleTfm);
+    mAtlasToCanvas = Matrix.preMultiply(mAtlasToCanvas, Matrix.getTranslate(0, messageHeight));
+
     mPromptY = canvasHeight - mPromptHeight;
   }
 
@@ -157,12 +192,29 @@ public class Canvas extends JPanel {
     return (int) Math.round(v);
   }
 
+  private Font font(Graphics2D g) {
+    if (mFont == null) {
+      mFont = new Font(Font.SANS_SERIF, Font.BOLD, 35);
+      mFontMetrics = g.getFontMetrics(mFont);
+    }
+    return mFont;
+  }
+
+  private FontMetrics mFontMetrics;
+  private Font mFont;
+
   private int mMaxNotes = 4;
   private Matrix mAtlasToCanvas;
+  private Matrix mMessageMatrix;
+
   private int mChordWidth;
   private int mClefX, mKeySigX, mChordsX, mContentWidth;
   private int mPromptHeight;
   private BufferedImage mAtlasImage;
   private int mPromptY;
   private DrillState mDrillState;
+  private RenderedNotes mCachedRenderedNotesForTfm;
+  private String mMessage;
+  private Color mMessageColor;
+
 }

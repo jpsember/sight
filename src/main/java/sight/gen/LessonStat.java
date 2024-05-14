@@ -5,16 +5,6 @@ import js.json.JSMap;
 
 public class LessonStat implements AbstractData {
 
-  @Deprecated
-  public int frequency() {
-    return mFrequency;
-  }
-
-  @Deprecated
-  public int correct() {
-    return mCorrect;
-  }
-
   public float accuracy() {
     return mAccuracy;
   }
@@ -24,9 +14,7 @@ public class LessonStat implements AbstractData {
     return new Builder(this);
   }
 
-  protected static final String _0 = "frequency";
-  protected static final String _1 = "correct";
-  protected static final String _2 = "accuracy";
+  protected static final String _0 = "accuracy";
 
   @Override
   public String toString() {
@@ -36,9 +24,7 @@ public class LessonStat implements AbstractData {
   @Override
   public JSMap toJson() {
     JSMap m = new JSMap();
-    m.putUnsafe(_0, mFrequency);
-    m.putUnsafe(_1, mCorrect);
-    m.putUnsafe(_2, mAccuracy);
+    m.putUnsafe(_0, mAccuracy);
     return m;
   }
 
@@ -53,9 +39,7 @@ public class LessonStat implements AbstractData {
   }
 
   private LessonStat(JSMap m) {
-    mFrequency = m.opt(_0, 0);
-    mCorrect = m.opt(_1, 0);
-    mAccuracy = m.opt(_2, 0f);
+    mAccuracy = m.opt(_0, 0f);
   }
 
   public static Builder newBuilder() {
@@ -71,10 +55,6 @@ public class LessonStat implements AbstractData {
     LessonStat other = (LessonStat) object;
     if (other.hashCode() != hashCode())
       return false;
-    if (!(mFrequency == other.mFrequency))
-      return false;
-    if (!(mCorrect == other.mCorrect))
-      return false;
     if (!(mAccuracy == other.mAccuracy))
       return false;
     return true;
@@ -85,24 +65,18 @@ public class LessonStat implements AbstractData {
     int r = m__hashcode;
     if (r == 0) {
       r = 1;
-      r = r * 37 + mFrequency;
-      r = r * 37 + mCorrect;
       r = r * 37 + (int)mAccuracy;
       m__hashcode = r;
     }
     return r;
   }
 
-  protected int mFrequency;
-  protected int mCorrect;
   protected float mAccuracy;
   protected int m__hashcode;
 
   public static final class Builder extends LessonStat {
 
     private Builder(LessonStat m) {
-      mFrequency = m.mFrequency;
-      mCorrect = m.mCorrect;
       mAccuracy = m.mAccuracy;
     }
 
@@ -120,22 +94,8 @@ public class LessonStat implements AbstractData {
     @Override
     public LessonStat build() {
       LessonStat r = new LessonStat();
-      r.mFrequency = mFrequency;
-      r.mCorrect = mCorrect;
       r.mAccuracy = mAccuracy;
       return r;
-    }
-
-    @Deprecated
-    public Builder frequency(int x) {
-      mFrequency = x;
-      return this;
-    }
-
-    @Deprecated
-    public Builder correct(int x) {
-      mCorrect = x;
-      return this;
     }
 
     public Builder accuracy(float x) {

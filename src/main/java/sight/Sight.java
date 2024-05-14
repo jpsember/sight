@@ -4,6 +4,7 @@ import static js.base.Tools.*;
 import static sight.Util.*;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
@@ -74,8 +75,8 @@ public class Sight extends App {
 
     SystemUtil.prepareForConsoleOrGUI(false);
 
-     lessonManager().prepare();
-     
+    lessonManager().prepare();
+
     // Continue starting app within the Swing thread
     //
     SwingUtilities.invokeLater(() -> {
@@ -141,7 +142,6 @@ public class Sight extends App {
       var ch = MidiManager.SHARED_INSTANCE.currentChord();
       if (ch != mPrevChord) {
         mPrevChord = ch;
-        z("chord changed to:", ch);
 
         if (!ch.equals(Chord.DEFAULT_INSTANCE)) {
           if (ch.equals(DEATH_CHORD)) {
@@ -189,29 +189,51 @@ public class Sight extends App {
 
     // Switch state if appropriate
     //
-    {
-      if (mDrillState.status() == DrillStatus.DONE) {
-        int pctRight = calcPercentRight(mDrillState);
-        int pt = config().donePauseTimeMs();
-        if (pctRight == 100)
-          pt /= 3;
-        long elapsed = System.currentTimeMillis() - mDoneTime;
-        if (elapsed >= pt) {
-          lessonManager().recordResult(mDrillState.lessonId(),pctRight);
-          prepareDrill();
-          canvas().repaint();
-        }
+    switch (mDrillState.status()) {
+    default:
+      break;
+
+    case DONE_SESSION: {
+      int pt = config().donePauseTimeMs() * 3;
+      long elapsed = System.currentTimeMillis() - mDoneTime;
+      if (elapsed >= pt) {
+        prepareDrill();
+        canvas().repaint();
       }
     }
-  }
+      break;
 
-  private int calcPercentRight(DrillState s) {
-    checkArgument(s.cursor() != 0);
-    int c = 0;
-    for (int i = 0; i < s.cursor(); i++)
-      if (s.icons()[i] == ICON_RIGHT)
-        c++;
-    return (c * 100) / s.cursor();
+    case DONE: {
+      int pt = config().donePauseTimeMs() / 3;
+      long elapsed = System.currentTimeMillis() - mDoneTime;
+      if (elapsed >= pt) {
+        lessonManager().recordResult(mDrillState.lessonId(), calcPercentRight(mDrillState));
+        var doneSession = lessonManager().advance();
+        if (doneSession) {
+          var b = createWork();
+          b.status(DrillStatus.DONE_SESSION);
+          writeWork();
+          canvas().setMessage(new Color(0, 128, 0), "Done session!");
+          mDoneTime = System.currentTimeMillis();
+        } else {
+          prepareDrill();
+        }
+        canvas().repaint();
+      }
+    }
+      break;
+    case RETRY: {
+      int pt = config().donePauseTimeMs();
+      long elapsed = System.currentTimeMillis() - mDoneTime;
+      if (elapsed >= pt) {
+        lessonManager().recordResult(mDrillState.lessonId(), calcPercentRight(mDrillState));
+        prepareDrill();
+        canvas().repaint();
+      }
+    }
+      break;
+    }
+
   }
 
   private BgndTaskManager mTaskManager;
@@ -264,21 +286,6 @@ public class Sight extends App {
 
   private List<String> lessonHistory = arrayList();
 
-  private void prepareScore(DrillState.Builder b) {
-    z("choosing lesson");
-    var key = lessonManager().choose();
-    var r = lessonManager().renderedNotes(key);
-    z("chose:", r.description());
-    lessonHistory.add(key);
-    b.lessonId(key);
-    pr("Lesson:", r.description());
-
-    var notes = lessonManager().renderedNotes(key);
-    var ic = new int[notes.renderedChords().size()];
-    ic[0] = ICON_POINTER;
-    b.icons(ic);
-  }
-
   /**
    * Get app frame's content pane
    */
@@ -293,53 +300,61 @@ public class Sight extends App {
   private void prepareDrill() {
     var b = DrillState.newBuilder();
     b.status(DrillStatus.ACTIVE);
-    prepareScore(b);
+    canvas().clearMessage();
+
+    {
+      var key = lessonManager().choose();
+      lessonHistory.add(key);
+      b.lessonId(key);
+
+      var notes = lessonManager().renderedNotes(key);
+      var ic = new int[notes.renderedChords().size()];
+      ic[0] = ICON_POINTER;
+      b.icons(ic);
+    }
+
     mDrillState = b.build();
     canvas().setDrillState(mDrillState);
   }
 
   private void processPlayerChord(Chord ch) {
-
     var s = mDrillState;
-    z("processPlayerChord:", ch, "status:", s.status());
-    switch (s.status()) {
-    case DONE:
-      prepareDrill();
-      canvas().repaint();
-      break;
-    case ACTIVE: {
-      var notes = lessonManager().renderedNotes(s.lessonId());
-      var exp = notes.renderedChords().get(s.cursor());
-      var expChord = exp.chord();
-      log("chord:", ch);
-      log("expct:", expChord);
-      int newIcon = (expChord.equals(ch)) ? ICON_RIGHT : ICON_WRONG;
-      var b = s.toBuilder();
-      b.icons()[s.cursor()] = newIcon;
-      b.cursor(s.cursor() + 1);
-      if (b.cursor() != notes.renderedChords().size()) {
-        b.icons()[b.cursor()] = ICON_POINTER;
-      } else {
+    if (s.status() != DrillStatus.ACTIVE)
+      return;
+    var notes = lessonManager().renderedNotes(s.lessonId());
+    var exp = notes.renderedChords().get(s.cursor());
+    var expChord = exp.chord();
+    log("chord:", ch);
+    log("expct:", expChord);
+
+    if (ch.equals(NEXT_LESSON_CHORD)) {
+      ch = expChord;
+    }
+
+    int newIcon = (expChord.equals(ch)) ? ICON_RIGHT : ICON_WRONG;
+    var b = s.toBuilder();
+    b.icons()[s.cursor()] = newIcon;
+    b.cursor(s.cursor() + 1);
+    if (b.cursor() != notes.renderedChords().size()) {
+      b.icons()[b.cursor()] = ICON_POINTER;
+    } else {
+      var pct = calcPercentRight(b);
+      if (pct == 100) {
         b.status(DrillStatus.DONE);
-        mDoneTime = System.currentTimeMillis();
+      } else {
+        b.status(DrillStatus.RETRY);
+        canvas().setMessage(Color.RED, "Try Again");
       }
-      mDrillState = b.build();
-
-      notes = lessonManager().renderedNotes(mDrillState.lessonId());
-      z("new drill state:", notes.imageFile());
-      canvas().repaint();
+      mDoneTime = System.currentTimeMillis();
     }
-      break;
-    default:
-      badState("unexpected status:", mDrillState);
-    }
-
+    mDrillState = b.build();
+    notes = lessonManager().renderedNotes(mDrillState.lessonId());
+    canvas().repaint();
   }
 
   private DrillState mDrillState = DrillState.DEFAULT_INSTANCE;
   private FrameWrapper mFrame;
   private Canvas mCanvas;
-  //  private LessonManager mLessonManager;
 
   private void createChords() {
     pr("creating chords");
@@ -388,7 +403,7 @@ public class Sight extends App {
   // ------------------------------------------------------------------
 
   /**
-   * Construct a builder from a copy of the drill stater
+   * Construct a builder from a copy of the drill state
    */
   private DrillState.Builder createWork() {
     mTempDrillState = mDrillState.build().toBuilder();

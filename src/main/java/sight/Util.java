@@ -11,6 +11,7 @@ import java.util.Map;
 import js.base.DateTimeTools;
 import js.file.Files;
 import sight.gen.Chord;
+import sight.gen.DrillState;
 import sight.gen.Hand;
 import sight.gen.Lesson;
 import sight.gen.SightConfig;
@@ -33,16 +34,8 @@ public final class Util {
   public static final Chord CHORD_RESET_SCORE = chordWith(CASIO_KEY_LAST - 2);
   public static final Chord CHORD_REMOVE_LAST = chordWith(CASIO_KEY_LAST - 4);
 
-  public static final int MAX_ACTIVE_LESSONS = 8;
-  public static final int MIN_ACTIVE_LESSONS = 4;
-
-  public static final int LESSONS_PER_SESSION = 8;
-  public static final int REPS_PER_LESSON = 3;
-
-  public static void z(Object... msg) {
-    if (false && alert("z messages in effect"))
-      pr(msg);
-  }
+  public static final int LESSONS_PER_SESSION = SMALL ? 3 : 8;
+  public static final int REPS_PER_LESSON = SMALL ? 2 : 3;
 
   /**
    * Get an input stream to a resource
@@ -208,6 +201,15 @@ public final class Util {
       mLessonManager = new LessonManager();
     }
     return mLessonManager;
+  }
+
+  public static int calcPercentRight(DrillState s) {
+    checkArgument(s.cursor() != 0);
+    int c = 0;
+    for (int i = 0; i < s.cursor(); i++)
+      if (s.icons()[i] == ICON_RIGHT)
+        c++;
+    return (c * 100) / s.cursor();
   }
 
   private static LessonManager mLessonManager;

@@ -53,6 +53,8 @@ public class ChordLibrary extends BaseObject {
   }
 
   private void compile(Lesson rs, File metadata, File imgFile) {
+    pr("compiling lesson:", rs.description());
+
     files().deletePeacefully(metadata);
     files().deletePeacefully(imgFile);
 

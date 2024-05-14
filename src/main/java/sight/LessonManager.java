@@ -24,7 +24,7 @@ import sight.gen.RenderedNotes;
 public class LessonManager extends BaseObject {
 
   public void prepare() {
-    alertVerbose();
+    // alertVerbose();
     if (prepared())
       return;
 
@@ -36,34 +36,29 @@ public class LessonManager extends BaseObject {
     mFolderMod = false;
   }
 
-  public String choose() {
-    log("choose lesson");
-    checkState(prepared());
-
-    prepareLessonSet();
-
-    //    updateActiveLessonList();
-    //    var list = mFolder.activeLessons();
-    //    checkState(list.size() != 0, "no active lessons");
-
-    String key = mCurrentPassList.get(mPassCursor);
-    //    
-    //    String key;
-    //    while (true) {
-    //      key = list.get(mLessonSelectionRand.nextInt(list.size()));
-    //      if (list.size() == 1 || !key.equals(mLastLessonKey))
-    //        break;
-    //    }
-    log("pass:", mPassNumber, "cursor:", mPassCursor, "id:", key);
+  public boolean advance() {
     mPassCursor++;
     if (mPassCursor == mCurrentPassList.size()) {
       mPassCursor = 0;
       mPassNumber++;
       if (mPassNumber == REPS_PER_LESSON) {
         mLessonSet = null;
+        mPassNumber = 0;
+        return true;
       }
     }
+    return false;
+  }
 
+  public String choose() {
+    log("choose lesson");
+    checkState(prepared());
+    if (mLessonSet == null)
+      prepareLessonSet();
+    var key = mCurrentPassList.get(mPassCursor);
+    if (SMALL)
+      pr(VERT_SP, "choose lesson; pass:", mPassNumber, "cursor:", mPassCursor);
+    log("pass:", mPassNumber, "cursor:", mPassCursor, "id:", key);
     mLastLessonId = key;
     return key;
   }
@@ -87,13 +82,6 @@ public class LessonManager extends BaseObject {
     checkState(r != null, "no RenderedNotes found for key:", key);
     return r;
   }
-
-  //  private Lesson getLesson(String key) {
-  //    var m = renderedSetMap();
-  //    var r = m.get(key);
-  //    checkState(r != null, "no RenderedSet found for key:", key);
-  //    return r;
-  //  }
 
   private Map<String, Lesson> lessonMap() {
     getSets();
@@ -240,73 +228,6 @@ public class LessonManager extends BaseObject {
     }
   };
 
-  //  /**
-  //   * Modify active lesson list by culling high accuracy items if too full, or
-  //   * adding low accuracy ones if too empty
-  //   */
-  //  private void updateActiveLessonList() {
-  //    var b = mFolder;
-  //
-  //    // build list of active lessons, sorted by accuracy
-  //    List<String> activeList = arrayList();
-  //    activeList.addAll(b.activeLessons());
-  //
-  //    activeList.sort(LESSON_COMPARATOR);
-  //
-  //    if (verbose()) {
-  //      log("active lessons currently:", activeList);
-  //      for (var id : activeList) {
-  //        var rs = getLesson(id);
-  //        log(INDENT, id, ":", calcAccuracy(lessonStat(id)), ";", rs.description());
-  //      }
-  //    }
-  //
-  //    // If there are too many, remove the ones with the highest accuracy
-  //    while (activeList.size() > MAX_ACTIVE_LESSONS) {
-  //      var out = pop(activeList);
-  //      var prompt = "removing lesson with highest accuracy";
-  //      dumpLessonStat(out, prompt);
-  //      setModified(prompt);
-  //    }
-  //
-  //    List<String> lessonKeys = arrayList();
-  //    lessonKeys.addAll(renderedSetMap().keySet());
-  //
-  //    while (activeList.size() < MIN_ACTIVE_LESSONS && availLessonsCount() > activeList.size()) {
-  //      // Choose a lesson that is not in the list
-  //      String key = null;
-  //      while (true) {
-  //        int k = mLessonSelectionRand.nextInt(availLessonsCount());
-  //        key = lessonKeys.get(k);
-  //        if (!b.activeLessons().contains(key))
-  //          break;
-  //      }
-  //      activeList.add(key);
-  //      var prompt = "adding new lesson to active list";
-  //      dumpLessonStat(key, prompt);
-  //      setModified(prompt);
-  //    }
-  //    b.activeLessons(activeList);
-  //    log("active lessons now:", INDENT, b.activeLessons());
-  //  }
-
-  //  private void dumpLessonStat(String lessonId, String prompt) {
-  //    if (!verbose())
-  //      return;
-  //    var rs = getLesson(lessonId);
-  //    log(prompt, INDENT, "id:", lessonId, "accuracy:", lessonStat(lessonId), "desc:", rs.description());
-  //  }
-
-  //  private int calcAccuracy(LessonStat stat) {
-  //    if (stat.frequency() == 0)
-  //      return 0;
-  //    return (stat.correct() * 100) / stat.frequency();
-  //  }
-
-  //  private int availLessonsCount() {
-  //    return renderedSetMap().size();
-  //  }
-
   private void setModified(String cause) {
     if (!mFolderMod) {
       log("setting folder modified:", cause);
@@ -328,31 +249,18 @@ public class LessonManager extends BaseObject {
     mFolderMod = false;
   }
 
-  private boolean mFolderMod;
-  private Random mLessonSelectionRand;
-  private Map<String, RenderedNotes> mSets;
-  private LessonCollection mLessonCollection;
-  //  private String mLastLessonKey;
-  private LessonFolder.Builder mFolder;
-  private Map<String, Lesson> mLessonMap;
-
-  private void prepareSortedLessonList() {
-    //    if (mSortedLessonList == null) {
-    List<String> t = arrayList();
-    t.addAll(lessonMap().keySet());
-    mSortedLessonList = t;
-    mSortedLessonList.sort(LESSON_COMPARATOR);
-    //    }
-  }
-
   private void prepareLessonSet() {
 
+    pr(VERT_SP, "===================== preparing lesson set");
     var rand = mLessonSelectionRand;
 
     if (mLessonSet == null) {
       log("preparing new lesson set");
-      prepareSortedLessonList();
-      int numLess = mSortedLessonList.size();
+      List<String> t = arrayList();
+      t.addAll(lessonMap().keySet());
+      t.sort(LESSON_COMPARATOR);
+      List<String> orderedLessonIds = t;
+      int numLess = orderedLessonIds.size();
       checkState(numLess >= LESSONS_PER_SESSION);
       List<String> ls = arrayList();
       mLessonSet = ls;
@@ -365,14 +273,14 @@ public class LessonManager extends BaseObject {
           double pos = ((i + .5) / LESSONS_PER_SESSION) * numLess;
           int slot = (int) Math.round(pos);
           slot = MyMath.clamp(slot, 0, numLess - 1);
-          id = mSortedLessonList.get(slot);
+          id = orderedLessonIds.get(slot);
           log("i:", i, "slot:", slot, "id:", id);
           if (ls.contains(id)) {
             log("...already in set");
             int k = rand.nextInt(numLess);
             while (true) {
               k = (k + 1) % numLess;
-              id = mSortedLessonList.get(k);
+              id = orderedLessonIds.get(k);
               log("....sequential scan, k:", k);
               if (!ls.contains(id))
                 break;
@@ -399,16 +307,18 @@ public class LessonManager extends BaseObject {
           break;
         log("...first element is same as last lesson id:", mLastLessonId);
       }
-
     }
-
   }
 
+  private boolean mFolderMod;
+  private Random mLessonSelectionRand;
+  private Map<String, RenderedNotes> mSets;
+  private LessonCollection mLessonCollection;
+  private LessonFolder.Builder mFolder;
+  private Map<String, Lesson> mLessonMap;
   private List<String> mLessonSet;
   private List<String> mCurrentPassList;
-  private List<String> mSortedLessonList;
   private int mPassNumber;
   private int mPassCursor;
   private String mLastLessonId;
-  //  private Random mLessonRand = new Random();
 }

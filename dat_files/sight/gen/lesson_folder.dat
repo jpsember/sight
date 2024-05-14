@@ -1,7 +1,3 @@
 fields {
-
   map string LessonStat stats;
-
-  - * string active_lessons;
-
 }
