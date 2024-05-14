@@ -114,8 +114,13 @@ public class LessonManager extends BaseObject {
       if (x.hand() == Hand.UNKNOWN) {
         var nparser = new ChordParser();
         nparser.parse(x.notes());
-        var chords = nparser.chords();
-        x = x.toBuilder().hand(inferHandFromNotes(chords)).build();
+        var b = x.toBuilder();
+        if (nparser.twoHands())
+          b.hand(Hand.BOTH);
+        else {
+          b.hand(inferHandFromNotes(nparser.chords()));
+        }
+        x = b.build();
       }
 
       if (!(hand == Hand.BOTH || hand == x.hand())) {

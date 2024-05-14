@@ -16,11 +16,41 @@ public class ChordParser extends BaseObject {
     if (verbose())
       log("parse:", quote(chordsExpr));
 
+    var twoHands = chordsExpr.contains(":");
+
+    var words = chordsExpr.split(" +");
+    checkArgument(words.length > 0, "no chords found");
+    String firstHand = chordsExpr;
+    String secondHand = null;
+
+    if (twoHands) {
+      var s1 = new String[words.length];
+      var s2 = new String[words.length];
+      var i = INIT_INDEX;
+      for (var w : words) {
+        i++;
+        var parts = split(w, ':');
+        checkArgument(parts.size() == 2, "missing colon in two-hand chord expr:", w);
+        s1[i] = parts.get(0);
+        s2[i] = parts.get(1);
+      }
+      firstHand = String.join(" ", s1);
+      secondHand = String.join(" ", s2);
+    }
+
+    mLeft = parseHand(firstHand);
+    if (twoHands)
+      mRight = parseHand(secondHand);
+
+  }
+
+  private List<Chord> parseHand(String chordsExpr) {
+
     mText = chordsExpr;
     mCursor = 0;
     skipWs();
 
-    mChords = arrayList();
+    List<Chord> chordList = arrayList();
 
     while (!done()) {
       log(VERT_SP, "reading another chord");
@@ -39,17 +69,25 @@ public class ChordParser extends BaseObject {
           break;
       }
 
-      todo("?add support for duration later");
-
       nb.keyNumbers(keynum.array());
-      mChords.add(nb.build());
+      chordList.add(nb.build());
     }
+    return chordList;
+  }
+
+  public List<Chord> chordsLH() {
+    checkState(twoHands());
+    return mLeft;
+  }
+
+  public List<Chord> chordsRH() {
+    checkState(twoHands());
+    return mRight;
   }
 
   public List<Chord> chords() {
-    todo("have parser determine if chords are for two hands");
-    checkState(mChords != null);
-    return mChords;
+    checkState(!twoHands());
+    return mLeft;
   }
 
   private boolean done() {
@@ -177,7 +215,13 @@ public class ChordParser extends BaseObject {
     skipWs();
   }
 
+  public boolean twoHands() {
+    return mRight != null;
+  }
+
   private String mText;
   private int mCursor;
-  private List<Chord> mChords;
+  private List<Chord> mLeft;
+  private List<Chord> mRight;
+
 }

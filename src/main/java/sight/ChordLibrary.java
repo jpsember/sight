@@ -9,6 +9,7 @@ import java.util.Random;
 
 import js.base.BaseObject;
 import js.base.SystemCall;
+import js.data.IntArray;
 import js.file.FileException;
 import js.file.Files;
 import js.geometry.IRect;
@@ -60,29 +61,67 @@ public class ChordLibrary extends BaseObject {
 
     var nparser = new ChordParser();
     nparser.parse(rs.notes());
-    var chords = nparser.chords();
 
     var hand = rs.hand();
     if (hand == Hand.UNKNOWN) {
-      hand = inferHandFromNotes(chords);
+      if (nparser.twoHands())
+        hand = Hand.BOTH;
+      else
+        hand = inferHandFromNotes(nparser.chords());
     }
-
-    if (hand == Hand.BOTH)
-      throw notSupported("BOTH is not supported yet");
 
     if (rs.keySig() == KeySig.UNDEFINED)
       badArg("no key signature defined");
 
-    var template = frag("score_template.txt");
+    String script;
 
-    var m = map();
-    m.put("key", toLilyPond(rs.keySig()));
-    m.put("notes", encodeLily(chords));
-    m.put("clef", hand == Hand.LEFT ? "bass" : "treble");
+    List<Chord> chords;
 
-    MacroParser parser = new MacroParser();
-    parser.withTemplate(template).withMapper(m);
-    String script = parser.content();
+    if (nparser.twoHands()) {
+
+      chords = arrayList();
+      int i = INIT_INDEX;
+      {
+        for (var rh : nparser.chordsRH()) {
+          i++;
+          var lh = nparser.chordsLH().get(i);
+          var b = Chord.newBuilder();
+          var ib = IntArray.newBuilder();
+          for (var k : lh.keyNumbers())
+            ib.add(k);
+          for (var k : rh.keyNumbers())
+            ib.add(k);
+          b.keyNumbers(ib.array());
+          chords.add(b.build());
+        }
+      }
+
+      var template = frag("score_two_hands.txt");
+
+      var m = map();
+      m.put("key", toLilyPond(rs.keySig()));
+      m.put("notes_rh", encodeLily(nparser.chordsRH()));
+      m.put("notes_lh", encodeLily(nparser.chordsLH()));
+
+      MacroParser parser = new MacroParser();
+      parser.withTemplate(template).withMapper(m);
+      script = parser.content();
+
+    } else {
+
+      chords = nparser.chords();
+      var template = frag("score_template.txt");
+
+      var m = map();
+      m.put("key", toLilyPond(rs.keySig()));
+      m.put("notes", encodeLily(chords));
+      m.put("clef", hand == Hand.LEFT ? "bass" : "treble");
+
+      MacroParser parser = new MacroParser();
+      parser.withTemplate(template).withMapper(m);
+      script = parser.content();
+
+    }
 
     File targetFile = imgFile;
 
@@ -118,7 +157,7 @@ public class ChordLibrary extends BaseObject {
     ext.setSource(bi);
     var boxes = ext.rects();
 
-    if (config().inspectBoxes()) {
+    if (config().inspectBoxes() || alert("always boxes")) {
       var bx = ext.plotRects();
       var d = Files.parent(targetFile);
       var bn = Files.basename(targetFile);
