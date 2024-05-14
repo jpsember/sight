@@ -293,16 +293,16 @@ public class LessonManager extends BaseObject {
       checkState(numLess >= LESSONS_PER_SESSION);
       List<String> ls = arrayList();
       mLessonSet = ls;
-    
-   
-     zzz 
-      for (var id : orderedLessonIds) {
-        if (ls.size() == LESSONS_PER_SESSION)
-          break;
-        var xx = lessonMap().get(id);
-        if (xx.hand() != Hand.BOTH)
-          continue;
-        ls.add(id);
+
+      if (alert("choosing both hands right now")) {
+        for (var id : orderedLessonIds) {
+          if (ls.size() == LESSONS_PER_SESSION)
+            break;
+          var xx = lessonMap().get(id);
+          if (xx.hand() != Hand.BOTH)
+            continue;
+          ls.add(id);
+        }
       }
 
       for (int i = 0; i < LESSONS_PER_SESSION; i++) {

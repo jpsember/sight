@@ -64,7 +64,9 @@ public class Canvas extends JPanel {
       {
         var sr = rn.staffRect();
         var staffImg = getImage(sr);
-        g.drawImage(staffImg, 0, sr.y, mContentWidth, sr.height, null);
+        // Start a bit past the left edge of the clef
+        final int WILD_ASS_GUESS = 25;
+        g.drawImage(staffImg, WILD_ASS_GUESS, sr.y, mContentWidth - WILD_ASS_GUESS, sr.height, null);
       }
       // Draw the clef
       drawAtlasImage(g, rn.clefRect(), mClefX);
@@ -122,14 +124,15 @@ public class Canvas extends JPanel {
     mCachedRenderedNotesForTfm = rn;
 
     // We'll set the height to the height of the staff image, multipled by a constant
-    var staffHeight = rn.staffRect().height;
+    var trueStaffHeight = rn.staffRect().height;
+    var staffHeight = 100;
 
     var extraAbove = round(staffHeight * 1.2);
     var extraBelow = round(staffHeight * 1.2);
 
     mPromptHeight = round(staffHeight * .4);
 
-    var canvasHeight = extraAbove + staffHeight + extraBelow + mPromptHeight;
+    var canvasHeight = extraAbove + trueStaffHeight + extraBelow + mPromptHeight;
 
     // Determine x offsets of the clef, keysig, and the (first) chord
 
