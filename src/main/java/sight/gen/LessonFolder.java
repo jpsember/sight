@@ -14,6 +14,7 @@ public class LessonFolder implements AbstractData {
     return mStats;
   }
 
+  @Deprecated
   public List<String> activeLessons() {
     return mActiveLessons;
   }
@@ -144,6 +145,7 @@ public class LessonFolder implements AbstractData {
       return this;
     }
 
+    @Deprecated
     public Builder activeLessons(List<String> x) {
       mActiveLessons = DataUtil.mutableCopyOf((x == null) ? DataUtil.emptyList() : x);
       return this;

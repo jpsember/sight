@@ -36,6 +36,9 @@ public final class Util {
   public static final int MAX_ACTIVE_LESSONS = 8;
   public static final int MIN_ACTIVE_LESSONS = 4;
 
+  public static final int LESSONS_PER_SESSION = 8;
+  public static final int REPS_PER_LESSON = 3;
+
   public static void z(Object... msg) {
     if (false && alert("z messages in effect"))
       pr(msg);
