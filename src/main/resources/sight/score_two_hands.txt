@@ -16,9 +16,8 @@
     % In case there is no key signature, add space from clef
     \override Staff.Clef.space-alist.first-note = #'(extra-space . 8)
 
-    \key e \major
-
-    <gis dis' >4  <ais e' >4  <cis' >4  <a cis' e' >4
+    \key [!key]
+    [!notes_rh]
 }
 
 
@@ -33,9 +32,8 @@
     % In case there is no key signature, add space from clef
     \override Staff.Clef.space-alist.first-note = #'(extra-space . 8)
 
-    \key e \major
-
-    <gis dis' >4  <ais e' >4  <cis' >4  <a cis' e' >4
+    \key [!key]
+    [!notes_lh]
 }
 
 
@@ -57,3 +55,4 @@
 \header {
   tagline = ""  % removed
 }
+

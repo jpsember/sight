@@ -1,8 +1,5 @@
 \version "2.24.3"
 
-\paper {
-  horizontal-shift = -2.0\mm
-}
 
 \score {
 

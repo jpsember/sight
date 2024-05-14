@@ -47,6 +47,7 @@ public class ChordParser extends BaseObject {
   }
 
   public List<Chord> chords() {
+    todo("have parser determine if chords are for two hands");
     checkState(mChords != null);
     return mChords;
   }
