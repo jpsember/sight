@@ -9,7 +9,6 @@ import java.util.Random;
 
 import js.base.BaseObject;
 import js.base.SystemCall;
-import js.data.IntArray;
 import js.file.FileException;
 import js.file.Files;
 import js.geometry.IRect;
@@ -75,33 +74,27 @@ public class ChordLibrary extends BaseObject {
 
     String script;
 
-    List<Chord> chords;
+    List<Chord> chordsRH;
+    List<Chord> chordsLH;
+
+    int newSeed = mOurRand.nextInt() | 1;
+
+    // We need to use the same random number sequence for both left and right hands
+    var rnd2 = new Random(newSeed);
 
     if (nparser.twoHands()) {
 
-      chords = arrayList();
-      int i = INIT_INDEX;
-      {
-        for (var rh : nparser.chordsRH()) {
-          i++;
-          var lh = nparser.chordsLH().get(i);
-          var b = Chord.newBuilder();
-          var ib = IntArray.newBuilder();
-          for (var k : lh.keyNumbers())
-            ib.add(k);
-          for (var k : rh.keyNumbers())
-            ib.add(k);
-          b.keyNumbers(ib.array());
-          chords.add(b.build());
-        }
-      }
+      chordsRH = nparser.chordsRH();
+      chordsLH = nparser.chordsLH();
+
+      checkState(chordsRH.size() == chordsLH.size(), "mismatched left/right chord counts");
 
       var template = frag("score_two_hands.txt");
 
       var m = map();
       m.put("key", toLilyPond(rs.keySig()));
-      m.put("notes_rh", encodeLily(nparser.chordsRH()));
-      m.put("notes_lh", encodeLily(nparser.chordsLH()));
+      m.put("notes_rh", encodeLily(chordsRH, rnd2));
+      m.put("notes_lh", encodeLily(chordsLH, new Random(newSeed)));
 
       MacroParser parser = new MacroParser();
       parser.withTemplate(template).withMapper(m);
@@ -109,12 +102,15 @@ public class ChordLibrary extends BaseObject {
 
     } else {
 
-      chords = nparser.chords();
+      var chords = nparser.chords();
+      chordsLH = chords;
+      chordsRH = chords;
+
       var template = frag("score_template.txt");
 
       var m = map();
       m.put("key", toLilyPond(rs.keySig()));
-      m.put("notes", encodeLily(chords));
+      m.put("notes", encodeLily(chords, rnd2));
       m.put("clef", hand == Hand.LEFT ? "bass" : "treble");
 
       MacroParser parser = new MacroParser();
@@ -170,31 +166,40 @@ public class ChordLibrary extends BaseObject {
     nb.imageFile(new File(targetFile.getName()));
 
     {
+      int numChords = chordsRH.size();
+
       int numBoxes = boxes.size();
       var hdrRects = ImgExtractor.RECT_HEADER_SIZE;
 
-      if (chords.size() != numBoxes - hdrRects) {
-        if (rs.keySig() == KeySig.C && chords.size() == numBoxes - (hdrRects - 1)) {
+      if (numChords != numBoxes - hdrRects) {
+        if (rs.keySig() == KeySig.C && numChords == numBoxes - (hdrRects - 1)) {
           // Insert a small, empty rect for the key signature, which is not rendered for C major
           numBoxes++;
           var b = boxes.get(ImgExtractor.RECT_CLEF);
           boxes.add(ImgExtractor.RECT_KEYSIG, new IRect(b.x + 3, b.y, 1, 1));
         } else
-          badState("number of chords:", chords.size(), "number of boxes:", numBoxes, "expected:",
-              chords.size() + hdrRects);
+          badState("number of chords:", numChords, "number of boxes:", numBoxes, "expected:",
+              numChords + hdrRects);
       }
+
       nb.staffRect(boxes.get(ImgExtractor.RECT_STAFF_LINES));
       nb.clefRect(boxes.get(ImgExtractor.RECT_CLEF));
       nb.keysigRect(boxes.get(ImgExtractor.RECT_KEYSIG));
       nb.description(rs.description());
       List<RenderedChord> renderedChordsList = arrayList();
 
-      var j = INIT_INDEX;
-      for (var ch : chords) {
-        j++;
+      for (int j = 0; j < numChords; j++) {
+        Chord ca;
+        Chord cb = null;
+        ca = chordsLH.get(j);
+        if (nparser.twoHands()) {
+          cb = chordsRH.get(j);
+        }
+
         var i = j + hdrRects;
         var renc = RenderedChord.newBuilder();
-        renc.chord(ch);
+        renc.chordA(ca);
+        renc.chordB(cb);
         renc.rect(boxes.get(i));
         renderedChordsList.add(renc);
       }
@@ -243,13 +248,14 @@ public class ChordLibrary extends BaseObject {
       "1 3 3 3", //
   };
 
-  private String encodeLily(List<Chord> chords) {
+  private String encodeLily(List<Chord> chords, Random rand) {
     checkArgument(chords.size() == NOTES_PER_LESSON, "expected", NOTES_PER_LESSON, "chords, got:",
         chords.size());
 
-    var durs = sDurations[mOurRand.nextInt(NOTES_PER_LESSON)];
+    int si = rand.nextInt(sDurations.length);
+    var durs = sDurations[si];
     var durstr = split(durs, ' ');
-    var ord = MyMath.permute(durstr, mOurRand);
+    var ord = MyMath.permute(durstr, rand);
 
     var sb = new StringBuilder();
     var i = INIT_INDEX;

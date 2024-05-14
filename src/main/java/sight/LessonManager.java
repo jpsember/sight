@@ -111,6 +111,9 @@ public class LessonManager extends BaseObject {
 
     for (var x : mLessonCollection.lessons()) {
 
+      if (false && alert("skipping all but 2 hand") && !x.description().equals("two hands"))
+        continue;
+
       if (x.hand() == Hand.UNKNOWN) {
         var nparser = new ChordParser();
         nparser.parse(x.notes());
@@ -195,6 +198,29 @@ public class LessonManager extends BaseObject {
   }
 
   private String randomlyOmitNotes(String chordStr, Random rand) {
+
+    String result;
+    int j = chordStr.indexOf(':');
+    if (j >= 0) {
+      var ca = chordStr.substring(0, j);
+      var cb = chordStr.substring(j + 1);
+      ca = auxRandomlyOmitNotes(ca, rand);
+      cb = auxRandomlyOmitNotes(cb, rand);
+      result = ca + ":" + cb;
+    } else
+      result = auxRandomlyOmitNotes(chordStr, rand);
+
+    // pr("randomly omit notes:", INDENT, chordStr, CR, result);
+
+    if (false)
+      log("randomly omit notes:", INDENT, chordStr, CR, result);
+    return result;
+  }
+
+  private String auxRandomlyOmitNotes(String chordStr, Random rand) {
+
+    checkArgument(chordStr.indexOf(':') < 0);
+
     var noteNums = split(chordStr, '.');
     List<String> out = arrayList();
     for (var x : noteNums) {
@@ -206,8 +232,6 @@ public class LessonManager extends BaseObject {
       result = chordStr;
     else
       result = String.join(".", out);
-    if (false)
-      log("randomly omit notes:", INDENT, chordStr, CR, result);
     return result;
   }
 
@@ -269,8 +293,21 @@ public class LessonManager extends BaseObject {
       checkState(numLess >= LESSONS_PER_SESSION);
       List<String> ls = arrayList();
       mLessonSet = ls;
-      for (int i = 0; i < LESSONS_PER_SESSION; i++) {
+    
+   
+     zzz 
+      for (var id : orderedLessonIds) {
+        if (ls.size() == LESSONS_PER_SESSION)
+          break;
+        var xx = lessonMap().get(id);
+        if (xx.hand() != Hand.BOTH)
+          continue;
+        ls.add(id);
+      }
 
+      for (int i = 0; i < LESSONS_PER_SESSION; i++) {
+        if (ls.size() == LESSONS_PER_SESSION)
+          break;
         // Choose a lesson that has a particular position in the accuracy distribution
 
         String id = null;

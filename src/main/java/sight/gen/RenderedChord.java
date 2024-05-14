@@ -6,8 +6,12 @@ import js.json.JSMap;
 
 public class RenderedChord implements AbstractData {
 
-  public Chord chord() {
-    return mChord;
+  public Chord chordA() {
+    return mChordA;
+  }
+
+  public Chord chordB() {
+    return mChordB;
   }
 
   public IRect rect() {
@@ -19,8 +23,9 @@ public class RenderedChord implements AbstractData {
     return new Builder(this);
   }
 
-  protected static final String _0 = "chord";
-  protected static final String _1 = "rect";
+  protected static final String _0 = "chord_a";
+  protected static final String _1 = "chord_b";
+  protected static final String _2 = "rect";
 
   @Override
   public String toString() {
@@ -30,8 +35,9 @@ public class RenderedChord implements AbstractData {
   @Override
   public JSMap toJson() {
     JSMap m = new JSMap();
-    m.putUnsafe(_0, mChord.toJson());
-    m.putUnsafe(_1, mRect.toJson());
+    m.putUnsafe(_0, mChordA.toJson());
+    m.putUnsafe(_1, mChordB.toJson());
+    m.putUnsafe(_2, mRect.toJson());
     return m;
   }
 
@@ -47,15 +53,22 @@ public class RenderedChord implements AbstractData {
 
   private RenderedChord(JSMap m) {
     {
-      mChord = Chord.DEFAULT_INSTANCE;
+      mChordA = Chord.DEFAULT_INSTANCE;
       Object x = m.optUnsafe(_0);
       if (x != null) {
-        mChord = Chord.DEFAULT_INSTANCE.parse(x);
+        mChordA = Chord.DEFAULT_INSTANCE.parse(x);
+      }
+    }
+    {
+      mChordB = Chord.DEFAULT_INSTANCE;
+      Object x = m.optUnsafe(_1);
+      if (x != null) {
+        mChordB = Chord.DEFAULT_INSTANCE.parse(x);
       }
     }
     {
       mRect = IRect.DEFAULT_INSTANCE;
-      Object x = m.optUnsafe(_1);
+      Object x = m.optUnsafe(_2);
       if (x != null) {
         mRect = IRect.DEFAULT_INSTANCE.parse(x);
       }
@@ -75,7 +88,9 @@ public class RenderedChord implements AbstractData {
     RenderedChord other = (RenderedChord) object;
     if (other.hashCode() != hashCode())
       return false;
-    if (!(mChord.equals(other.mChord)))
+    if (!(mChordA.equals(other.mChordA)))
+      return false;
+    if (!(mChordB.equals(other.mChordB)))
       return false;
     if (!(mRect.equals(other.mRect)))
       return false;
@@ -87,21 +102,24 @@ public class RenderedChord implements AbstractData {
     int r = m__hashcode;
     if (r == 0) {
       r = 1;
-      r = r * 37 + mChord.hashCode();
+      r = r * 37 + mChordA.hashCode();
+      r = r * 37 + mChordB.hashCode();
       r = r * 37 + mRect.hashCode();
       m__hashcode = r;
     }
     return r;
   }
 
-  protected Chord mChord;
+  protected Chord mChordA;
+  protected Chord mChordB;
   protected IRect mRect;
   protected int m__hashcode;
 
   public static final class Builder extends RenderedChord {
 
     private Builder(RenderedChord m) {
-      mChord = m.mChord;
+      mChordA = m.mChordA;
+      mChordB = m.mChordB;
       mRect = m.mRect;
     }
 
@@ -119,13 +137,19 @@ public class RenderedChord implements AbstractData {
     @Override
     public RenderedChord build() {
       RenderedChord r = new RenderedChord();
-      r.mChord = mChord;
+      r.mChordA = mChordA;
+      r.mChordB = mChordB;
       r.mRect = mRect;
       return r;
     }
 
-    public Builder chord(Chord x) {
-      mChord = (x == null) ? Chord.DEFAULT_INSTANCE : x.build();
+    public Builder chordA(Chord x) {
+      mChordA = (x == null) ? Chord.DEFAULT_INSTANCE : x.build();
+      return this;
+    }
+
+    public Builder chordB(Chord x) {
+      mChordB = (x == null) ? Chord.DEFAULT_INSTANCE : x.build();
       return this;
     }
 
@@ -139,7 +163,8 @@ public class RenderedChord implements AbstractData {
   public static final RenderedChord DEFAULT_INSTANCE = new RenderedChord();
 
   private RenderedChord() {
-    mChord = Chord.DEFAULT_INSTANCE;
+    mChordA = Chord.DEFAULT_INSTANCE;
+    mChordB = Chord.DEFAULT_INSTANCE;
     mRect = IRect.DEFAULT_INSTANCE;
   }
 

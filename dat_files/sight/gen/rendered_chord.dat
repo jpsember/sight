@@ -1,4 +1,5 @@
 fields {
-  Chord chord;
+  Chord chord_a;
+  Chord chord_b;  // nonempty only if two hands
   IRect rect;
 }

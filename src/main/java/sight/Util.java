@@ -213,4 +213,18 @@ public final class Util {
   }
 
   private static LessonManager mLessonManager;
+
+  public static Chord mergeChords(Chord chordA, Chord chordB) {
+    var ka = chordA.keyNumbers();
+    var kb = chordB.keyNumbers();
+    int[] x = new int[ka.length + kb.length];
+    int j = 0;
+    for (var n : ka)
+      x[j++] = n;
+    for (var n : kb)
+      x[j++] = n;
+    var ch = Chord.newBuilder().keyNumbers(x).build();
+    return ch;
+  }
+
 }

@@ -323,7 +323,7 @@ public class Sight extends App {
       return;
     var notes = lessonManager().renderedNotes(s.lessonId());
     var exp = notes.renderedChords().get(s.cursor());
-    var expChord = exp.chord();
+    var expChord = mergeChords(exp.chordA(), exp.chordB());
     log("chord:", ch);
     log("expct:", expChord);
 
