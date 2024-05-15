@@ -26,12 +26,13 @@ import sight.gen.RenderedNotes;
 public class Canvas extends JPanel {
 
   public void paintComponent(Graphics graphics) {
-    if (mDrillState == null)
+
+    if (mDrillState == null) {
+      pr("DrillState is null!", INDENT, ST);
       return;
+    }
 
     var notes = lessonManager().renderedNotes(mDrillState.lessonId());
-    if (notes == null)
-      return;
 
     var g = (Graphics2D) graphics;
 

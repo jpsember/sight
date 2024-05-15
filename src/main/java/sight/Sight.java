@@ -16,6 +16,7 @@ import javax.swing.SwingUtilities;
 
 import js.app.App;
 import js.app.AppOper;
+import js.base.BasePrinter;
 import js.file.Files;
 import js.geometry.IRect;
 import js.system.SystemUtil;
@@ -198,7 +199,7 @@ public class Sight extends App {
       long elapsed = System.currentTimeMillis() - mDoneTime;
       if (elapsed >= pt) {
         prepareDrill();
-        canvas().repaint();
+        refreshView("DONE_SESSION expired");
       }
     }
       break;
@@ -218,7 +219,7 @@ public class Sight extends App {
         } else {
           prepareDrill();
         }
-        canvas().repaint();
+        refreshView("DONE expired");
       }
     }
       break;
@@ -228,7 +229,7 @@ public class Sight extends App {
       if (elapsed >= pt) {
         lessonManager().recordResult(mDrillState.lessonId(), calcPercentRight(mDrillState));
         prepareDrill();
-        canvas().repaint();
+        refreshView("RETRY expired");
       }
     }
       break;
@@ -258,6 +259,13 @@ public class Sight extends App {
 
   private long mDoneTime;
 
+  private void refreshView(Object... message) {
+    if (ISSUE_24) {
+      pr("Refreshing view;", BasePrinter.toString(message));
+    }
+    canvas().repaint();
+  }
+
   //------------------------------------------------------------------
   // Frame
   // ------------------------------------------------------------------
@@ -273,9 +281,12 @@ public class Sight extends App {
     JPanel parentPanel = new JPanel(new BorderLayout());
     parentPanel.add(canvas());
     contentPane().add(parentPanel);
-    // WTF, apparently this is necessary to get repainting to occur; see
-    // https://groups.google.com/g/comp.lang.java.gui/c/vCbwLOX9Vow?pli=1
-    contentPane().revalidate();
+
+    if (!ISSUE_24) {
+      // WTF, apparently this is necessary to get repainting to occur; see
+      // https://groups.google.com/g/comp.lang.java.gui/c/vCbwLOX9Vow?pli=1
+      contentPane().revalidate();
+    }
   }
 
   private Canvas canvas() {
@@ -350,7 +361,7 @@ public class Sight extends App {
     }
     mDrillState = b.build();
     notes = lessonManager().renderedNotes(mDrillState.lessonId());
-    canvas().repaint();
+    refreshView("updated state after player chord");
   }
 
   private DrillState mDrillState = DrillState.DEFAULT_INSTANCE;
@@ -425,7 +436,7 @@ public class Sight extends App {
   private void writeWork() {
     mDrillState = mTempDrillState.build();
     canvas().setDrillState(mDrillState);
-    canvas().repaint();
+    refreshView("replaced drill state");
   }
 
   private void setCursor(int newCursorLocation) {
