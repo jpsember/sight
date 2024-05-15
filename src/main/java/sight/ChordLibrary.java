@@ -45,17 +45,50 @@ public class ChordLibrary extends BaseObject {
       // We need a distinct random number generator for each set we're generating
       int seed = idToInteger(rs.id()) | 1;
       mOurRand = new Random(seed);
-      compile(rs, metadata, imgFile);
+      compile(rs, metadata, imgFile, false);
     }
     var rn = Files.parseAbstractData(RenderedNotes.DEFAULT_INSTANCE, metadata).toBuilder();
     rn.imageFile(new File(mCacheDirectory, rn.imageFile().toString()));
     return rn.build();
   }
 
-  private void compile(Lesson rs, File metadata, File imgFile) {
+  public void generateInspection(Lesson rs) {
+    var baseName = filenameSafe(rs.description());
+    var dir = new File(mCacheDirectory, "inspect");
+    Files.S.mkdirs(dir);
+    var imgFile = new File(dir, baseName + ".png");
+    if (!imgFile.exists()) {
+      compile(rs, null, imgFile, true);
+    }
+  }
+
+  private static final String filenameSafe(String s) {
+    var legal = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    var sb = new StringBuilder();
+    var prevLegal = false;
+    for (int i = 0; i < s.length(); i++) {
+      char c = s.charAt(i);
+      if (legal.indexOf(c) < 0) {
+        if (prevLegal) {
+          sb.append('_');
+          prevLegal = false;
+        }
+      } else {
+        prevLegal = true;
+        sb.append(c);
+      }
+    }
+    var r = sb.toString();
+    if (r.isEmpty())
+      r = "_SAFE_";
+    return r;
+  }
+
+  private void compile(Lesson rs, File metadata, File imgFile, boolean inspection) {
     pr("compiling lesson:", rs.description());
 
-    files().deletePeacefully(metadata);
+    if (!inspection)
+      files().deletePeacefully(metadata);
     files().deletePeacefully(imgFile);
 
     var nparser = new ChordParser();
@@ -77,10 +110,14 @@ public class ChordLibrary extends BaseObject {
     List<Chord> chordsRH;
     List<Chord> chordsLH;
 
-    int newSeed = mOurRand.nextInt() | 1;
+    Random rnd2 = null;
+    int newSeed = 0;
+    if (!inspection) {
+      newSeed = mOurRand.nextInt() | 1;
 
-    // We need to use the same random number sequence for both left and right hands
-    var rnd2 = new Random(newSeed);
+      // We need to use the same random number sequence for both left and right hands
+      rnd2 = new Random(newSeed);
+    }
 
     if (nparser.twoHands()) {
 
@@ -93,8 +130,8 @@ public class ChordLibrary extends BaseObject {
 
       var m = map();
       m.put("key", toLilyPond(rs.keySig()));
-      m.put("notes_rh", encodeLily(chordsRH, rnd2));
-      m.put("notes_lh", encodeLily(chordsLH, new Random(newSeed)));
+      m.put("notes_rh", encodeLily(chordsRH, rnd2, inspection));
+      m.put("notes_lh", encodeLily(chordsLH, new Random(newSeed), inspection));
 
       MacroParser parser = new MacroParser();
       parser.withTemplate(template).withMapper(m);
@@ -110,7 +147,7 @@ public class ChordLibrary extends BaseObject {
 
       var m = map();
       m.put("key", toLilyPond(rs.keySig()));
-      m.put("notes", encodeLily(chords, rnd2));
+      m.put("notes", encodeLily(chords, rnd2, inspection));
       m.put("clef", hand == Hand.LEFT ? "bass" : "treble");
 
       MacroParser parser = new MacroParser();
@@ -206,7 +243,8 @@ public class ChordLibrary extends BaseObject {
       nb.renderedChords(renderedChordsList);
     }
 
-    files().writePretty(metadata, nb);
+    if (!inspection)
+      files().writePretty(metadata, nb);
   }
 
   private String toLilyPond(KeySig keySig) {
@@ -248,14 +286,19 @@ public class ChordLibrary extends BaseObject {
       "2. 2. 8 4.", //
   };
 
-  private String encodeLily(List<Chord> chords, Random rand) {
-    checkArgument(chords.size() == NOTES_PER_LESSON, "expected", NOTES_PER_LESSON, "chords, got:",
-        chords.size());
+  private String encodeLily(List<Chord> chords, Random rand, boolean inspection) {
 
-    int index = rand.nextInt(sDurations.length);
+    int index = 0;
+    if (!inspection) {
+      checkArgument(chords.size() == NOTES_PER_LESSON, "expected", NOTES_PER_LESSON, "chords, got:",
+          chords.size());
+      index = rand.nextInt(sDurations.length);
+    }
     var durationExpr = sDurations[index];
     var durationArray = split(durationExpr, ' ');
-    durationArray = MyMath.permute(durationArray, rand);
+    if (!inspection) {
+      durationArray = MyMath.permute(durationArray, rand);
+    }
 
     var sb = new StringBuilder();
     var i = INIT_INDEX;
