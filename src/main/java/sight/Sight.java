@@ -81,6 +81,7 @@ public class Sight extends App {
     // Continue starting app within the Swing thread
     //
     SwingUtilities.invokeLater(() -> {
+      wtf = true;
       continueStartupWithinSwingThread();
     });
 
@@ -337,7 +338,6 @@ public class Sight extends App {
     var expChord = mergeChords(exp.chordA(), exp.chordB());
     log("chord:", ch);
     log("expct:", expChord);
-    pr(VERT_SP, "chord:", ch, CR, "expct:", expChord);
 
     if (ch.equals(NEXT_LESSON_CHORD)) {
       ch = expChord;

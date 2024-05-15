@@ -39,6 +39,8 @@ public class LessonManager extends BaseObject {
     var f = folderFile();
     mFolder = Files.parseAbstractDataOpt(LessonFolder.DEFAULT_INSTANCE, f).toBuilder();
     mFolderMod = false;
+    
+    getSets();
   }
 
   public boolean advance() {

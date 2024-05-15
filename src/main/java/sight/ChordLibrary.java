@@ -42,6 +42,9 @@ public class ChordLibrary extends BaseObject {
     var metadata = new File(mCacheDirectory, baseName + ".json");
     var imgFile = new File(mCacheDirectory, baseName + ".png");
     if (mIgnoreCache || !metadata.exists() || !imgFile.exists()) {
+      if (ISSUE_24)
+        checkState(!wtf);
+      
       // We need a distinct random number generator for each set we're generating
       int seed = idToInteger(rs.id()) | 1;
       mOurRand = new Random(seed);

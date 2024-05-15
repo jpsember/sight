@@ -65,6 +65,7 @@ public final class Util {
   public static void sleepMs(long ms) {
     DateTimeTools.sleepForRealMs(ms);
   }
+public static boolean wtf;
 
   public static void close(AutoCloseable... closeables) {
     todo("?replace the Files method with this (autocloseable instead of closeable)");
