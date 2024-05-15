@@ -153,7 +153,7 @@ public class ChordLibrary extends BaseObject {
     ext.setSource(bi);
     var boxes = ext.rects();
 
-    if (config().inspectBoxes() || alert("always boxes")) {
+    if (config().inspectBoxes()) {
       var bx = ext.plotRects();
       var d = Files.parent(targetFile);
       var bn = Files.basename(targetFile);
