@@ -245,17 +245,17 @@ public class ChordLibrary extends BaseObject {
       "4. 8 4 4", //
       "4. 4. 8 4", //
       "2 2 4 4", //
-      "1 3 3 3", //
+      "2. 2. 8 4.", //
   };
 
   private String encodeLily(List<Chord> chords, Random rand) {
     checkArgument(chords.size() == NOTES_PER_LESSON, "expected", NOTES_PER_LESSON, "chords, got:",
         chords.size());
 
-    int si = rand.nextInt(sDurations.length);
-    var durs = sDurations[si];
-    var durstr = split(durs, ' ');
-    var ord = MyMath.permute(durstr, rand);
+    int index = rand.nextInt(sDurations.length);
+    var durationExpr = sDurations[index];
+    var durationArray = split(durationExpr, ' ');
+    durationArray = MyMath.permute(durationArray, rand);
 
     var sb = new StringBuilder();
     var i = INIT_INDEX;
@@ -268,7 +268,7 @@ public class ChordLibrary extends BaseObject {
       }
 
       sb.append(">");
-      sb.append(ord.get(i));
+      sb.append(durationArray.get(i));
       sb.append(' ');
     }
     return sb.toString();

@@ -1,5 +1,4 @@
 fields {
-  //File chords;
   int done_pause_time_ms = 1200;
   int quiescent_chord_ms = 250;
   bool view_recent_edits;
@@ -8,5 +7,10 @@ fields {
   enum Hand hand;
   enum KeySig key;
   bool inspect_boxes;
-  int seed = 1965;
+  int seed;
+
+  // For practice mode, include only lessons whose descriptions
+  // match this regex
+
+  string pattern;
 }

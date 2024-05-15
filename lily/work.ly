@@ -17,8 +17,7 @@
     \override Staff.Clef.space-alist.first-note = #'(extra-space . 8)
 
     \key e \major
-
-    <gis dis' >4  <ais e' >1  <cis' >4  <a cis' e' >4
+     <b d' a' >2.  <g cis' fis' >4.  <fis a >2  <cis' >2
 }
 
 
@@ -34,8 +33,7 @@
     \override Staff.Clef.space-alist.first-note = #'(extra-space . 8)
 
     \key e \major
-
-    <gis dis' >4  <ais e' >1  <cis' >4  <a cis' e' >4
+     <cis f >2.  <a, fis >4  <d, a, >2  <cis >2
 }
 
 

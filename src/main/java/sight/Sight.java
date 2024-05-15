@@ -23,13 +23,13 @@ import sight.gen.Chord;
 import sight.gen.DrillState;
 import sight.gen.DrillStatus;
 import sight.gen.GuiState;
+import sight.gen.Hand;
 import sight.gen.SightConfig;
 
 public class Sight extends App {
 
   public static void main(String[] args) {
     Sight app = new Sight();
-    //app.setCustomArgs("-h");
     app.startApplication(args);
   }
 
@@ -326,6 +326,7 @@ public class Sight extends App {
     var expChord = mergeChords(exp.chordA(), exp.chordB());
     log("chord:", ch);
     log("expct:", expChord);
+    pr(VERT_SP, "chord:", ch, CR, "expct:", expChord);
 
     if (ch.equals(NEXT_LESSON_CHORD)) {
       ch = expChord;
@@ -387,9 +388,15 @@ public class Sight extends App {
 
         {
           var sb = new StringBuilder();
+          int slot = INIT_INDEX;
           for (var c : score) {
-            if (sb.length() != 0)
-              sb.append("    ");
+            slot++;
+            if (sb.length() != 0) {
+              if (config().hand() == Hand.BOTH && slot % 2 == 1)
+                sb.append(":");
+              else
+                sb.append("    ");
+            }
             sb.append(encodeChord(c));
           }
           pr(sb.toString());

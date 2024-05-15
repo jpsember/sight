@@ -8,11 +8,13 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.regex.Pattern;
 
 import js.base.BaseObject;
 import js.data.DataUtil;
 import js.file.Files;
 import js.geometry.MyMath;
+import js.parsing.RegExp;
 import sight.gen.Hand;
 import sight.gen.KeySig;
 import sight.gen.Lesson;
@@ -24,12 +26,15 @@ import sight.gen.RenderedNotes;
 public class LessonManager extends BaseObject {
 
   public void prepare() {
-    // alertVerbose();
+    //    alertVerbose();
     if (prepared())
       return;
 
-    mLessonSelectionRand = new Random(1965);
-    log("chose random number generators");
+    int seed = config().seed();
+    if (seed == 0)
+      seed = (int) System.currentTimeMillis();
+    mLessonSelectionRand = new Random(seed);
+    log("chose random number generator");
 
     var f = folderFile();
     mFolder = Files.parseAbstractDataOpt(LessonFolder.DEFAULT_INSTANCE, f).toBuilder();
@@ -110,9 +115,6 @@ public class LessonManager extends BaseObject {
     var renderMap = mLessonMap;
 
     for (var x : mLessonCollection.lessons()) {
-
-      if (false && alert("skipping all but 2 hand") && !x.description().equals("two hands"))
-        continue;
 
       if (x.hand() == Hand.UNKNOWN) {
         var nparser = new ChordParser();
@@ -286,33 +288,55 @@ public class LessonManager extends BaseObject {
     if (mLessonSet == null) {
       log("preparing new lesson set");
       List<String> t = arrayList();
-      t.addAll(lessonMap().keySet());
-      t.sort(LESSON_COMPARATOR);
-      List<String> orderedLessonIds = t;
-      int numLess = orderedLessonIds.size();
-      checkState(numLess >= LESSONS_PER_SESSION);
-      List<String> ls = arrayList();
-      mLessonSet = ls;
 
-      if (alert("choosing both hands right now")) {
-        for (var id : orderedLessonIds) {
-          if (ls.size() == LESSONS_PER_SESSION)
-            break;
-          var xx = lessonMap().get(id);
-          if (xx.hand() != Hand.BOTH)
-            continue;
-          ls.add(id);
+      Pattern p = null;
+      {
+        var s = config().pattern();
+        if (nonEmpty(s)) {
+          p = RegExp.pattern(s);
         }
       }
 
-      for (int i = 0; i < LESSONS_PER_SESSION; i++) {
-        if (ls.size() == LESSONS_PER_SESSION)
+      for (var ent : lessonMap().entrySet()) {
+        var id = ent.getKey();
+        var lesson = ent.getValue();
+        if (config().hand() != Hand.UNKNOWN) {
+          if (lesson.hand() != config().hand()) {
+            log("hand", lesson.hand(), "!=", config().hand());
+            continue;
+          }
+        }
+        if (p != null) {
+          var m = p.matcher(lesson.description());
+          if (!m.find()) {
+            log("pattern", quote(config().pattern()), "doesn't match description",
+                quote(lesson.description()));
+            continue;
+          }
+        }
+        t.add(id);
+      }
+
+      //  t.addAll(lessonMap().keySet());
+      t.sort(LESSON_COMPARATOR);
+      List<String> orderedLessonIds = t;
+      int numLess = orderedLessonIds.size();
+      if (numLess == 0) {
+        halt("no lessons found matching criteria");
+      }
+      List<String> ls = arrayList();
+      mLessonSet = ls;
+
+      var maxLessonsPerSession = Math.min(numLess, MAX_LESSONS_PER_SESSION);
+
+      for (int i = 0; i < maxLessonsPerSession; i++) {
+        if (ls.size() == maxLessonsPerSession)
           break;
         // Choose a lesson that has a particular position in the accuracy distribution
 
         String id = null;
         {
-          double pos = ((i + .5) / LESSONS_PER_SESSION) * numLess;
+          double pos = ((i + .5) / maxLessonsPerSession) * numLess;
           int slot = (int) Math.round(pos);
           slot = MyMath.clamp(slot, 0, numLess - 1);
           id = orderedLessonIds.get(slot);

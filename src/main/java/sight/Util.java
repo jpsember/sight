@@ -34,7 +34,7 @@ public final class Util {
   public static final Chord CHORD_RESET_SCORE = chordWith(CASIO_KEY_LAST - 2);
   public static final Chord CHORD_REMOVE_LAST = chordWith(CASIO_KEY_LAST - 4);
 
-  public static final int LESSONS_PER_SESSION = SMALL ? 3 : 8;
+  public static final int MAX_LESSONS_PER_SESSION = SMALL ? 3 : 8;
   public static final int REPS_PER_LESSON = SMALL ? 2 : 3;
 
   /**
