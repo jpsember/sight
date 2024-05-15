@@ -81,7 +81,6 @@ public class Sight extends App {
     // Continue starting app within the Swing thread
     //
     SwingUtilities.invokeLater(() -> {
-      wtf = true;
       continueStartupWithinSwingThread();
     });
 

@@ -18,7 +18,7 @@ import sight.gen.SightConfig;
 
 public final class Util {
 
-  public static final boolean ISSUE_24 = true && alert("ISSUE_24 in effect");
+  public static final boolean ISSUE_24 = false && alert("ISSUE_24 in effect");
   
   public static final boolean SMALL = false && alert("small lessons for dev");
 
@@ -65,7 +65,6 @@ public final class Util {
   public static void sleepMs(long ms) {
     DateTimeTools.sleepForRealMs(ms);
   }
-public static boolean wtf;
 
   public static void close(AutoCloseable... closeables) {
     todo("?replace the Files method with this (autocloseable instead of closeable)");
