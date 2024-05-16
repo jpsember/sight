@@ -39,7 +39,7 @@ public class LessonManager extends BaseObject {
     var f = folderFile();
     mFolder = Files.parseAbstractDataOpt(LessonFolder.DEFAULT_INSTANCE, f).toBuilder();
     mFolderMod = false;
-    
+
     getSets();
   }
 
@@ -49,12 +49,20 @@ public class LessonManager extends BaseObject {
       mPassCursor = 0;
       mPassNumber++;
       if (mPassNumber == REPS_PER_LESSON) {
+        mAccuracyAtLessonEnd = calcLessonAccuracy();
         mLessonSet = null;
         mPassNumber = 0;
         return true;
       }
     }
     return false;
+  }
+
+  public float[] accuracyAtLessonStartAndEnd() {
+    float[] r = new float[2];
+    r[0] = mAccuracyAtLessonStart;
+    r[1] = mAccuracyAtLessonEnd;
+    return r;
   }
 
   public String choose() {
@@ -388,6 +396,7 @@ public class LessonManager extends BaseObject {
       mPassNumber = 0;
       mLastLessonId = "";
       mPassCursor = 0;
+      mAccuracyAtLessonStart = calcLessonAccuracy();
     }
 
     if (mPassCursor == 0) {
@@ -405,6 +414,15 @@ public class LessonManager extends BaseObject {
     }
   }
 
+  private float calcLessonAccuracy() {
+    float accSum = 0;
+    for (var id : mLessonSet) {
+      var stat = lessonStat(id);
+      accSum += stat.accuracy();
+    }
+    return accSum / mLessonSet.size();
+  }
+
   private boolean mFolderMod;
   private Random mLessonSelectionRand;
   private Map<String, RenderedNotes> mSets;
@@ -416,4 +434,6 @@ public class LessonManager extends BaseObject {
   private int mPassNumber;
   private int mPassCursor;
   private String mLastLessonId;
+  private float mAccuracyAtLessonStart;
+  private float mAccuracyAtLessonEnd;
 }

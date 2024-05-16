@@ -211,10 +211,16 @@ public class Sight extends App {
         lessonManager().recordResult(mDrillState.lessonId(), calcPercentRight(mDrillState));
         var doneSession = lessonManager().advance();
         if (doneSession) {
+          var acc = lessonManager().accuracyAtLessonStartAndEnd();
+
           var b = createWork();
           b.status(DrillStatus.DONE_SESSION);
           writeWork();
-          canvas().setMessage(new Color(0, 128, 0), "Done session!");
+          var endAcc = Math.round(acc[1] * 100);
+          var diff = Math.round((acc[1] - acc[0]) * 100);
+
+          canvas().setMessage(new Color(0, 128, 0), "Done session! Accuracy:", diff >= 0 ? "+"+diff : "-"+diff, 
+              "=", endAcc + "%");
           mDoneTime = System.currentTimeMillis();
         } else {
           prepareDrill();

@@ -198,8 +198,6 @@ public class Canvas extends JPanel {
     return mIcons.get(index);
   }
 
-  private List<BufferedImage> mIcons;
-
   private void drawAtlasImage(Graphics2D g, IRect atlasRect, int targetX) {
     var image = getImage(atlasRect);
     g.drawImage(image, targetX, atlasRect.y, null);
@@ -240,6 +238,8 @@ public class Canvas extends JPanel {
     mNextCoordinate += pixels;
     return result;
   }
+
+  private List<BufferedImage> mIcons;
 
   // Standard number of pixels to represent other quantities as a proportion of
   private int mStandardSize;
