@@ -183,9 +183,7 @@ public class ImgExtractor extends BaseObject {
     // If the leftmost rectangle is very thin, it's an extraneous vertical line that we can delete
     if (r.size() != 0) {
       var x = r.get(0);
-      pr("leftmost rect:", x);
       if (x.width <= 8) {
-        pr("omitting, assuming vert bar");
         r.remove(0);
       }
     }
