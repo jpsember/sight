@@ -74,8 +74,8 @@ public class Canvas extends JPanel {
       {
         var sr = rn.staffRect();
         var staffImg = getImage(sr);
-        // Start a bit past the left edge of the clef
-        final int xStart = mTwoStaves ? config().resolution() / 8 : 0;
+        // Start a bit past the left edge of the clef? no longer necessary
+        final int xStart = 0; //mTwoStaves ? config().resolution() *  : 0;
         g.drawImage(staffImg, xStart, sr.y, mContentWidth - xStart, sr.height, null);
 
         if (DRAW_BOXES)
