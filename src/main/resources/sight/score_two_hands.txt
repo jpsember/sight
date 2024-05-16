@@ -1,5 +1,7 @@
 \version "2.24.3"
 
+#(set-default-paper-size '(cons (* 100 mm) (* 70 mm)))
+
 % Render the following components in parallel
 %
 

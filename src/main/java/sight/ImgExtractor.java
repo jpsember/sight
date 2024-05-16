@@ -1,27 +1,22 @@
 package sight;
 
 import static js.base.Tools.*;
+import static sight.Util.*;
 
 import java.awt.Font;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.util.Arrays;
+import java.util.BitSet;
 import java.util.List;
 
 import js.base.BaseObject;
 import js.base.BasePrinter;
-import js.file.Files;
 import js.geometry.IPoint;
 import js.geometry.IRect;
 import js.graphics.ImgUtil;
 import js.graphics.Plotter;
 
 public class ImgExtractor extends BaseObject {
-
-  private static final float RES_FACTOR = 1 / 2.5f;
-  private static final int LINE_THICKNESS = (int) (12 * RES_FACTOR);
-  private static final int MERGE_DIST = (int) (18 * RES_FACTOR);
-  private static final int PAD_DIST = MERGE_DIST / 2;
 
   public void setSource(BufferedImage img) {
     checkState(mSource == null);
@@ -42,16 +37,13 @@ public class ImgExtractor extends BaseObject {
       mPixels = ImgUtil.bgrPixels(mSource);
       mWidth = image.getWidth();
       mHeight = image.getHeight();
-
-      mStaffLines = findStaffLines();
-      log("staff lines:", mStaffLines);
-
+      findStaffLines();
       mSubImages = extractSubImages();
     }
     return mSubImages;
   }
 
-  private List<Integer> findStaffLines() {
+  private void findStaffLines() {
     // Look for rightmost column that contains some (non-white) pixels
     int x = mWidth - 1;
     outer: while (x >= 0) {
@@ -64,22 +56,45 @@ public class ImgExtractor extends BaseObject {
     }
     checkState(x >= 0, "can't find any non-white pixels");
 
-    List<Integer> lineRows = arrayList();
-    int lastLineY = -1;
+    // Move x to the left by one pixel in case there is antialiasing
+    x--;
+    mStaffX1 = x;
+    mStaffRows = new BitSet(mHeight);
+
+    int last = -1;
+    int first = -1;
     for (int y = 0; y < mHeight; y++) {
-      if (!readPixel(x, y))
-        continue;
-      if (lastLineY < 0 || lastLineY < y - LINE_THICKNESS) {
-        lineRows.add(y);
-        lastLineY = y;
+      if (readPixel(x, y)) {
+        mStaffRows.set(y);
+        if (first < 0)
+          first = y;
+        last = y;
       }
     }
+    checkState(last >= 0, "trouble finding staff lines");
 
-    mStaffLineEndX = x;
-    return lineRows;
+    mStaffY0 = first;
+    mStaffY1 = last;
+
+    // Look for the column where the staff rows begin (and are not part of a vertical line)
+    mStaffX0 = -1;
+    for (int c = 0; c < mStaffX1; c++) {
+      boolean found = true;
+      for (int y = mStaffY0; y <= mStaffY1; y++) {
+        boolean exp = mStaffRows.get(y);
+        if (readPixel(c, y) != exp) {
+          found = false;
+          break;
+        }
+      }
+      if (found) {
+        mStaffX0 = c;
+        break;
+      }
+    }
+    checkState(mStaffX0 >= 0);
+
   }
-
-  int count;
 
   private boolean readPixel(int x, int y) {
     if (x < 0 || x >= mWidth)
@@ -96,62 +111,27 @@ public class ImgExtractor extends BaseObject {
     return true;
   }
 
-  private void deleteRow(byte[] pix, int y) {
-    int bytesPerRow = mWidth * 3;
-    int r0 = y * bytesPerRow;
-    Arrays.fill(pix, r0, r0 + bytesPerRow, (byte) 255);
-  }
-
   private List<IRect> extractSubImages() {
 
+    int MERGE_DIST = (int) (config().resolution() * .04375);
+    int PAD_DIST = MERGE_DIST / 2;
+
     List<ActiveRect> active = arrayList();
-    int staffCursor = 0;
-
     log("extractSubImages");
-
-    if (alert("rendering image with staff lines omitted")) {
-      byte[] mpix = Arrays.copyOf(mPixels, mPixels.length);
-
-      for (int y = 0; y < mHeight; y++) {
-        // If y is too close to a staff line, skip
-        if (staffCursor < mStaffLines.size()) {
-          int sl = mStaffLines.get(staffCursor);
-          if (Math.abs(sl - y) * 2 <= LINE_THICKNESS) {
-            deleteRow(mpix, y);
-            continue;
-          }
-          if (sl < y) {
-            staffCursor++;
-          }
-        }
-      }
-      var i2 = ImgUtil.bytesToBGRImage(mpix, new IPoint(mWidth, mHeight));
-      ImgUtil.writeImage(Files.S, i2, new File("_SKIP_stripped.png"));
-    }
 
     for (int y = 0; y < mHeight; y++) {
 
       log("y:", y);
-      // If y is too close to a staff line, skip
-      if (staffCursor < mStaffLines.size()) {
-        int sl = mStaffLines.get(staffCursor);
-        log("sc:", staffCursor, "y:", sl);
-        if (Math.abs(sl - y) * 2 <= LINE_THICKNESS) {
-          log("...too close to staff");
-          continue;
-        }
-        if (sl < y) {
-          staffCursor++;
-          log("past this staff line, incr cursor");
-        }
-      }
+      // If y is on a staff line, skip
+      if (mStaffRows.get(y))
+        continue;
 
-      xloop: for (int x = 0; x < mWidth; x++) {
+      xloop: for (int x = mStaffX0; x <= mStaffX1; x++) {
         if (!readPixel(x, y))
           continue;
         // Add pixel to an active rect, if possible
         for (var ar : active) {
-          if (ar.expandFor(x, y))
+          if (ar.expandFor(x, y, MERGE_DIST))
             continue xloop;
         }
 
@@ -213,10 +193,7 @@ public class ImgExtractor extends BaseObject {
     // Insert at position 0 a rectangle representing a thin slice of the staff lines
     {
       var width = 8;
-      int y0 = mStaffLines.get(0) - LINE_THICKNESS - 2;
-      int yLast = last(mStaffLines) + LINE_THICKNESS + 2;
-
-      var sr = new IRect(mStaffLineEndX - 1 - width, y0, width, yLast - y0);
+      var sr = new IRect(mStaffX1 - width, mStaffY0, width, mStaffY1 + 1 - mStaffY0);
       r.add(0, sr);
     }
 
@@ -254,7 +231,7 @@ public class ImgExtractor extends BaseObject {
       y1 = y;
     }
 
-    boolean expandFor(int x, int y) {
+    boolean expandFor(int x, int y, int MERGE_DIST) {
       if (x < x0 - MERGE_DIST || x > x1 + MERGE_DIST)
         return false;
       x0 = Math.min(x0, x);
@@ -308,8 +285,12 @@ public class ImgExtractor extends BaseObject {
   private BufferedImage mSource;
   private int mWidth, mHeight;
   private byte[] mPixels;
-  private List<Integer> mStaffLines;
-  private int mStaffLineEndX;
+
+  private BitSet mStaffRows;
+  private int mStaffX1;
+  private int mStaffX0;
+  private int mStaffY0, mStaffY1;
+
   private List<IRect> mSubImages;
 
 }
