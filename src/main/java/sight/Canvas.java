@@ -75,7 +75,7 @@ public class Canvas extends JPanel {
         var sr = rn.staffRect();
         var staffImg = getImage(sr);
         // Start a bit past the left edge of the clef
-        final int xStart = mTwoStaves ? 25 : 0;
+        final int xStart = mTwoStaves ? config().resolution() / 8 : 0;
         g.drawImage(staffImg, xStart, sr.y, mContentWidth - xStart, sr.height, null);
 
         if (DRAW_BOXES)
@@ -189,7 +189,7 @@ public class Canvas extends JPanel {
         var res = Util.openResource(k, nm);
         h = Files.toByteArray(res, "icon");
         var img = ImgUtil.read(h);
-        double targetHeight = 64;
+        double targetHeight = config().resolution() / 4;
         double f = targetHeight / img.getHeight();
         var scaled = ImgEffects.scale(img, f);
         mIcons.add(scaled);

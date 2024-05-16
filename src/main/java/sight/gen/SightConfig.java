@@ -17,10 +17,6 @@ public class SightConfig implements AbstractData {
     return mViewRecentEdits;
   }
 
-  public double noteScale() {
-    return mNoteScale;
-  }
-
   public boolean createChords() {
     return mCreateChords;
   }
@@ -45,6 +41,10 @@ public class SightConfig implements AbstractData {
     return mPattern;
   }
 
+  public int resolution() {
+    return mResolution;
+  }
+
   @Override
   public Builder toBuilder() {
     return new Builder(this);
@@ -53,13 +53,13 @@ public class SightConfig implements AbstractData {
   protected static final String _0 = "done_pause_time_ms";
   protected static final String _1 = "quiescent_chord_ms";
   protected static final String _2 = "view_recent_edits";
-  protected static final String _3 = "note_scale";
-  protected static final String _4 = "create_chords";
-  protected static final String _5 = "hand";
-  protected static final String _6 = "key";
-  protected static final String _7 = "inspect_boxes";
-  protected static final String _8 = "seed";
-  protected static final String _9 = "pattern";
+  protected static final String _3 = "create_chords";
+  protected static final String _4 = "hand";
+  protected static final String _5 = "key";
+  protected static final String _6 = "inspect_boxes";
+  protected static final String _7 = "seed";
+  protected static final String _8 = "pattern";
+  protected static final String _9 = "resolution";
 
   @Override
   public String toString() {
@@ -72,13 +72,13 @@ public class SightConfig implements AbstractData {
     m.putUnsafe(_0, mDonePauseTimeMs);
     m.putUnsafe(_1, mQuiescentChordMs);
     m.putUnsafe(_2, mViewRecentEdits);
-    m.putUnsafe(_3, mNoteScale);
-    m.putUnsafe(_4, mCreateChords);
-    m.putUnsafe(_5, mHand.toString().toLowerCase());
-    m.putUnsafe(_6, mKey.toString().toLowerCase());
-    m.putUnsafe(_7, mInspectBoxes);
-    m.putUnsafe(_8, mSeed);
-    m.putUnsafe(_9, mPattern);
+    m.putUnsafe(_3, mCreateChords);
+    m.putUnsafe(_4, mHand.toString().toLowerCase());
+    m.putUnsafe(_5, mKey.toString().toLowerCase());
+    m.putUnsafe(_6, mInspectBoxes);
+    m.putUnsafe(_7, mSeed);
+    m.putUnsafe(_8, mPattern);
+    m.putUnsafe(_9, mResolution);
     return m;
   }
 
@@ -96,19 +96,19 @@ public class SightConfig implements AbstractData {
     mDonePauseTimeMs = m.opt(_0, 1200);
     mQuiescentChordMs = m.opt(_1, 250);
     mViewRecentEdits = m.opt(_2, false);
-    mNoteScale = m.opt(_3, 1.0);
-    mCreateChords = m.opt(_4, false);
+    mCreateChords = m.opt(_3, false);
     {
-      String x = m.opt(_5, "");
+      String x = m.opt(_4, "");
       mHand = x.isEmpty() ? Hand.DEFAULT_INSTANCE : Hand.valueOf(x.toUpperCase());
     }
     {
-      String x = m.opt(_6, "");
+      String x = m.opt(_5, "");
       mKey = x.isEmpty() ? KeySig.DEFAULT_INSTANCE : KeySig.valueOf(x.toUpperCase());
     }
-    mInspectBoxes = m.opt(_7, false);
-    mSeed = m.opt(_8, 0);
-    mPattern = m.opt(_9, "");
+    mInspectBoxes = m.opt(_6, false);
+    mSeed = m.opt(_7, 0);
+    mPattern = m.opt(_8, "");
+    mResolution = m.opt(_9, 160);
   }
 
   public static Builder newBuilder() {
@@ -130,8 +130,6 @@ public class SightConfig implements AbstractData {
       return false;
     if (!(mViewRecentEdits == other.mViewRecentEdits))
       return false;
-    if (!(mNoteScale == other.mNoteScale))
-      return false;
     if (!(mCreateChords == other.mCreateChords))
       return false;
     if (!(mHand.equals(other.mHand)))
@@ -144,6 +142,8 @@ public class SightConfig implements AbstractData {
       return false;
     if (!(mPattern.equals(other.mPattern)))
       return false;
+    if (!(mResolution == other.mResolution))
+      return false;
     return true;
   }
 
@@ -155,13 +155,13 @@ public class SightConfig implements AbstractData {
       r = r * 37 + mDonePauseTimeMs;
       r = r * 37 + mQuiescentChordMs;
       r = r * 37 + (mViewRecentEdits ? 1 : 0);
-      r = r * 37 + (int) mNoteScale;
       r = r * 37 + (mCreateChords ? 1 : 0);
       r = r * 37 + mHand.ordinal();
       r = r * 37 + mKey.ordinal();
       r = r * 37 + (mInspectBoxes ? 1 : 0);
       r = r * 37 + mSeed;
       r = r * 37 + mPattern.hashCode();
+      r = r * 37 + mResolution;
       m__hashcode = r;
     }
     return r;
@@ -170,13 +170,13 @@ public class SightConfig implements AbstractData {
   protected int mDonePauseTimeMs;
   protected int mQuiescentChordMs;
   protected boolean mViewRecentEdits;
-  protected double mNoteScale;
   protected boolean mCreateChords;
   protected Hand mHand;
   protected KeySig mKey;
   protected boolean mInspectBoxes;
   protected int mSeed;
   protected String mPattern;
+  protected int mResolution;
   protected int m__hashcode;
 
   public static final class Builder extends SightConfig {
@@ -185,13 +185,13 @@ public class SightConfig implements AbstractData {
       mDonePauseTimeMs = m.mDonePauseTimeMs;
       mQuiescentChordMs = m.mQuiescentChordMs;
       mViewRecentEdits = m.mViewRecentEdits;
-      mNoteScale = m.mNoteScale;
       mCreateChords = m.mCreateChords;
       mHand = m.mHand;
       mKey = m.mKey;
       mInspectBoxes = m.mInspectBoxes;
       mSeed = m.mSeed;
       mPattern = m.mPattern;
+      mResolution = m.mResolution;
     }
 
     @Override
@@ -211,13 +211,13 @@ public class SightConfig implements AbstractData {
       r.mDonePauseTimeMs = mDonePauseTimeMs;
       r.mQuiescentChordMs = mQuiescentChordMs;
       r.mViewRecentEdits = mViewRecentEdits;
-      r.mNoteScale = mNoteScale;
       r.mCreateChords = mCreateChords;
       r.mHand = mHand;
       r.mKey = mKey;
       r.mInspectBoxes = mInspectBoxes;
       r.mSeed = mSeed;
       r.mPattern = mPattern;
+      r.mResolution = mResolution;
       return r;
     }
 
@@ -233,11 +233,6 @@ public class SightConfig implements AbstractData {
 
     public Builder viewRecentEdits(boolean x) {
       mViewRecentEdits = x;
-      return this;
-    }
-
-    public Builder noteScale(double x) {
-      mNoteScale = x;
       return this;
     }
 
@@ -271,6 +266,11 @@ public class SightConfig implements AbstractData {
       return this;
     }
 
+    public Builder resolution(int x) {
+      mResolution = x;
+      return this;
+    }
+
   }
 
   public static final SightConfig DEFAULT_INSTANCE = new SightConfig();
@@ -278,10 +278,10 @@ public class SightConfig implements AbstractData {
   private SightConfig() {
     mDonePauseTimeMs = 1200;
     mQuiescentChordMs = 250;
-    mNoteScale = 1.0;
     mHand = Hand.DEFAULT_INSTANCE;
     mKey = KeySig.DEFAULT_INSTANCE;
     mPattern = "";
+    mResolution = 160;
   }
 
 }

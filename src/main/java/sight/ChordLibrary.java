@@ -172,7 +172,7 @@ public class ChordLibrary extends BaseObject {
       files().deletePeacefully(tempOutputFile);
 
       s.directory(mWorkDirectory);
-      s.arg("/opt/local/bin/lilypond", "--format=png", "-dresolution=" + rs.resolution());
+      s.arg("/opt/local/bin/lilypond", "--format=png", "-dresolution=" + config().resolution());
       s.arg("input.ly");
       s.call();
 
@@ -214,9 +214,14 @@ public class ChordLibrary extends BaseObject {
           numBoxes++;
           var b = boxes.get(ImgExtractor.RECT_CLEF);
           boxes.add(ImgExtractor.RECT_KEYSIG, new IRect(b.x + 3, b.y, 1, 1));
-        } else
+        } else {
+
+          var bx = ext.plotRects();
+          var d = new File("_SKIP_box_problem.png");
+          ImgUtil.writeImage(files(), bx, d);
           badState("number of chords:", numChords, "number of boxes:", numBoxes, "expected:",
-              numChords + hdrRects);
+              numChords + hdrRects, "wrote inspection:", d);
+        }
       }
 
       nb.staffRect(boxes.get(ImgExtractor.RECT_STAFF_LINES));

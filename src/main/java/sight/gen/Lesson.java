@@ -25,10 +25,6 @@ public class Lesson implements AbstractData {
     return mNotes;
   }
 
-  public int resolution() {
-    return mResolution;
-  }
-
   @Override
   public Builder toBuilder() {
     return new Builder(this);
@@ -39,7 +35,6 @@ public class Lesson implements AbstractData {
   protected static final String _2 = "hand";
   protected static final String _3 = "key_sig";
   protected static final String _4 = "notes";
-  protected static final String _5 = "resolution";
 
   @Override
   public String toString() {
@@ -54,7 +49,6 @@ public class Lesson implements AbstractData {
     m.putUnsafe(_2, mHand.toString().toLowerCase());
     m.putUnsafe(_3, mKeySig.toString().toLowerCase());
     m.putUnsafe(_4, mNotes);
-    m.putUnsafe(_5, mResolution);
     return m;
   }
 
@@ -80,7 +74,6 @@ public class Lesson implements AbstractData {
       mKeySig = x.isEmpty() ? KeySig.DEFAULT_INSTANCE : KeySig.valueOf(x.toUpperCase());
     }
     mNotes = m.opt(_4, "");
-    mResolution = m.opt(_5, 300);
   }
 
   public static Builder newBuilder() {
@@ -106,8 +99,6 @@ public class Lesson implements AbstractData {
       return false;
     if (!(mNotes.equals(other.mNotes)))
       return false;
-    if (!(mResolution == other.mResolution))
-      return false;
     return true;
   }
 
@@ -121,7 +112,6 @@ public class Lesson implements AbstractData {
       r = r * 37 + mHand.ordinal();
       r = r * 37 + mKeySig.ordinal();
       r = r * 37 + mNotes.hashCode();
-      r = r * 37 + mResolution;
       m__hashcode = r;
     }
     return r;
@@ -132,7 +122,6 @@ public class Lesson implements AbstractData {
   protected Hand mHand;
   protected KeySig mKeySig;
   protected String mNotes;
-  protected int mResolution;
   protected int m__hashcode;
 
   public static final class Builder extends Lesson {
@@ -143,7 +132,6 @@ public class Lesson implements AbstractData {
       mHand = m.mHand;
       mKeySig = m.mKeySig;
       mNotes = m.mNotes;
-      mResolution = m.mResolution;
     }
 
     @Override
@@ -165,7 +153,6 @@ public class Lesson implements AbstractData {
       r.mHand = mHand;
       r.mKeySig = mKeySig;
       r.mNotes = mNotes;
-      r.mResolution = mResolution;
       return r;
     }
 
@@ -194,11 +181,6 @@ public class Lesson implements AbstractData {
       return this;
     }
 
-    public Builder resolution(int x) {
-      mResolution = x;
-      return this;
-    }
-
   }
 
   public static final Lesson DEFAULT_INSTANCE = new Lesson();
@@ -209,7 +191,6 @@ public class Lesson implements AbstractData {
     mHand = Hand.DEFAULT_INSTANCE;
     mKeySig = KeySig.DEFAULT_INSTANCE;
     mNotes = "";
-    mResolution = 300;
   }
 
 }

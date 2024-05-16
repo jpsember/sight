@@ -150,7 +150,9 @@ public class LessonManager extends BaseObject {
 
       log(VERT_SP, "generating lessons from chord set:", x.id(), x.notes());
 
-      List<Lesson> inspectionList = arrayList();
+      List<Lesson> inspectionList = null;
+      if (false)
+        inspectionList = arrayList();
       var y = generateLessonsFromChordSet(x, inspectionList);
 
       if (inspectionList != null) {

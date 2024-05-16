@@ -2,7 +2,6 @@ fields {
   int done_pause_time_ms = 1200;
   int quiescent_chord_ms = 250;
   bool view_recent_edits;
-  double note_scale = 1.0;
   bool create_chords;
   enum Hand hand;
   enum KeySig key;
@@ -13,4 +12,6 @@ fields {
   // match this regex
 
   string pattern;
+
+  int resolution = 160;
 }

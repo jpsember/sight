@@ -5,10 +5,12 @@ import static js.base.Tools.*;
 import java.awt.Font;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.Arrays;
 import java.util.List;
 
 import js.base.BaseObject;
 import js.base.BasePrinter;
+import js.file.Files;
 import js.geometry.IPoint;
 import js.geometry.IRect;
 import js.graphics.ImgUtil;
@@ -16,8 +18,9 @@ import js.graphics.Plotter;
 
 public class ImgExtractor extends BaseObject {
 
-  private static final int LINE_THICKNESS = 6;
-  private static final int MERGE_DIST = 18;
+  private static final float RES_FACTOR = 1 / 2.5f;
+  private static final int LINE_THICKNESS = (int) (12 * RES_FACTOR);
+  private static final int MERGE_DIST = (int) (18 * RES_FACTOR);
   private static final int PAD_DIST = MERGE_DIST / 2;
 
   public void setSource(BufferedImage img) {
@@ -93,12 +96,38 @@ public class ImgExtractor extends BaseObject {
     return true;
   }
 
+  private void deleteRow(byte[] pix, int y) {
+    int bytesPerRow = mWidth * 3;
+    int r0 = y * bytesPerRow;
+    Arrays.fill(pix, r0, r0 + bytesPerRow, (byte) 255);
+  }
+
   private List<IRect> extractSubImages() {
 
     List<ActiveRect> active = arrayList();
     int staffCursor = 0;
 
     log("extractSubImages");
+
+    if (alert("rendering image with staff lines omitted")) {
+      byte[] mpix = Arrays.copyOf(mPixels, mPixels.length);
+
+      for (int y = 0; y < mHeight; y++) {
+        // If y is too close to a staff line, skip
+        if (staffCursor < mStaffLines.size()) {
+          int sl = mStaffLines.get(staffCursor);
+          if (Math.abs(sl - y) * 2 <= LINE_THICKNESS) {
+            deleteRow(mpix, y);
+            continue;
+          }
+          if (sl < y) {
+            staffCursor++;
+          }
+        }
+      }
+      var i2 = ImgUtil.bytesToBGRImage(mpix, new IPoint(mWidth, mHeight));
+      ImgUtil.writeImage(Files.S, i2, new File("_SKIP_stripped.png"));
+    }
 
     for (int y = 0; y < mHeight; y++) {
 
@@ -170,6 +199,16 @@ public class ImgExtractor extends BaseObject {
       r.add(rect);
     }
     r.sort((a, b) -> Integer.compare(a.x, b.x));
+
+    // If the leftmost rectangle is very thin, it's an extraneous vertical line that we can delete
+    if (r.size() != 0) {
+      var x = r.get(0);
+      pr("leftmost rect:", x);
+      if (x.width <= 8) {
+        pr("omitting, assuming vert bar");
+        r.remove(0);
+      }
+    }
 
     // Insert at position 0 a rectangle representing a thin slice of the staff lines
     {
