@@ -10,6 +10,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.util.List;
 
 import javax.swing.JPanel;
@@ -24,6 +25,8 @@ import sight.gen.DrillState;
 import sight.gen.RenderedNotes;
 
 public class Canvas extends JPanel {
+
+  private static final boolean DRAW_BOXES = true && alert("drawing boxes");
 
   public void paintComponent(Graphics graphics) {
 
@@ -47,18 +50,29 @@ public class Canvas extends JPanel {
 
     calcTransform(notes);
 
-    var orig = g.getTransform();
+    g.transform(mContentTransform.toAffineTransform());
+
+    // var orig = g.getTransform();
+
+    if (alert("sample message"))
+      setMessage(Color.red, "Hello!");
 
     if (!nullOrEmpty(mMessage)) {
-      g.transform(mMessageMatrix.toAffineTransform());
       g.setColor(mMessageColor);
       g.setFont(font(g));
-      g.drawString(mMessage, 10, 10 + mFontMetrics.getAscent());
-      g.setTransform(orig);
+      g.drawString(mMessage, 0, mMessageY + mFontMetrics.getAscent());
+    }
+
+    if (DRAW_BOXES) {
+      drawBox(g, Color.red, mClefX, mMessageY, mContentWidth, mMessageHeight);
+      drawBox(g, Color.green, mClefX, mPad1Y, mContentWidth, mPadHeight);
+      drawBox(g, Color.green, mClefX, mPad2Y, mContentWidth, mPadHeight);
     }
 
     {
-      g.transform(mAtlasToCanvas.toAffineTransform());
+      // Apply the additional transform for rendering images from the atlas
+
+      g.transform(mAtlasToContent.toAffineTransform());
       var rn = notes;
 
       // Stretch the staff image (a vertical strip) to fill the horizontal extent of the staff
@@ -68,7 +82,11 @@ public class Canvas extends JPanel {
         // Start a bit past the left edge of the clef
         final int WILD_ASS_GUESS = 25;
         g.drawImage(staffImg, WILD_ASS_GUESS, sr.y, mContentWidth - WILD_ASS_GUESS, sr.height, null);
+
+        if (DRAW_BOXES)
+          drawBox(g, Color.magenta, mClefX, sr.y, mContentWidth, sr.height);
       }
+
       // Draw the clef
       drawAtlasImage(g, rn.clefRect(), mClefX);
 
@@ -82,6 +100,7 @@ public class Canvas extends JPanel {
       for (int i = 0; i < numNotes; i++) {
         var ch = rn.renderedChords().get(i);
         var r = getImage(ch.rect());
+
         g.drawImage(r, cx - ch.rect().width / 2, ch.rect().y, null);
 
         // Render icon in prompt region, if appropriate
@@ -94,7 +113,6 @@ public class Canvas extends JPanel {
 
         cx += mChordWidth;
       }
-      g.setTransform(orig);
     }
 
   }
@@ -104,6 +122,7 @@ public class Canvas extends JPanel {
     var notes = lessonManager().renderedNotes(s.lessonId());
     var sourceImage = notes.imageFile();
     mAtlasImage = ImgUtil.read(sourceImage);
+    Files.S.copyFile(sourceImage, new File("_SKIP_atlas.png"));
   }
 
   public void clearMessage() {
@@ -120,46 +139,49 @@ public class Canvas extends JPanel {
    * the atlas image to the canvas image
    */
   private void calcTransform(RenderedNotes rn) {
-    if (rn.equals(mCachedRenderedNotesForTfm))
-      return;
-    mCachedRenderedNotesForTfm = rn;
 
-    // We'll set the height to the height of the staff image, multipled by a constant
-    var trueStaffHeight = rn.staffRect().height;
-    var staffHeight = 100;
+    var atlasStaffRect = rn.staffRect();
+    boolean twoStaves = atlasStaffRect.height > atlasStaffRect.width * 3;
+    mStandardSize = twoStaves ? atlasStaffRect.height / 3 : atlasStaffRect.height;
 
-    var extraAbove = round(staffHeight * 1.2);
-    var extraBelow = round(staffHeight * 1.2);
+    mMessageHeight = stdScale(0.4);
 
-    mPromptHeight = round(staffHeight * .4);
+    mPadHeight = stdScale(0.90);
+    var staffHeight = atlasStaffRect.height;
+    var promptHeight = stdScale(0.4);
 
-    var canvasHeight = extraAbove + trueStaffHeight + extraBelow + mPromptHeight;
+    startAllocPix();
+    mMessageY = allocPix(mMessageHeight);
+    mPad1Y = allocPix(mPadHeight);
+    mCanvasStaffY = allocPix(staffHeight);
+    mPad2Y = allocPix(mPadHeight);
+    mPromptY = allocPix(promptHeight);
+    mContentHeight = allocPix(0);
 
-    // Determine x offsets of the clef, keysig, and the (first) chord
+    startAllocPix();
+    mClefX = allocPix(rn.clefRect().width + stdScale(0.1));
+    mKeySigX = allocPix(rn.keysigRect().width + stdScale(0.5));
+    mChordWidth = stdScale(1.4);
+    mChordsX = allocPix(mChordWidth * mMaxNotes + stdScale(0.1));
+    mContentWidth = allocPix(0);
 
-    var xpad = staffHeight * .1;
+    var canvasSize = new IRect(getBounds()).size();
 
-    mClefX = round(xpad);
-    mKeySigX = round(mClefX + rn.clefRect().width + xpad);
-    mChordsX = round(mKeySigX + rn.keysigRect().width + staffHeight * .5);
+    mContentTransform = Matrix.getTranslate((canvasSize.x - mContentWidth) / 2,
+        (canvasSize.y - mContentHeight) / 2);
 
-    // The width given to each chord is a proportion of the staff height
-    mChordWidth = round(staffHeight * 1.4);
+    // Determine transformation from a location in the atlas to the canvas content region.
+    //
+    // We don't care about the x coordinates within the atlas, since we will be explicitly
+    // providing the x coordinate.
 
-    mContentWidth = round(mChordsX + mChordWidth * mMaxNotes + xpad);
+    // The y coordinate should be transformed from atlas space to canvas space, where
+    // the canvas space includes the message and first padding region above the staff.
 
-    var messageHeight = round(staffHeight * .1);
+    int xOffset = 0;
+    int yOffset = mCanvasStaffY - atlasStaffRect.y;
 
-    int padding = round(staffHeight * .5);
-
-    mMessageMatrix = Matrix.getTranslate(20, messageHeight * .75f);
-
-    mAtlasToCanvas = Matrix.getTranslate(padding, padding + extraAbove - rn.staffRect().y);
-    var scaleTfm = Matrix.getScale((float) config().noteScale());
-    mAtlasToCanvas = Matrix.preMultiply(mAtlasToCanvas, scaleTfm);
-    mAtlasToCanvas = Matrix.preMultiply(mAtlasToCanvas, Matrix.getTranslate(0, messageHeight));
-
-    mPromptY = canvasHeight - mPromptHeight;
+    mAtlasToContent = Matrix.getTranslate(xOffset, yOffset);
   }
 
   private BufferedImage icon(int index) {
@@ -185,40 +207,67 @@ public class Canvas extends JPanel {
   private List<BufferedImage> mIcons;
 
   private void drawAtlasImage(Graphics2D g, IRect atlasRect, int targetX) {
-    g.drawImage(getImage(atlasRect), targetX, atlasRect.y, null);
+    var image = getImage(atlasRect);
+    g.drawImage(image, targetX, atlasRect.y, null);
+    if (DRAW_BOXES)
+      drawBox(g, Color.blue, targetX, atlasRect.y, atlasRect.width, atlasRect.height);
+  }
+
+  private void drawBox(Graphics2D g, Color color, int x, int y, int w, int h) {
+    if (alert("rendering box")) {
+      g.setColor(color);
+      g.drawRect(x, y, w, h);
+    }
   }
 
   private BufferedImage getImage(IRect rect) {
     return ImgUtil.subimage(mAtlasImage, rect);
   }
 
-  private static int round(double v) {
-    return (int) Math.round(v);
-  }
-
   private Font font(Graphics2D g) {
     if (mFont == null) {
-      mFont = new Font(Font.SANS_SERIF, Font.BOLD, 35);
+      checkState(mMessageHeight != 0);
+      pr("building font with message height:",mMessageHeight);
+      mFont = new Font(Font.SANS_SERIF, Font.BOLD, mMessageHeight);
       mFontMetrics = g.getFontMetrics(mFont);
     }
     return mFont;
   }
 
+  private int stdScale(double amt) {
+    return (int) Math.round(amt * mStandardSize);
+  }
+
+  private void startAllocPix() {
+    mNextCoordinate = 0;
+  }
+
+  private int allocPix(int pixels) {
+    var result = mNextCoordinate;
+    mNextCoordinate += pixels;
+    return result;
+  }
+
+  // Standard number of pixels to represent other quantities as a proportion of
+  private int mStandardSize;
+  // The next y coordinate to return from call to allocHeight()
+  private int mNextCoordinate;
+  private int mMessageY, mCanvasStaffY, mPromptY, mContentHeight, mPad1Y, mPad2Y;
+
   private FontMetrics mFontMetrics;
   private Font mFont;
 
   private int mMaxNotes = 4;
-  private Matrix mAtlasToCanvas;
-  private Matrix mMessageMatrix;
+  private Matrix mAtlasToContent;
 
   private int mChordWidth;
   private int mClefX, mKeySigX, mChordsX, mContentWidth;
-  private int mPromptHeight;
+  private int mMessageHeight;
+  private int mPadHeight;
   private BufferedImage mAtlasImage;
-  private int mPromptY;
   private DrillState mDrillState;
-  private RenderedNotes mCachedRenderedNotesForTfm;
   private String mMessage;
   private Color mMessageColor;
+  private Matrix mContentTransform;
 
 }
