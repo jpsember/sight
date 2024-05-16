@@ -26,7 +26,7 @@ import sight.gen.RenderedNotes;
 
 public class Canvas extends JPanel {
 
-  private static final boolean DRAW_BOXES = true && alert("drawing boxes");
+  private static final boolean DRAW_BOXES = false && alert("drawing boxes");
 
   public void paintComponent(Graphics graphics) {
 
@@ -52,11 +52,6 @@ public class Canvas extends JPanel {
 
     g.transform(mContentTransform.toAffineTransform());
 
-    // var orig = g.getTransform();
-
-    if (alert("sample message"))
-      setMessage(Color.red, "Hello!");
-
     if (!nullOrEmpty(mMessage)) {
       g.setColor(mMessageColor);
       g.setFont(font(g));
@@ -80,8 +75,8 @@ public class Canvas extends JPanel {
         var sr = rn.staffRect();
         var staffImg = getImage(sr);
         // Start a bit past the left edge of the clef
-        final int WILD_ASS_GUESS = 25;
-        g.drawImage(staffImg, WILD_ASS_GUESS, sr.y, mContentWidth - WILD_ASS_GUESS, sr.height, null);
+        final int xStart = mTwoStaves ? 25 : 0;
+        g.drawImage(staffImg, xStart, sr.y, mContentWidth - xStart, sr.height, null);
 
         if (DRAW_BOXES)
           drawBox(g, Color.magenta, mClefX, sr.y, mContentWidth, sr.height);
@@ -114,7 +109,6 @@ public class Canvas extends JPanel {
         cx += mChordWidth;
       }
     }
-
   }
 
   public void setDrillState(DrillState s) {
@@ -139,10 +133,10 @@ public class Canvas extends JPanel {
    * the atlas image to the canvas image
    */
   private void calcTransform(RenderedNotes rn) {
-
     var atlasStaffRect = rn.staffRect();
-    boolean twoStaves = atlasStaffRect.height > atlasStaffRect.width * 3;
-    mStandardSize = twoStaves ? atlasStaffRect.height / 3 : atlasStaffRect.height;
+
+    mTwoStaves = rn.clefRect().height > rn.clefRect().width * 3;
+    mStandardSize = mTwoStaves ? atlasStaffRect.height / 3 : atlasStaffRect.height;
 
     mMessageHeight = stdScale(0.4);
 
@@ -227,7 +221,6 @@ public class Canvas extends JPanel {
   private Font font(Graphics2D g) {
     if (mFont == null) {
       checkState(mMessageHeight != 0);
-      pr("building font with message height:",mMessageHeight);
       mFont = new Font(Font.SANS_SERIF, Font.BOLD, mMessageHeight);
       mFontMetrics = g.getFontMetrics(mFont);
     }
@@ -269,5 +262,5 @@ public class Canvas extends JPanel {
   private String mMessage;
   private Color mMessageColor;
   private Matrix mContentTransform;
-
+  private boolean mTwoStaves;
 }
