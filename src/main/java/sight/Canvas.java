@@ -116,9 +116,8 @@ public class Canvas extends JPanel {
   public void setDrillState(DrillState s) {
     mDrillState = s;
     var notes = lessonManager().renderedNotes(s.lessonId());
-    var sourceImage = notes.imageFile();
-    i24("reading atlas image:", sourceImage.getName());
-    mAtlasImage = ImgUtil.read(sourceImage);
+    i24("reading atlas image:", notes.imageFile());
+    mAtlasImage = imageCache().get(notes.imageFile());
   }
 
   public void clearMessage() {

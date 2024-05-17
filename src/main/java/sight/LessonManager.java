@@ -371,6 +371,14 @@ public class LessonManager extends BaseObject {
       mLastLessonId = "";
       mPassCursor = 0;
       mAccuracyAtLessonStart = calcLessonAccuracy();
+
+      // Preload lessons into image cache
+      imageCache().clear();
+      for (var id : mLessonSet) {
+        var lesson = lessonMap().get(id);
+        var rn = chordLibrary().get(lesson);
+        imageCache().get(rn.imageFile());
+      }
     }
 
     if (mPassCursor == 0) {

@@ -149,9 +149,7 @@ public class Sight extends App {
         mPrevChord = ch;
 
         if (!ch.equals(Chord.DEFAULT_INSTANCE)) {
-          if (ch.equals(DEATH_CHORD)) {
-            halt("DEATH CHORD pressed, quitting");
-          }
+          quitIfDeathChord(ch);
 
           if (ch.equals(CHORD_BACKUP)) {
             if (mDrillState.cursor() != 0) {
@@ -396,9 +394,7 @@ public class Sight extends App {
         mPrevChord = ch;
         if (ch.equals(Chord.DEFAULT_INSTANCE))
           continue;
-        if (ch.equals(DEATH_CHORD)) {
-          halt("DEATH CHORD pressed, quitting");
-        }
+        quitIfDeathChord(ch);
 
         if (ch.equals(CHORD_RESET_SCORE)) {
           score.clear();
@@ -478,9 +474,7 @@ public class Sight extends App {
         mPrevChord = ch;
         if (ch.equals(Chord.DEFAULT_INSTANCE))
           continue;
-        if (ch.equals(DEATH_CHORD)) {
-          halt("DEATH CHORD pressed, quitting");
-        }
+        quitIfDeathChord(ch);
         m.playCorrection(ch, 700);
       }
     }

@@ -1,6 +1,7 @@
 package sight;
 
 import static js.base.Tools.*;
+import static sight.Util.*;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -110,6 +111,12 @@ public final class Util {
 
   public static SightConfig config() {
     return sConfig;
+  }
+
+  private static ImageCache sImageCache = new ImageCache();
+
+  public static ImageCache imageCache() {
+    return sImageCache;
   }
 
   public static Chord chordWith(int... keyNumbers) {
@@ -270,4 +277,10 @@ public final class Util {
     }
   }
 
+  public static void quitIfDeathChord(Chord ch) {
+    if (DEATH_CHORD.equals(ch)) {
+      pr("...DEATH CHORD pressed, quitting");
+      System.exit(0);
+    }
+  }
 }
