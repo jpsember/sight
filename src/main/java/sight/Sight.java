@@ -20,8 +20,8 @@ import js.file.Files;
 import js.geometry.IRect;
 import js.system.SystemUtil;
 import sight.gen.Chord;
-import sight.gen.DrillState;
-import sight.gen.DrillStatus;
+import sight.gen.LessonState;
+import sight.gen.LessonStatus;
 import sight.gen.GuiState;
 import sight.gen.Hand;
 import sight.gen.SightConfig;
@@ -142,13 +142,7 @@ public class Sight extends App {
       }
     }
 
-    if (mReplaceX && currentTime >= mReplaceXTime) {
-      mReplaceX = false;
-      var b = createWork();
-      b.icons()[b.cursor()] = ICON_POINTER;
-      writeWork();
-      refreshView("changed icon back to pointer");
-    }
+    updatePlayerState(currentTime);
 
     // Look for changes in the current chord
     {
@@ -174,7 +168,7 @@ public class Sight extends App {
                 pop(lessonHistory);
 
                 var b = createWork();
-                b.status(DrillStatus.ACTIVE);
+                b.status(LessonStatus.ACTIVE);
 
                 var r = last(lessonHistory);
                 b.lessonId(r);
@@ -186,7 +180,7 @@ public class Sight extends App {
               }
             } else {
               var b = createWork();
-              b.status(DrillStatus.ACTIVE);
+              b.status(LessonStatus.ACTIVE);
               setCursor(0);
               writeWork();
               return;
@@ -224,7 +218,7 @@ public class Sight extends App {
           var acc = lessonManager().accuracyAtLessonStartAndEnd();
 
           var b = createWork();
-          b.status(DrillStatus.DONE_SESSION);
+          b.status(LessonStatus.DONE_SESSION);
           writeWork();
           var endAcc = Math.round(acc[1] * 100);
           var diff = Math.round((acc[1] - acc[0]) * 100);
@@ -253,7 +247,7 @@ public class Sight extends App {
 
   }
 
-  private static int calcPercentRight(DrillState s) {
+  private static int calcPercentRight(LessonState s) {
     checkArgument(s.cursor() != 0);
     int c = 0;
     for (int i = 0; i < s.cursor(); i++)
@@ -332,8 +326,8 @@ public class Sight extends App {
   // ------------------------------------------------------------------
 
   private void prepareDrill() {
-    var b = DrillState.newBuilder();
-    b.status(DrillStatus.ACTIVE);
+    var b = LessonState.newBuilder();
+    b.status(LessonStatus.ACTIVE);
     canvas().clearMessage();
 
     {
@@ -351,11 +345,27 @@ public class Sight extends App {
     canvas().setDrillState(mDrillState);
   }
 
+  private void updatePlayerState(long currentTime) {
+    var b = createWork();
+    switch (b.status()) {
+    default:
+      break;
+    case SHOWING_ERROR:
+      if (currentTime - b.timeMs() > 2000) {
+        b.icons()[b.cursor()] = ICON_POINTER;
+        b.status(LessonStatus.ACTIVE);
+        writeWork();
+        refreshView("changed icon back to pointer");
+      }
+      break;
+    }
+  }
+
   private void processPlayerChord(Chord ch) {
-    mReplaceX = false;
+    todo("use createWork");
     //alertVerbose();
     var s = mDrillState;
-    if (s.status() != DrillStatus.ACTIVE)
+    if (s.status() != LessonStatus.ACTIVE)
       return;
     var notes = lessonManager().renderedNotes(s.lessonId());
     var exp = notes.renderedChords().get(s.cursor());
@@ -370,7 +380,7 @@ public class Sight extends App {
     }
     boolean correct = expChord.equals(ch);
     if (!correct) {
-      i24("Expected:",expChord,"Played:",ch);
+      i24("Expected:", expChord, "Played:", ch);
       b.hadError(true);
       if (!config().silentCorrection())
         MidiManager.SHARED_INSTANCE.playCorrection(expChord, 600);
@@ -387,16 +397,16 @@ public class Sight extends App {
         b.icons()[b.cursor()] = ICON_POINTER;
       } else {
         if (!b.hadError())
-          b.status(DrillStatus.DONE);
+          b.status(LessonStatus.DONE);
         else {
-          b.status(DrillStatus.RETRY);
+          b.status(LessonStatus.RETRY);
           canvas().setMessage(Color.RED, "Try Again");
         }
         mDoneTime = System.currentTimeMillis();
       }
     } else {
-      mReplaceX = true;
-      mReplaceXTime = System.currentTimeMillis() + 1500;
+      b.status(LessonStatus.SHOWING_ERROR);
+      b.timeMs(System.currentTimeMillis());
     }
 
     mDrillState = b.build();
@@ -404,7 +414,7 @@ public class Sight extends App {
     refreshView("updated state after player chord");
   }
 
-  private DrillState mDrillState = DrillState.DEFAULT_INSTANCE;
+  private LessonState mDrillState = LessonState.DEFAULT_INSTANCE;
   private FrameWrapper mFrame;
   private Canvas mCanvas;
 
@@ -461,7 +471,7 @@ public class Sight extends App {
   /**
    * Construct a builder from a copy of the drill state
    */
-  private DrillState.Builder createWork() {
+  private LessonState.Builder createWork() {
     mTempDrillState = mDrillState.build().toBuilder();
     var ic = mTempDrillState.icons();
     mTempDrillState.icons(Arrays.copyOf(ic, ic.length));
@@ -472,6 +482,7 @@ public class Sight extends App {
    * Replace drill state with the work version, and trigger a repaint
    */
   private void writeWork() {
+    mTempDrillState.timeMs(System.currentTimeMillis());
     mDrillState = mTempDrillState.build();
     canvas().setDrillState(mDrillState);
     refreshView("replaced drill state");
@@ -487,7 +498,7 @@ public class Sight extends App {
     w.cursor(newCursorLocation);
   }
 
-  private DrillState.Builder mTempDrillState;
+  private LessonState.Builder mTempDrillState;
 
   private void playExp() {
     pr("experiment for sending midi to device");
@@ -511,6 +522,4 @@ public class Sight extends App {
     }
   }
 
-  private boolean mReplaceX;
-  private long mReplaceXTime;
 }

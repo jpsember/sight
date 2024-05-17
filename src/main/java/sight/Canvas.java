@@ -20,7 +20,7 @@ import js.geometry.IRect;
 import js.geometry.Matrix;
 import js.graphics.ImgEffects;
 import js.graphics.ImgUtil;
-import sight.gen.DrillState;
+import sight.gen.LessonState;
 import sight.gen.RenderedNotes;
 
 public class Canvas extends JPanel {
@@ -113,7 +113,7 @@ public class Canvas extends JPanel {
     i24("canvas.paintComponent done");
   }
 
-  public void setDrillState(DrillState s) {
+  public void setDrillState(LessonState s) {
     mDrillState = s;
     var notes = lessonManager().renderedNotes(s.lessonId());
     i24("reading atlas image:", notes.imageFile());
@@ -259,7 +259,7 @@ public class Canvas extends JPanel {
   private int mMessageHeight;
   private int mPadHeight;
   private BufferedImage mAtlasImage;
-  private DrillState mDrillState;
+  private LessonState mDrillState;
   private String mMessage;
   private Color mMessageColor;
   private Matrix mContentTransform;

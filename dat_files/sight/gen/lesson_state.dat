@@ -1,0 +1,9 @@
+fields {
+  enum LessonStatus status;
+  *int icons;
+  int cursor;
+  string lesson_id;
+  bool had_error;
+  // Timestamp the state last changed
+  long time_ms;
+}

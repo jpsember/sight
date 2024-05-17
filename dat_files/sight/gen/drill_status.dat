@@ -1,3 +1,0 @@
-enum {
-  none, active, done, retry, done_session,
-}

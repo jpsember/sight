@@ -5,9 +5,9 @@ import js.data.AbstractData;
 import js.data.DataUtil;
 import js.json.JSMap;
 
-public class DrillState implements AbstractData {
+public class LessonState implements AbstractData {
 
-  public DrillStatus status() {
+  public LessonStatus status() {
     return mStatus;
   }
 
@@ -27,6 +27,10 @@ public class DrillState implements AbstractData {
     return mHadError;
   }
 
+  public long timeMs() {
+    return mTimeMs;
+  }
+
   @Override
   public Builder toBuilder() {
     return new Builder(this);
@@ -37,6 +41,7 @@ public class DrillState implements AbstractData {
   protected static final String _2 = "cursor";
   protected static final String _3 = "lesson_id";
   protected static final String _4 = "had_error";
+  protected static final String _5 = "time_ms";
 
   @Override
   public String toString() {
@@ -51,23 +56,24 @@ public class DrillState implements AbstractData {
     m.putUnsafe(_2, mCursor);
     m.putUnsafe(_3, mLessonId);
     m.putUnsafe(_4, mHadError);
+    m.putUnsafe(_5, mTimeMs);
     return m;
   }
 
   @Override
-  public DrillState build() {
+  public LessonState build() {
     return this;
   }
 
   @Override
-  public DrillState parse(Object obj) {
-    return new DrillState((JSMap) obj);
+  public LessonState parse(Object obj) {
+    return new LessonState((JSMap) obj);
   }
 
-  private DrillState(JSMap m) {
+  private LessonState(JSMap m) {
     {
       String x = m.opt(_0, "");
-      mStatus = x.isEmpty() ? DrillStatus.DEFAULT_INSTANCE : DrillStatus.valueOf(x.toUpperCase());
+      mStatus = x.isEmpty() ? LessonStatus.DEFAULT_INSTANCE : LessonStatus.valueOf(x.toUpperCase());
     }
     {
       mIcons = DataUtil.EMPTY_INT_ARRAY;
@@ -79,6 +85,7 @@ public class DrillState implements AbstractData {
     mCursor = m.opt(_2, 0);
     mLessonId = m.opt(_3, "");
     mHadError = m.opt(_4, false);
+    mTimeMs = m.opt(_5, 0L);
   }
 
   public static Builder newBuilder() {
@@ -89,9 +96,9 @@ public class DrillState implements AbstractData {
   public boolean equals(Object object) {
     if (this == object)
       return true;
-    if (object == null || !(object instanceof DrillState))
+    if (object == null || !(object instanceof LessonState))
       return false;
-    DrillState other = (DrillState) object;
+    LessonState other = (LessonState) object;
     if (other.hashCode() != hashCode())
       return false;
     if (!(mStatus.equals(other.mStatus)))
@@ -103,6 +110,8 @@ public class DrillState implements AbstractData {
     if (!(mLessonId.equals(other.mLessonId)))
       return false;
     if (!(mHadError == other.mHadError))
+      return false;
+    if (!(mTimeMs == other.mTimeMs))
       return false;
     return true;
   }
@@ -117,26 +126,29 @@ public class DrillState implements AbstractData {
       r = r * 37 + mCursor;
       r = r * 37 + mLessonId.hashCode();
       r = r * 37 + (mHadError ? 1 : 0);
+      r = r * 37 + (int)mTimeMs;
       m__hashcode = r;
     }
     return r;
   }
 
-  protected DrillStatus mStatus;
+  protected LessonStatus mStatus;
   protected int[] mIcons;
   protected int mCursor;
   protected String mLessonId;
   protected boolean mHadError;
+  protected long mTimeMs;
   protected int m__hashcode;
 
-  public static final class Builder extends DrillState {
+  public static final class Builder extends LessonState {
 
-    private Builder(DrillState m) {
+    private Builder(LessonState m) {
       mStatus = m.mStatus;
       mIcons = m.mIcons;
       mCursor = m.mCursor;
       mLessonId = m.mLessonId;
       mHadError = m.mHadError;
+      mTimeMs = m.mTimeMs;
     }
 
     @Override
@@ -151,18 +163,19 @@ public class DrillState implements AbstractData {
     }
 
     @Override
-    public DrillState build() {
-      DrillState r = new DrillState();
+    public LessonState build() {
+      LessonState r = new LessonState();
       r.mStatus = mStatus;
       r.mIcons = mIcons;
       r.mCursor = mCursor;
       r.mLessonId = mLessonId;
       r.mHadError = mHadError;
+      r.mTimeMs = mTimeMs;
       return r;
     }
 
-    public Builder status(DrillStatus x) {
-      mStatus = (x == null) ? DrillStatus.DEFAULT_INSTANCE : x;
+    public Builder status(LessonStatus x) {
+      mStatus = (x == null) ? LessonStatus.DEFAULT_INSTANCE : x;
       return this;
     }
 
@@ -186,12 +199,17 @@ public class DrillState implements AbstractData {
       return this;
     }
 
+    public Builder timeMs(long x) {
+      mTimeMs = x;
+      return this;
+    }
+
   }
 
-  public static final DrillState DEFAULT_INSTANCE = new DrillState();
+  public static final LessonState DEFAULT_INSTANCE = new LessonState();
 
-  private DrillState() {
-    mStatus = DrillStatus.DEFAULT_INSTANCE;
+  private LessonState() {
+    mStatus = LessonStatus.DEFAULT_INSTANCE;
     mIcons = DataUtil.EMPTY_INT_ARRAY;
     mLessonId = "";
   }
