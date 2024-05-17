@@ -150,16 +150,7 @@ public class LessonManager extends BaseObject {
 
       log(VERT_SP, "generating lessons from chord set:", x.id(), x.notes());
 
-      List<Lesson> inspectionList = null;
-      if (false)
-        inspectionList = arrayList();
-      var y = generateLessonsFromChordSet(x, inspectionList);
-
-      if (inspectionList != null) {
-        for (var il : inspectionList) {
-          chordLibrary().generateInspection(il);
-        }
-      }
+      var y = generateLessonsFromChordSet(x);
 
       for (var z : y) {
         var key = z.id();
@@ -173,7 +164,7 @@ public class LessonManager extends BaseObject {
     return result;
   }
 
-  private List<Lesson> generateLessonsFromChordSet(Lesson source, List<Lesson> inspectionList) {
+  private List<Lesson> generateLessonsFromChordSet(Lesson source) {
 
     // We need a distinct random number generator for each set we're generating
     var rand = new Random(calcHashFor(source));
@@ -187,25 +178,6 @@ public class LessonManager extends BaseObject {
     int numPerms = 1;
     if (numNotes > 3) {
       numPerms = 5;
-    }
-
-    if (inspectionList != null) {
-      for (int i = 0; i < numNotes; i += NOTES_PER_LESSON) {
-
-        var b = source.toBuilder();
-        b.description(source.description() + "_" + i);
-        var sb = new StringBuilder();
-        for (var j = i; j < i + NOTES_PER_LESSON; j++) {
-          if (j >= numNotes)
-            continue;
-          var chordStr = noteStrs.get(j);
-          sb.append(chordStr);
-          sb.append(' ');
-        }
-        b.notes(sb.toString().trim());
-        b.id(DataUtil.hex32(calcHashFor(b)));
-        inspectionList.add(b.build());
-      }
     }
 
     for (int perm = 0; perm < numPerms; perm++) {

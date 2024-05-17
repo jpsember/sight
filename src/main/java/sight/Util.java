@@ -19,11 +19,11 @@ import sight.gen.SightConfig;
 public final class Util {
 
   public static final boolean ISSUE_24 = false && alert("ISSUE_24 in effect");
-  
+
   public static final boolean SMALL = false && alert("small lessons for dev");
 
   // We need to convert from MIDI pitches to the index of the key on an 88-key piano.
- public static final int PITCH_TO_PIANO_KEY_NUMBER_OFFSET = 39 - 60;
+  public static final int PITCH_TO_PIANO_KEY_NUMBER_OFFSET = 39 - 60;
 
   public static final int NOTES_PER_LESSON = 4;
   public static final int MAX_KEY_NUMBER = 88;
@@ -232,4 +232,25 @@ public final class Util {
     return ch;
   }
 
+  public static final String filenameSafe(String s) {
+    var legal = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    var sb = new StringBuilder();
+    var prevLegal = false;
+    for (int i = 0; i < s.length(); i++) {
+      char c = s.charAt(i);
+      if (legal.indexOf(c) < 0) {
+        if (prevLegal) {
+          sb.append('_');
+          prevLegal = false;
+        }
+      } else {
+        prevLegal = true;
+        sb.append(c);
+      }
+    }
+    var r = sb.toString();
+    if (r.isEmpty())
+      r = "_SAFE_";
+    return r;
+  }
 }
