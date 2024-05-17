@@ -348,26 +348,30 @@ public class Sight extends App {
       ch = expChord;
     }
     boolean correct = expChord.equals(ch);
-    if (!correct && !config().silentCorrection()) {
-      MidiManager.SHARED_INSTANCE.playCorrection(expChord, 600);
+    if (!correct) {
+      if (!config().silentCorrection())
+        MidiManager.SHARED_INSTANCE.playCorrection(expChord, 600);
     }
 
     int newIcon = correct ? ICON_RIGHT : ICON_WRONG;
     var b = s.toBuilder();
     b.icons()[s.cursor()] = newIcon;
-    b.cursor(s.cursor() + 1);
-    if (b.cursor() != notes.renderedChords().size()) {
-      b.icons()[b.cursor()] = ICON_POINTER;
-    } else {
-      var pct = calcPercentRight(b);
-      if (pct == 100) {
-        b.status(DrillStatus.DONE);
+    if (correct) {
+      b.cursor(s.cursor() + 1);
+      if (b.cursor() != notes.renderedChords().size()) {
+        b.icons()[b.cursor()] = ICON_POINTER;
       } else {
-        b.status(DrillStatus.RETRY);
-        canvas().setMessage(Color.RED, "Try Again");
+        var pct = calcPercentRight(b);
+        if (pct == 100) {
+          b.status(DrillStatus.DONE);
+        } else {
+          b.status(DrillStatus.RETRY);
+          canvas().setMessage(Color.RED, "Try Again");
+        }
+        mDoneTime = System.currentTimeMillis();
       }
-      mDoneTime = System.currentTimeMillis();
     }
+    
     mDrillState = b.build();
     notes = lessonManager().renderedNotes(mDrillState.lessonId());
     refreshView("updated state after player chord");

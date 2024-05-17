@@ -1,7 +1,6 @@
 package sight;
 
 import static js.base.Tools.*;
-import static sight.Util.*;
 
 import java.io.BufferedInputStream;
 import java.io.File;
