@@ -11,7 +11,6 @@ import java.util.Map;
 import js.base.DateTimeTools;
 import js.file.Files;
 import sight.gen.Chord;
-import sight.gen.DrillState;
 import sight.gen.Hand;
 import sight.gen.Lesson;
 import sight.gen.SightConfig;
@@ -214,15 +213,7 @@ public final class Util {
     return mLessonManager;
   }
 
-  public static int calcPercentRight(DrillState s) {
-    checkArgument(s.cursor() != 0);
-    int c = 0;
-    for (int i = 0; i < s.cursor(); i++)
-      if (s.icons()[i] == ICON_RIGHT)
-        c++;
-    return (c * 100) / s.cursor();
-  }
-
+ 
   private static LessonManager mLessonManager;
 
   public static Chord mergeChords(Chord chordA, Chord chordB) {

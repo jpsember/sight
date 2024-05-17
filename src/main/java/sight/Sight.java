@@ -142,6 +142,14 @@ public class Sight extends App {
       }
     }
 
+    if (mReplaceX && currentTime >= mReplaceXTime) {
+      mReplaceX = false;
+      var b = createWork();
+      b.icons()[b.cursor()] = ICON_POINTER;
+      writeWork();
+      refreshView("changed icon back to pointer");
+    }
+
     // Look for changes in the current chord
     {
       var ch = MidiManager.SHARED_INSTANCE.currentChord();
@@ -245,6 +253,15 @@ public class Sight extends App {
 
   }
 
+  private static int calcPercentRight(DrillState s) {
+    checkArgument(s.cursor() != 0);
+    int c = 0;
+    for (int i = 0; i < s.cursor(); i++)
+      if (s.icons()[i] == ICON_RIGHT)
+        c++;
+    return (c * 100) / s.cursor();
+  }
+
   private BgndTaskManager mTaskManager;
 
   private GuiState mGuiState;
@@ -335,6 +352,8 @@ public class Sight extends App {
   }
 
   private void processPlayerChord(Chord ch) {
+    mReplaceX = false;
+    alertVerbose();
     var s = mDrillState;
     if (s.status() != DrillStatus.ACTIVE)
       return;
@@ -344,34 +363,41 @@ public class Sight extends App {
     log("chord:", ch);
     log("expct:", expChord);
 
+    var b = s.toBuilder();
+
     if (ch.equals(NEXT_LESSON_CHORD)) {
       ch = expChord;
     }
     boolean correct = expChord.equals(ch);
     if (!correct) {
+      b.hadError(true);
       if (!config().silentCorrection())
         MidiManager.SHARED_INSTANCE.playCorrection(expChord, 600);
     }
 
     int newIcon = correct ? ICON_RIGHT : ICON_WRONG;
-    var b = s.toBuilder();
     b.icons()[s.cursor()] = newIcon;
+
+    // If there was a mistake, we're going to make user repeat this chord
+
     if (correct) {
       b.cursor(s.cursor() + 1);
       if (b.cursor() != notes.renderedChords().size()) {
         b.icons()[b.cursor()] = ICON_POINTER;
       } else {
-        var pct = calcPercentRight(b);
-        if (pct == 100) {
+        if (!b.hadError())
           b.status(DrillStatus.DONE);
-        } else {
+        else {
           b.status(DrillStatus.RETRY);
           canvas().setMessage(Color.RED, "Try Again");
         }
         mDoneTime = System.currentTimeMillis();
       }
+    } else {
+      mReplaceX = true;
+      mReplaceXTime = System.currentTimeMillis() + 1500;
     }
-    
+
     mDrillState = b.build();
     notes = lessonManager().renderedNotes(mDrillState.lessonId());
     refreshView("updated state after player chord");
@@ -484,4 +510,6 @@ public class Sight extends App {
     }
   }
 
+  private boolean mReplaceX;
+  private long mReplaceXTime;
 }

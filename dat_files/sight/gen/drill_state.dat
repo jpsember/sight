@@ -3,4 +3,5 @@ fields {
   *int icons;
   int cursor;
   string lesson_id;
+  bool had_error;
 }

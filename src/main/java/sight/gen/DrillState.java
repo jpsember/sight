@@ -23,6 +23,10 @@ public class DrillState implements AbstractData {
     return mLessonId;
   }
 
+  public boolean hadError() {
+    return mHadError;
+  }
+
   @Override
   public Builder toBuilder() {
     return new Builder(this);
@@ -32,6 +36,7 @@ public class DrillState implements AbstractData {
   protected static final String _1 = "icons";
   protected static final String _2 = "cursor";
   protected static final String _3 = "lesson_id";
+  protected static final String _4 = "had_error";
 
   @Override
   public String toString() {
@@ -45,6 +50,7 @@ public class DrillState implements AbstractData {
     m.putUnsafe(_1, DataUtil.encodeBase64Maybe(mIcons));
     m.putUnsafe(_2, mCursor);
     m.putUnsafe(_3, mLessonId);
+    m.putUnsafe(_4, mHadError);
     return m;
   }
 
@@ -72,6 +78,7 @@ public class DrillState implements AbstractData {
     }
     mCursor = m.opt(_2, 0);
     mLessonId = m.opt(_3, "");
+    mHadError = m.opt(_4, false);
   }
 
   public static Builder newBuilder() {
@@ -95,6 +102,8 @@ public class DrillState implements AbstractData {
       return false;
     if (!(mLessonId.equals(other.mLessonId)))
       return false;
+    if (!(mHadError == other.mHadError))
+      return false;
     return true;
   }
 
@@ -107,6 +116,7 @@ public class DrillState implements AbstractData {
       r = r * 37 + Arrays.hashCode(mIcons);
       r = r * 37 + mCursor;
       r = r * 37 + mLessonId.hashCode();
+      r = r * 37 + (mHadError ? 1 : 0);
       m__hashcode = r;
     }
     return r;
@@ -116,6 +126,7 @@ public class DrillState implements AbstractData {
   protected int[] mIcons;
   protected int mCursor;
   protected String mLessonId;
+  protected boolean mHadError;
   protected int m__hashcode;
 
   public static final class Builder extends DrillState {
@@ -125,6 +136,7 @@ public class DrillState implements AbstractData {
       mIcons = m.mIcons;
       mCursor = m.mCursor;
       mLessonId = m.mLessonId;
+      mHadError = m.mHadError;
     }
 
     @Override
@@ -145,6 +157,7 @@ public class DrillState implements AbstractData {
       r.mIcons = mIcons;
       r.mCursor = mCursor;
       r.mLessonId = mLessonId;
+      r.mHadError = mHadError;
       return r;
     }
 
@@ -165,6 +178,11 @@ public class DrillState implements AbstractData {
 
     public Builder lessonId(String x) {
       mLessonId = (x == null) ? "" : x;
+      return this;
+    }
+
+    public Builder hadError(boolean x) {
+      mHadError = x;
       return this;
     }
 
