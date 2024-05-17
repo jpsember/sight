@@ -77,7 +77,6 @@ public class MidiManager extends BaseObject {
     for (var devInfo : midiDevInfoList) {
       var name = devInfo.getName();
       var origName = name;
-      pr("name:", name);
       name = chompPrefix(name, "CoreMIDI4J - ");
       if (name == origName)
         continue;
@@ -135,24 +134,93 @@ public class MidiManager extends BaseObject {
 
   public void play(Chord c) {
 
-    final long MS_TO_MICROSEC = 1000;
-    final int vel = 64;
-
+    if (true) {
+    long delay = 3;
+    delay = playTogether(c, delay);
+    delay = playBroken(c,delay);
+    delay = playTogether(c,delay);
+    return;
+    }
+    
     try {
-      var r = mInstrumentReceiver;
       var ts = mOutputDevice.getMicrosecondPosition();
       checkState(ts > 0);
 
+      final int chordDuration = 1500;
+      final int brokenDuration = 350;
+
+      final int postChordPause = 500;
+      final int postBrokenPause = 100;
+
+      int allBrokenDuration = brokenDuration * c.keyNumbers().length + postChordPause;
+
+      int index = INIT_INDEX;
       for (int chordKey : c.keyNumbers()) {
-        var k = chordKey - PITCH_TO_PIANO_KEY_NUMBER_OFFSET;
-        var m1 = new ShortMessage(ShortMessage.NOTE_ON, 0, k, vel);
-        var m2 = new ShortMessage(ShortMessage.NOTE_OFF, 0, k, 0);
-        r.send(m1, ts + 3 * MS_TO_MICROSEC);
-        r.send(m2, ts + 1000 * MS_TO_MICROSEC);
+        index++;
+        int delay = 3;
+        sendKeyToDevice(chordKey, ts, delay, chordDuration - postChordPause);
+        delay += chordDuration;
+        sendKeyToDevice(chordKey, ts, delay + brokenDuration * index, brokenDuration - postBrokenPause);
+        sendKeyToDevice(chordKey, ts, delay + allBrokenDuration, chordDuration - postChordPause);
       }
     } catch (InvalidMidiDataException e) {
       throw asRuntimeException(e);
     }
+  }
+
+  public long playTogether(Chord c, long delayMs) {
+
+    try {
+      var ts = mOutputDevice.getMicrosecondPosition();
+      checkState(ts > 0);
+
+      final int chordDuration = 1500;
+
+      final int postChordPause = 200;
+
+      for (int chordKey : c.keyNumbers()) {
+        sendKeyToDevice(chordKey, ts, delayMs, chordDuration - postChordPause);
+      }
+      return delayMs + chordDuration;
+      
+    } catch (InvalidMidiDataException e) {
+      throw asRuntimeException(e);
+    }
+  }
+
+  public long playBroken(Chord c, long delayMs) {
+
+    try {
+      var ts = mOutputDevice.getMicrosecondPosition();
+      checkState(ts > 0);
+
+      final int brokenDuration = 350;
+
+      final int postBrokenPause = 200;
+
+      int index = INIT_INDEX;
+      for (int chordKey : c.keyNumbers()) {
+        index++;
+        long delay = delayMs + index * brokenDuration;
+        sendKeyToDevice(chordKey, ts, delay, brokenDuration - postBrokenPause);
+      }
+
+      return delayMs + brokenDuration * c.keyNumbers().length;
+    } catch (InvalidMidiDataException e) {
+      throw asRuntimeException(e);
+    }
+  }
+
+  private void sendKeyToDevice(int chordKey, long deviceTimestamp, long delayMs, int durationMs)
+      throws InvalidMidiDataException {
+    final long MS_TO_MICROSEC = 1000;
+    var r = mInstrumentReceiver;
+    var midiKey = chordKey - PITCH_TO_PIANO_KEY_NUMBER_OFFSET;
+    final int vel = 64;
+    var m1 = new ShortMessage(ShortMessage.NOTE_ON, 0, midiKey, vel);
+    var m2 = new ShortMessage(ShortMessage.NOTE_OFF, 0, midiKey, 0);
+    r.send(m1, deviceTimestamp + delayMs * MS_TO_MICROSEC);
+    r.send(m2, deviceTimestamp + (delayMs + durationMs) * MS_TO_MICROSEC);
   }
 
 }
