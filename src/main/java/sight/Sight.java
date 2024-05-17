@@ -370,6 +370,7 @@ public class Sight extends App {
     }
     boolean correct = expChord.equals(ch);
     if (!correct) {
+      i24("Expected:",expChord,"Played:",ch);
       b.hadError(true);
       if (!config().silentCorrection())
         MidiManager.SHARED_INSTANCE.playCorrection(expChord, 600);
