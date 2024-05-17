@@ -18,7 +18,7 @@ import sight.gen.SightConfig;
 
 public final class Util {
 
-  public static final boolean ISSUE_24 = true && alert("ISSUE_24 in effect");
+  public static final boolean ISSUE_24 = false && alert("ISSUE_24 in effect");
 
   public static final boolean SMALL = false && alert("small lessons for dev");
 
@@ -171,7 +171,6 @@ public final class Util {
   }
 
   public static int calcHashFor(Lesson rs) {
-    todo("?use a hash code with more resolution");
     int x = 0;
     x = hc(x, rs.keySig().toString());
     x = hc(x, rs.hand().toString());
