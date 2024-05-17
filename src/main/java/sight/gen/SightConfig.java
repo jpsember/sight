@@ -45,6 +45,10 @@ public class SightConfig implements AbstractData {
     return mResolution;
   }
 
+  public boolean silentCorrection() {
+    return mSilentCorrection;
+  }
+
   @Override
   public Builder toBuilder() {
     return new Builder(this);
@@ -60,6 +64,7 @@ public class SightConfig implements AbstractData {
   protected static final String _7 = "seed";
   protected static final String _8 = "pattern";
   protected static final String _9 = "resolution";
+  protected static final String _10 = "silent_correction";
 
   @Override
   public String toString() {
@@ -79,6 +84,7 @@ public class SightConfig implements AbstractData {
     m.putUnsafe(_7, mSeed);
     m.putUnsafe(_8, mPattern);
     m.putUnsafe(_9, mResolution);
+    m.putUnsafe(_10, mSilentCorrection);
     return m;
   }
 
@@ -109,6 +115,7 @@ public class SightConfig implements AbstractData {
     mSeed = m.opt(_7, 0);
     mPattern = m.opt(_8, "");
     mResolution = m.opt(_9, 160);
+    mSilentCorrection = m.opt(_10, false);
   }
 
   public static Builder newBuilder() {
@@ -144,6 +151,8 @@ public class SightConfig implements AbstractData {
       return false;
     if (!(mResolution == other.mResolution))
       return false;
+    if (!(mSilentCorrection == other.mSilentCorrection))
+      return false;
     return true;
   }
 
@@ -162,6 +171,7 @@ public class SightConfig implements AbstractData {
       r = r * 37 + mSeed;
       r = r * 37 + mPattern.hashCode();
       r = r * 37 + mResolution;
+      r = r * 37 + (mSilentCorrection ? 1 : 0);
       m__hashcode = r;
     }
     return r;
@@ -177,6 +187,7 @@ public class SightConfig implements AbstractData {
   protected int mSeed;
   protected String mPattern;
   protected int mResolution;
+  protected boolean mSilentCorrection;
   protected int m__hashcode;
 
   public static final class Builder extends SightConfig {
@@ -192,6 +203,7 @@ public class SightConfig implements AbstractData {
       mSeed = m.mSeed;
       mPattern = m.mPattern;
       mResolution = m.mResolution;
+      mSilentCorrection = m.mSilentCorrection;
     }
 
     @Override
@@ -218,6 +230,7 @@ public class SightConfig implements AbstractData {
       r.mSeed = mSeed;
       r.mPattern = mPattern;
       r.mResolution = mResolution;
+      r.mSilentCorrection = mSilentCorrection;
       return r;
     }
 
@@ -268,6 +281,11 @@ public class SightConfig implements AbstractData {
 
     public Builder resolution(int x) {
       mResolution = x;
+      return this;
+    }
+
+    public Builder silentCorrection(boolean x) {
+      mSilentCorrection = x;
       return this;
     }
 

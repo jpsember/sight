@@ -70,7 +70,7 @@ public class Sight extends App {
 
   private void auxPerform() {
 
-    if (alert("play exp")) {
+    if (false && alert("play exp")) {
       playExp();
       return;
     }
@@ -352,8 +352,12 @@ public class Sight extends App {
     if (ch.equals(NEXT_LESSON_CHORD)) {
       ch = expChord;
     }
+    boolean correct = expChord.equals(ch);
+    if (!correct && !config().silentCorrection()) {
+      MidiManager.SHARED_INSTANCE.playCorrection(expChord, 600);
+    }
 
-    int newIcon = (expChord.equals(ch)) ? ICON_RIGHT : ICON_WRONG;
+    int newIcon = correct ? ICON_RIGHT : ICON_WRONG;
     var b = s.toBuilder();
     b.icons()[s.cursor()] = newIcon;
     b.cursor(s.cursor() + 1);
@@ -467,16 +471,8 @@ public class Sight extends App {
     var m = MidiManager.SHARED_INSTANCE;
     m.start(config());
 
-    Chord pendingChord = null;
-    long playTime = 0;
-
     while (true) {
       sleepMs(50);
-      var tm = System.currentTimeMillis();
-      if (pendingChord != null && tm >= playTime) {
-        m.play(pendingChord);
-        pendingChord = null;
-      }
 
       // Look for changes in the current chord
 
@@ -488,9 +484,7 @@ public class Sight extends App {
         if (ch.equals(DEATH_CHORD)) {
           halt("DEATH CHORD pressed, quitting");
         }
-
-        pendingChord = ch;
-        playTime = tm + 300;
+        m.playCorrection(ch, 700);
       }
     }
   }

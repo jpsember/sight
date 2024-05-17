@@ -132,86 +132,62 @@ public class MidiManager extends BaseObject {
   private Transmitter mTransmitter;
   private Receiver mInstrumentReceiver;
 
-  public void play(Chord c) {
+  public long playCorrection(Chord c, long delayMs) {
+    long togetherDur = 1000;
+    long brokenDur = 220;
+    delayMs = playTogether(c, delayMs, togetherDur);
+    delayMs = playBroken(c, delayMs, brokenDur);
+    delayMs += togetherDur / 3;
+    delayMs = playTogether(c, delayMs, togetherDur);
+    return delayMs;
+  }
 
-    if (true) {
-    long delay = 3;
-    delay = playTogether(c, delay);
-    delay = playBroken(c,delay);
-    delay = playTogether(c,delay);
-    return;
-    }
-    
+  public long playTogether(Chord c, long delayMs, long chordDuration) {
     try {
       var ts = mOutputDevice.getMicrosecondPosition();
       checkState(ts > 0);
 
-      final int chordDuration = 1500;
-      final int brokenDuration = 350;
+      final long postChordPause = chordDuration / 8;
 
-      final int postChordPause = 500;
-      final int postBrokenPause = 100;
-
-      int allBrokenDuration = brokenDuration * c.keyNumbers().length + postChordPause;
-
-      int index = INIT_INDEX;
       for (int chordKey : c.keyNumbers()) {
-        index++;
-        int delay = 3;
-        sendKeyToDevice(chordKey, ts, delay, chordDuration - postChordPause);
-        delay += chordDuration;
-        sendKeyToDevice(chordKey, ts, delay + brokenDuration * index, brokenDuration - postBrokenPause);
-        sendKeyToDevice(chordKey, ts, delay + allBrokenDuration, chordDuration - postChordPause);
+        sendKeyToDevice(chordKey, ts, delayMs, chordDuration - postChordPause);
       }
+      return delayMs + chordDuration;
     } catch (InvalidMidiDataException e) {
       throw asRuntimeException(e);
     }
   }
 
   public long playTogether(Chord c, long delayMs) {
+    return playTogether(c, delayMs, 1500);
+  }
+
+  public long playBroken(Chord c, long delayMs, long durationMs) {
 
     try {
       var ts = mOutputDevice.getMicrosecondPosition();
       checkState(ts > 0);
 
-      final int chordDuration = 1500;
+      final long postBrokenPause = (long) ((durationMs * 3.5) / 2);
 
-      final int postChordPause = 200;
-
+      int index = INIT_INDEX;
       for (int chordKey : c.keyNumbers()) {
-        sendKeyToDevice(chordKey, ts, delayMs, chordDuration - postChordPause);
+        index++;
+        long delay = delayMs + index * durationMs;
+        sendKeyToDevice(chordKey, ts, delay, durationMs - postBrokenPause);
       }
-      return delayMs + chordDuration;
-      
+
+      return delayMs + durationMs * c.keyNumbers().length;
     } catch (InvalidMidiDataException e) {
       throw asRuntimeException(e);
     }
   }
 
   public long playBroken(Chord c, long delayMs) {
-
-    try {
-      var ts = mOutputDevice.getMicrosecondPosition();
-      checkState(ts > 0);
-
-      final int brokenDuration = 350;
-
-      final int postBrokenPause = 200;
-
-      int index = INIT_INDEX;
-      for (int chordKey : c.keyNumbers()) {
-        index++;
-        long delay = delayMs + index * brokenDuration;
-        sendKeyToDevice(chordKey, ts, delay, brokenDuration - postBrokenPause);
-      }
-
-      return delayMs + brokenDuration * c.keyNumbers().length;
-    } catch (InvalidMidiDataException e) {
-      throw asRuntimeException(e);
-    }
+    return playBroken(c, delayMs, 350);
   }
 
-  private void sendKeyToDevice(int chordKey, long deviceTimestamp, long delayMs, int durationMs)
+  private void sendKeyToDevice(int chordKey, long deviceTimestamp, long delayMs, long durationMs)
       throws InvalidMidiDataException {
     final long MS_TO_MICROSEC = 1000;
     var r = mInstrumentReceiver;

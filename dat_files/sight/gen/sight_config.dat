@@ -14,4 +14,6 @@ fields {
   string pattern;
 
   int resolution = 160;
+
+  bool silent_correction;
 }
