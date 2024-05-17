@@ -353,7 +353,7 @@ public class Sight extends App {
 
   private void processPlayerChord(Chord ch) {
     mReplaceX = false;
-    alertVerbose();
+    //alertVerbose();
     var s = mDrillState;
     if (s.status() != DrillStatus.ACTIVE)
       return;
