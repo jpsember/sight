@@ -69,6 +69,11 @@ public class Sight extends App {
   }
 
   private void auxPerform() {
+
+    if (alert("play exp")) {
+      playExp();
+      return;
+    }
     if (config().createChords()) {
       createChords();
       return;
@@ -219,8 +224,8 @@ public class Sight extends App {
           var endAcc = Math.round(acc[1] * 100);
           var diff = Math.round((acc[1] - acc[0]) * 100);
 
-          canvas().setMessage(new Color(0, 128, 0), "Done session! Accuracy:", diff >= 0 ? "+"+diff : "-"+diff, 
-              "=", endAcc + "%");
+          canvas().setMessage(new Color(0, 128, 0), "Done session! Accuracy:",
+              diff >= 0 ? "+" + diff : "-" + diff, "=", endAcc + "%");
           mDoneTime = System.currentTimeMillis();
         } else {
           prepareDrill();
@@ -455,5 +460,39 @@ public class Sight extends App {
   }
 
   private DrillState.Builder mTempDrillState;
+
+  private void playExp() {
+    pr("experiment for sending midi to device");
+    SystemUtil.prepareForConsoleOrGUI(true);
+    var m = MidiManager.SHARED_INSTANCE;
+    m.start(config());
+
+    Chord pendingChord = null;
+    long playTime = 0;
+
+    while (true) {
+      sleepMs(50);
+      var tm = System.currentTimeMillis();
+      if (pendingChord != null && tm >= playTime) {
+        m.play(pendingChord);
+        pendingChord = null;
+      }
+
+      // Look for changes in the current chord
+
+      var ch = m.currentChord();
+      if (ch != mPrevChord) {
+        mPrevChord = ch;
+        if (ch.equals(Chord.DEFAULT_INSTANCE))
+          continue;
+        if (ch.equals(DEATH_CHORD)) {
+          halt("DEATH CHORD pressed, quitting");
+        }
+
+        pendingChord = ch;
+        playTime = tm + 300;
+      }
+    }
+  }
 
 }
