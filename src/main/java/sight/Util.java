@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
+import js.base.BasePrinter;
 import js.base.DateTimeTools;
 import js.file.Files;
 import sight.gen.Chord;
@@ -18,7 +19,7 @@ import sight.gen.SightConfig;
 
 public final class Util {
 
-  public static final boolean ISSUE_24 = false && alert("ISSUE_24 in effect");
+  public static final boolean ISSUE_24 = true && alert("ISSUE_24 in effect");
 
   public static final boolean SMALL = false && alert("small lessons for dev");
 
@@ -253,4 +254,21 @@ public final class Util {
       r = "_SAFE_";
     return r;
   }
+
+  private static long prevTs;
+
+  public static void i24(Object... msg) {
+    if (!ISSUE_24)
+      return;
+    synchronized (Util.class) {
+      var ts = System.currentTimeMillis();
+      if (prevTs == 0)
+        prevTs = ts;
+      var elapsed = ts - prevTs;
+      prevTs = ts;
+      var texpr = String.format("t:%6d", elapsed);
+      pr(insertStringToFront("=== (" + texpr + ")", msg));
+    }
+  }
+
 }

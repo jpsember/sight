@@ -30,6 +30,8 @@ public class Canvas extends JPanel {
 
   public void paintComponent(Graphics graphics) {
 
+    i24("canvas.paintComponent");
+
     if (mDrillState == null) {
       pr("DrillState is null!", INDENT, ST);
       return;
@@ -109,14 +111,16 @@ public class Canvas extends JPanel {
         cx += mChordWidth;
       }
     }
+    i24("canvas.paintComponent done");
   }
 
   public void setDrillState(DrillState s) {
     mDrillState = s;
     var notes = lessonManager().renderedNotes(s.lessonId());
     var sourceImage = notes.imageFile();
+    i24("reading atlas image:",sourceImage.getName());
     mAtlasImage = ImgUtil.read(sourceImage);
-    Files.S.copyFile(sourceImage, new File("_SKIP_atlas.png"));
+    //Files.S.copyFile(sourceImage, new File("_SKIP_atlas.png"));
   }
 
   public void clearMessage() {

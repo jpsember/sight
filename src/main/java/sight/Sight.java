@@ -270,10 +270,8 @@ public class Sight extends App {
 
   private long mDoneTime;
 
-  private void refreshView(Object... message) {
-    if (ISSUE_24) {
-      pr("Refreshing view;", BasePrinter.toString(message));
-    }
+  private void refreshView(String reason) {
+    i24("refreshView:", reason);
     canvas().repaint();
   }
 
@@ -293,7 +291,7 @@ public class Sight extends App {
     parentPanel.add(canvas());
     contentPane().add(parentPanel);
 
-    if (!ISSUE_24) {
+    if (false && !ISSUE_24) {
       // WTF, apparently this is necessary to get repainting to occur; see
       // https://groups.google.com/g/comp.lang.java.gui/c/vCbwLOX9Vow?pli=1
       contentPane().revalidate();
