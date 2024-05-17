@@ -88,7 +88,6 @@ public class Sight extends App {
       continueStartupWithinSwingThread();
     });
 
-    prepareDrill();
   }
 
   /**
@@ -117,7 +116,12 @@ public class Sight extends App {
 
   private void swingBgndTask() {
 
-    var currentTime = System.currentTimeMillis();
+    mCurrentTime = System.currentTimeMillis();
+
+    var lessonState = lessonState();
+
+    if (lessonState.status() == LessonStatus.NONE)
+      prepareLesson();
 
     // Watch for changes to frame location
     {
@@ -125,98 +129,69 @@ public class Sight extends App {
       var s = guiState();
       if (!b.equals(s.frameBounds())) {
         mGuiState = s.toBuilder().frameBounds(b).build();
-        mGuiStateModTime = currentTime;
+        mGuiStateModTime = mCurrentTime;
       }
     }
 
     {
       var s = guiState();
       if (s.equals(mLastWrittenGuiState)) {
-        mGuiStateModTime = currentTime;
+        mGuiStateModTime = mCurrentTime;
       } else {
-        if (currentTime - mGuiStateModTime > 1000) {
+        if (mCurrentTime - mGuiStateModTime > 1000) {
           Files.S.writePretty(guiStateFile(), s);
           mLastWrittenGuiState = s;
-          mGuiStateModTime = currentTime;
+          mGuiStateModTime = mCurrentTime;
         }
       }
     }
-
-    updatePlayerState(currentTime);
 
     // Look for changes in the current chord
     {
       var ch = MidiManager.SHARED_INSTANCE.currentChord();
       if (ch != mPrevChord) {
         mPrevChord = ch;
-
         if (!ch.equals(Chord.DEFAULT_INSTANCE)) {
           quitIfDeathChord(ch);
 
-          if (ch.equals(CHORD_BACKUP)) {
-            if (mDrillState.cursor() != 0) {
-              createWork();
-              setCursor(mTempDrillState.cursor() - 1);
-              writeWork();
-            }
-            return;
-          }
-          if (ch.equals(PREV_LESSON_CHORD)) {
-            todo("this is very hacky.");
-            if (mDrillState.cursor() == 0) {
-              if (lessonHistory.size() > 1) {
-                pop(lessonHistory);
-
-                var b = createWork();
-                b.status(LessonStatus.ACTIVE);
-
-                var r = last(lessonHistory);
-                b.lessonId(r);
-
-                setCursor(0);
-                writeWork();
-
-                return;
-              }
-            } else {
-              var b = createWork();
-              b.status(LessonStatus.ACTIVE);
-              setCursor(0);
-              writeWork();
-              return;
-            }
-          }
-
-          processPlayerChord(ch);
+          if (lessonState.status() == LessonStatus.ACTIVE)
+            processPlayerChord(ch);
         }
       }
     }
 
+    long elapsed = mCurrentTime - lessonState.timeMs();
+
     // Switch state if appropriate
     //
-    switch (mDrillState.status()) {
+    switch (lessonState.status()) {
     default:
       break;
 
+    case SHOWING_ERROR:
+      if (elapsed > 2000) {
+        var b = createWork();
+        b.icons()[b.cursor()] = ICON_POINTER;
+        b.status(LessonStatus.ACTIVE);
+        writeWork();
+        refreshView("changed icon back to pointer");
+      }
+      break;
+
     case DONE_SESSION: {
-      int pt = config().donePauseTimeMs() * 3;
-      long elapsed = System.currentTimeMillis() - mDoneTime;
-      if (elapsed >= pt) {
-        prepareDrill();
+      if (elapsed >= config().donePauseTimeMs() * 3) {
+        prepareLesson();
         refreshView("DONE_SESSION expired");
       }
     }
       break;
 
     case DONE: {
-      int pt = config().donePauseTimeMs() / 3;
-      long elapsed = System.currentTimeMillis() - mDoneTime;
-      if (elapsed >= pt) {
-        lessonManager().recordResult(mDrillState.lessonId(), calcPercentRight(mDrillState));
+      if (elapsed >= config().donePauseTimeMs() / 3) {
+        lessonManager().recordResult(lessonState.lessonId(), calcPercentRight(lessonState));
         var doneSession = lessonManager().advance();
         if (doneSession) {
           var acc = lessonManager().accuracyAtLessonStartAndEnd();
-
           var b = createWork();
           b.status(LessonStatus.DONE_SESSION);
           writeWork();
@@ -225,26 +200,23 @@ public class Sight extends App {
 
           canvas().setMessage(new Color(0, 128, 0), "Done session! Accuracy:",
               diff >= 0 ? "+" + diff : "-" + diff, "=", endAcc + "%");
-          mDoneTime = System.currentTimeMillis();
         } else {
-          prepareDrill();
+          prepareLesson();
         }
         refreshView("DONE expired");
       }
     }
       break;
-    case RETRY: {
-      int pt = config().donePauseTimeMs();
-      long elapsed = System.currentTimeMillis() - mDoneTime;
-      if (elapsed >= pt) {
-        lessonManager().recordResult(mDrillState.lessonId(), calcPercentRight(mDrillState));
-        prepareDrill();
+    case RETRY:
+      if (elapsed >= config().donePauseTimeMs()) {
+        lessonManager().recordResult(lessonState.lessonId(), calcPercentRight(lessonState));
+        prepareLesson();
         refreshView("RETRY expired");
       }
-    }
       break;
     }
 
+    mCurrentTime = 0;
   }
 
   private static int calcPercentRight(LessonState s) {
@@ -275,8 +247,6 @@ public class Sight extends App {
   }
 
   private Chord mPrevChord = Chord.DEFAULT_INSTANCE;
-
-  private long mDoneTime;
 
   private void refreshView(String reason) {
     i24("refreshView:", reason);
@@ -325,57 +295,36 @@ public class Sight extends App {
   // Drill logic
   // ------------------------------------------------------------------
 
-  private void prepareDrill() {
-    var b = LessonState.newBuilder();
+  private void prepareLesson() {
+    var b = createWork();
     b.status(LessonStatus.ACTIVE);
+    b.cursor(0);
+    b.hadError(false);
     canvas().clearMessage();
 
-    {
-      var key = lessonManager().choose();
-      lessonHistory.add(key);
-      b.lessonId(key);
+    var key = lessonManager().choose();
+    lessonHistory.add(key);
+    b.lessonId(key);
 
-      var notes = lessonManager().renderedNotes(key);
-      var ic = new int[notes.renderedChords().size()];
-      ic[0] = ICON_POINTER;
-      b.icons(ic);
-    }
+    var notes = lessonManager().renderedNotes(key);
+    var ic = new int[notes.renderedChords().size()];
+    ic[0] = ICON_POINTER;
+    b.icons(ic);
 
-    mDrillState = b.build();
-    canvas().setDrillState(mDrillState);
-  }
-
-  private void updatePlayerState(long currentTime) {
-    var b = createWork();
-    switch (b.status()) {
-    default:
-      break;
-    case SHOWING_ERROR:
-      if (currentTime - b.timeMs() > 2000) {
-        b.icons()[b.cursor()] = ICON_POINTER;
-        b.status(LessonStatus.ACTIVE);
-        writeWork();
-        refreshView("changed icon back to pointer");
-      }
-      break;
-    }
+    writeWork();
   }
 
   private void processPlayerChord(Chord ch) {
-    todo("use createWork");
     //alertVerbose();
-    var s = mDrillState;
-    if (s.status() != LessonStatus.ACTIVE)
-      return;
-    var notes = lessonManager().renderedNotes(s.lessonId());
-    var exp = notes.renderedChords().get(s.cursor());
+    i24("processPlayerChord:", ch);
+    var b = createWork();
+    var notes = lessonManager().renderedNotes(b.lessonId());
+    var exp = notes.renderedChords().get(b.cursor());
     var expChord = mergeChords(exp.chordA(), exp.chordB());
     log("chord:", ch);
     log("expct:", expChord);
 
-    var b = s.toBuilder();
-
-    if (ch.equals(NEXT_LESSON_CHORD)) {
+    if (ch.equals(CHORD_CHEAT)) {
       ch = expChord;
     }
     boolean correct = expChord.equals(ch);
@@ -387,12 +336,12 @@ public class Sight extends App {
     }
 
     int newIcon = correct ? ICON_RIGHT : ICON_WRONG;
-    b.icons()[s.cursor()] = newIcon;
+    b.icons()[b.cursor()] = newIcon;
 
     // If there was a mistake, we're going to make user repeat this chord
 
     if (correct) {
-      b.cursor(s.cursor() + 1);
+      b.cursor(b.cursor() + 1);
       if (b.cursor() != notes.renderedChords().size()) {
         b.icons()[b.cursor()] = ICON_POINTER;
       } else {
@@ -402,19 +351,14 @@ public class Sight extends App {
           b.status(LessonStatus.RETRY);
           canvas().setMessage(Color.RED, "Try Again");
         }
-        mDoneTime = System.currentTimeMillis();
       }
     } else {
       b.status(LessonStatus.SHOWING_ERROR);
       b.timeMs(System.currentTimeMillis());
     }
-
-    mDrillState = b.build();
-    notes = lessonManager().renderedNotes(mDrillState.lessonId());
-    refreshView("updated state after player chord");
+    writeWork();
   }
 
-  private LessonState mDrillState = LessonState.DEFAULT_INSTANCE;
   private FrameWrapper mFrame;
   private Canvas mCanvas;
 
@@ -464,42 +408,6 @@ public class Sight extends App {
     }
   }
 
-  // ------------------------------------------------------------------
-  // Convenience methods for manipulating DrillState
-  // ------------------------------------------------------------------
-
-  /**
-   * Construct a builder from a copy of the drill state
-   */
-  private LessonState.Builder createWork() {
-    mTempDrillState = mDrillState.build().toBuilder();
-    var ic = mTempDrillState.icons();
-    mTempDrillState.icons(Arrays.copyOf(ic, ic.length));
-    return mTempDrillState;
-  }
-
-  /**
-   * Replace drill state with the work version, and trigger a repaint
-   */
-  private void writeWork() {
-    mTempDrillState.timeMs(System.currentTimeMillis());
-    mDrillState = mTempDrillState.build();
-    canvas().setDrillState(mDrillState);
-    refreshView("replaced drill state");
-  }
-
-  private void setCursor(int newCursorLocation) {
-    var w = mTempDrillState;
-    checkState(newCursorLocation >= 0 && newCursorLocation < w.icons().length);
-    var ic = w.icons();
-    ic[newCursorLocation] = ICON_POINTER;
-    for (int j = newCursorLocation + 1; j < ic.length; j++)
-      ic[j] = ICON_NONE;
-    w.cursor(newCursorLocation);
-  }
-
-  private LessonState.Builder mTempDrillState;
-
   private void playExp() {
     pr("experiment for sending midi to device");
     SystemUtil.prepareForConsoleOrGUI(true);
@@ -521,5 +429,36 @@ public class Sight extends App {
       }
     }
   }
+
+  // ------------------------------------------------------------------
+  // Convenience methods for manipulating DrillState
+  // ------------------------------------------------------------------
+
+  /**
+   * Construct a builder from a copy of the drill state
+   */
+  private LessonState.Builder createWork() {
+    checkState(mCurrentTime != 0);
+    var b = lessonState().build().toBuilder();
+    mTempLessonState = b;
+    var ic = b.icons();
+    b.icons(Arrays.copyOf(ic, ic.length));
+    return b;
+  }
+
+  /**
+   * Replace drill state with the work version, and trigger a repaint
+   */
+  private void writeWork() {
+    var b = mTempLessonState;
+    if (b.status() != lessonState().status())
+      b.timeMs(mCurrentTime);
+    setLessonState(b);
+    refreshView("replaced drill state");
+    mTempLessonState = null;
+  }
+
+  private LessonState.Builder mTempLessonState;
+  private long mCurrentTime;
 
 }

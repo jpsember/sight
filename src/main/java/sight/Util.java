@@ -13,6 +13,7 @@ import js.file.Files;
 import sight.gen.Chord;
 import sight.gen.Hand;
 import sight.gen.Lesson;
+import sight.gen.LessonState;
 import sight.gen.SightConfig;
 
 public final class Util {
@@ -32,9 +33,7 @@ public final class Util {
   public static final int MIDDLE_C = 39;
 
   public static final Chord DEATH_CHORD = chordWith(CASIO_KEY_FIRST);
-  public static final Chord CHORD_BACKUP = chordWith(CASIO_KEY_LAST - 3);
-  public static final Chord PREV_LESSON_CHORD = chordWith(CASIO_KEY_LAST - 1);
-  public static final Chord NEXT_LESSON_CHORD = chordWith(CASIO_KEY_LAST - 0);
+  public static final Chord CHORD_CHEAT = chordWith(CASIO_KEY_LAST - 0);
   public static final Chord CHORD_RESET_SCORE = chordWith(CASIO_KEY_LAST - 2);
   public static final Chord CHORD_REMOVE_LAST = chordWith(CASIO_KEY_LAST - 4);
 
@@ -213,7 +212,6 @@ public final class Util {
     return mLessonManager;
   }
 
- 
   private static LessonManager mLessonManager;
 
   public static Chord mergeChords(Chord chordA, Chord chordB) {
@@ -273,4 +271,15 @@ public final class Util {
       System.exit(0);
     }
   }
+
+  public static LessonState lessonState() {
+    return sLessonState;
+  }
+
+  public static void setLessonState(LessonState state) {
+    sLessonState = state.build();
+  }
+
+  private static LessonState sLessonState = LessonState.DEFAULT_INSTANCE;
+
 }

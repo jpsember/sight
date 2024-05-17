@@ -20,7 +20,6 @@ import js.geometry.IRect;
 import js.geometry.Matrix;
 import js.graphics.ImgEffects;
 import js.graphics.ImgUtil;
-import sight.gen.LessonState;
 import sight.gen.RenderedNotes;
 
 public class Canvas extends JPanel {
@@ -28,15 +27,7 @@ public class Canvas extends JPanel {
   private static final boolean DRAW_BOXES = false && alert("drawing boxes");
 
   public void paintComponent(Graphics graphics) {
-
     i24("canvas.paintComponent");
-
-    if (mDrillState == null) {
-      pr("DrillState is null!", INDENT, ST);
-      return;
-    }
-
-    var notes = lessonManager().renderedNotes(mDrillState.lessonId());
 
     var g = (Graphics2D) graphics;
 
@@ -49,7 +40,20 @@ public class Canvas extends JPanel {
     g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
     g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 
+    var s = lessonState();
+    var id = s.lessonId();
+    if (id.isEmpty())
+      return;
+    var notes = lessonManager().renderedNotes(id);
+    // Update the atlas image if the lesson id has changed
+    if (!id.equals(mAtlasLessonId)) {
+      mAtlasLessonId = id;
+      i24("reading atlas image:", notes.imageFile());
+      mAtlasImage = imageCache().get(notes.imageFile());
+    }
+
     calcTransform(notes);
+    font(g);
 
     g.transform(mContentTransform.toAffineTransform());
 
@@ -101,7 +105,7 @@ public class Canvas extends JPanel {
 
         // Render icon in prompt region, if appropriate
 
-        var icNum = mDrillState.icons()[i] - 1;
+        var icNum = s.icons()[i] - 1;
         if (icNum >= 0) {
           var ic = icon(icNum);
           g.drawImage(ic, cx - ic.getWidth() / 2, mPromptY, null);
@@ -111,13 +115,6 @@ public class Canvas extends JPanel {
       }
     }
     i24("canvas.paintComponent done");
-  }
-
-  public void setDrillState(LessonState s) {
-    mDrillState = s;
-    var notes = lessonManager().renderedNotes(s.lessonId());
-    i24("reading atlas image:", notes.imageFile());
-    mAtlasImage = imageCache().get(notes.imageFile());
   }
 
   public void clearMessage() {
@@ -219,9 +216,12 @@ public class Canvas extends JPanel {
 
   private Font font(Graphics2D g) {
     if (mFont == null) {
+      i24("constructing font");
       checkState(mMessageHeight != 0);
+      // I think constructing the font was taking a lot of time.
       mFont = new Font(Font.SANS_SERIF, Font.BOLD, mMessageHeight);
       mFontMetrics = g.getFontMetrics(mFont);
+      i24("done constructing font");
     }
     return mFont;
   }
@@ -259,7 +259,7 @@ public class Canvas extends JPanel {
   private int mMessageHeight;
   private int mPadHeight;
   private BufferedImage mAtlasImage;
-  private LessonState mDrillState;
+  private String mAtlasLessonId;
   private String mMessage;
   private Color mMessageColor;
   private Matrix mContentTransform;
