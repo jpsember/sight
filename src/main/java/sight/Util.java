@@ -8,7 +8,6 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
-import js.base.BasePrinter;
 import js.base.DateTimeTools;
 import js.file.Files;
 import sight.gen.Chord;

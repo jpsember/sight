@@ -16,7 +16,6 @@ import javax.swing.SwingUtilities;
 
 import js.app.App;
 import js.app.AppOper;
-import js.base.BasePrinter;
 import js.file.Files;
 import js.geometry.IRect;
 import js.system.SystemUtil;

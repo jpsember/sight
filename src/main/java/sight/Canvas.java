@@ -10,7 +10,6 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.util.List;
 
 import javax.swing.JPanel;
@@ -118,9 +117,8 @@ public class Canvas extends JPanel {
     mDrillState = s;
     var notes = lessonManager().renderedNotes(s.lessonId());
     var sourceImage = notes.imageFile();
-    i24("reading atlas image:",sourceImage.getName());
+    i24("reading atlas image:", sourceImage.getName());
     mAtlasImage = ImgUtil.read(sourceImage);
-    //Files.S.copyFile(sourceImage, new File("_SKIP_atlas.png"));
   }
 
   public void clearMessage() {
