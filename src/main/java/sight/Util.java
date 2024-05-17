@@ -22,6 +22,9 @@ public final class Util {
   
   public static final boolean SMALL = false && alert("small lessons for dev");
 
+  // We need to convert from MIDI pitches to the index of the key on an 88-key piano.
+ public static final int PITCH_TO_PIANO_KEY_NUMBER_OFFSET = 39 - 60;
+
   public static final int NOTES_PER_LESSON = 4;
   public static final int MAX_KEY_NUMBER = 88;
   public static final int CASIO_KEY_FIRST = 15;

@@ -20,8 +20,6 @@ import static sight.Util.*;
  */
 class MidiReceiver extends BaseObject implements Receiver {
 
-  // We need to convert from MIDI pitches to the index of the key on an 88-key piano.
-  private static final int PITCH_TO_PIANO_KEY_NUMBER_OFFSET = 39 - 60;
 
   public MidiReceiver(SightConfig config) {
     mConfig = config;
