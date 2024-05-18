@@ -1,9 +1,14 @@
 fields {
   enum LessonStatus status;
-  *int icons;
-  int cursor;
   string lesson_id;
-  bool had_error;
+
+  *int icons;
+
+  int cursor;
+
+  int question_count; // # of chords asked to play
+  int correct_count;  // # of those questions answered correctly
+
   // Timestamp the state last changed
   long time_ms;
 }

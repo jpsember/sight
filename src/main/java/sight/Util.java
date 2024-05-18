@@ -281,4 +281,10 @@ public final class Util {
 
   private static LessonState sLessonState = LessonState.DEFAULT_INSTANCE;
 
+  public static int calcPercentRight(LessonState s) {
+    checkArgument(s.questionCount() != 0);
+    checkArgument(s.correctCount() <= s.questionCount());
+    return (s.correctCount() * 100) / s.questionCount();
+  }
+
 }

@@ -188,7 +188,7 @@ public class Sight extends App {
 
     case DONE: {
       if (elapsed >= config().donePauseTimeMs() / 3) {
-        lessonManager().recordResult(lessonState.lessonId(), calcPercentRight(lessonState));
+        lessonManager().recordResult(lessonState);
         var doneSession = lessonManager().advance();
         if (doneSession) {
           var acc = lessonManager().accuracyAtLessonStartAndEnd();
@@ -197,7 +197,6 @@ public class Sight extends App {
           writeWork();
           var endAcc = Math.round(acc[1] * 100);
           var diff = Math.round((acc[1] - acc[0]) * 100);
-
           canvas().setMessage(new Color(0, 128, 0), "Done session! Accuracy:",
               diff >= 0 ? "+" + diff : "-" + diff, "=", endAcc + "%");
         } else {
@@ -209,7 +208,7 @@ public class Sight extends App {
       break;
     case RETRY:
       if (elapsed >= config().donePauseTimeMs()) {
-        lessonManager().recordResult(lessonState.lessonId(), calcPercentRight(lessonState));
+        lessonManager().recordResult(lessonState);
         prepareLesson();
         refreshView("RETRY expired");
       }
@@ -217,15 +216,6 @@ public class Sight extends App {
     }
 
     mCurrentTime = 0;
-  }
-
-  private static int calcPercentRight(LessonState s) {
-    checkArgument(s.cursor() != 0);
-    int c = 0;
-    for (int i = 0; i < s.cursor(); i++)
-      if (s.icons()[i] == ICON_RIGHT)
-        c++;
-    return (c * 100) / s.cursor();
   }
 
   private BgndTaskManager mTaskManager;
@@ -292,14 +282,14 @@ public class Sight extends App {
   }
 
   // ------------------------------------------------------------------
-  // Drill logic
+  // Lesson logic
   // ------------------------------------------------------------------
 
   private void prepareLesson() {
     var b = createWork();
     b.status(LessonStatus.ACTIVE);
     b.cursor(0);
-    b.hadError(false);
+    b.questionCount(0).correctCount(0);
     canvas().clearMessage();
 
     var key = lessonManager().choose();
@@ -330,7 +320,6 @@ public class Sight extends App {
     boolean correct = expChord.equals(ch);
     if (!correct) {
       i24("Expected:", expChord, "Played:", ch);
-      b.hadError(true);
       if (!config().silentCorrection())
         MidiManager.SHARED_INSTANCE.playCorrection(expChord, 600);
     }
@@ -338,14 +327,17 @@ public class Sight extends App {
     int newIcon = correct ? ICON_RIGHT : ICON_WRONG;
     b.icons()[b.cursor()] = newIcon;
 
+    b.questionCount(b.questionCount() + 1);
+
     // If there was a mistake, we're going to make user repeat this chord
 
     if (correct) {
+      b.correctCount(b.correctCount() + 1);
       b.cursor(b.cursor() + 1);
       if (b.cursor() != notes.renderedChords().size()) {
         b.icons()[b.cursor()] = ICON_POINTER;
       } else {
-        if (!b.hadError())
+        if (b.correctCount() == b.questionCount())
           b.status(LessonStatus.DONE);
         else {
           b.status(LessonStatus.RETRY);
@@ -435,7 +427,7 @@ public class Sight extends App {
   // ------------------------------------------------------------------
 
   /**
-   * Construct a builder from a copy of the drill state
+   * Construct a builder from a copy of the lesson state
    */
   private LessonState.Builder createWork() {
     checkState(mCurrentTime != 0);
@@ -447,7 +439,7 @@ public class Sight extends App {
   }
 
   /**
-   * Replace drill state with the work version, and trigger a repaint
+   * Replace lesson state with the work version, and trigger a repaint
    */
   private void writeWork() {
     var b = mTempLessonState;

@@ -21,12 +21,13 @@ import sight.gen.Lesson;
 import sight.gen.LessonCollection;
 import sight.gen.LessonFolder;
 import sight.gen.LessonStat;
+import sight.gen.LessonState;
 import sight.gen.RenderedNotes;
 
 public class LessonManager extends BaseObject {
 
   public void prepare() {
-    //    alertVerbose();
+    //alertVerbose();
     if (prepared())
       return;
 
@@ -78,15 +79,25 @@ public class LessonManager extends BaseObject {
     return key;
   }
 
-  public void recordResult(String lessonId, int pctRight) {
-    var stat = lessonStat(lessonId).toBuilder();
+  public void recordResult(LessonState lessonState) {
+    log("recordResult for LessonState:", INDENT, lessonState);
+//    if (lessonState.isRetry() && !lessonState.hadError()) {
+//      log("...no error, but was retry; not updating pct");
+//      return;
+//    }
+
+    var id = lessonState.lessonId();
+    var stat = lessonStat(id).toBuilder();
+    
+    var pctRight = calcPercentRight(lessonState);
+
     double currAcc = pctRight / 100.0;
     double EXP = 0.15;
 
     double updAcc = EXP * currAcc + (1 - EXP) * stat.accuracy();
     stat.accuracy((float) updAcc);
-    log("recorded result for", lessonId, "% right:", pctRight, INDENT, stat);
-    mFolder.stats().put(lessonId, stat);
+    log("recorded result for", id, "% right:", pctRight, INDENT, stat);
+    mFolder.stats().put(id, stat);
     setModified("recorded result for lesson");
     flushFolder();
   }
@@ -287,7 +298,7 @@ public class LessonManager extends BaseObject {
 
     var f = folderFile();
     Files.S.writePretty(f, mFolder);
-    log("...flushed lesson folder", INDENT, mFolder);
+    log("...flushed lesson folder" /*, INDENT, mFolder*/);
     mFolderMod = false;
   }
 
