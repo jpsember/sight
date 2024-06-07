@@ -49,6 +49,14 @@ public class SightConfig implements AbstractData {
     return mSilentCorrection;
   }
 
+  public boolean repeat() {
+    return mRepeat;
+  }
+
+  public String lessonId() {
+    return mLessonId;
+  }
+
   @Override
   public Builder toBuilder() {
     return new Builder(this);
@@ -65,6 +73,8 @@ public class SightConfig implements AbstractData {
   protected static final String _8 = "pattern";
   protected static final String _9 = "resolution";
   protected static final String _10 = "silent_correction";
+  protected static final String _11 = "repeat";
+  protected static final String _12 = "lesson_id";
 
   @Override
   public String toString() {
@@ -85,6 +95,8 @@ public class SightConfig implements AbstractData {
     m.putUnsafe(_8, mPattern);
     m.putUnsafe(_9, mResolution);
     m.putUnsafe(_10, mSilentCorrection);
+    m.putUnsafe(_11, mRepeat);
+    m.putUnsafe(_12, mLessonId);
     return m;
   }
 
@@ -116,6 +128,8 @@ public class SightConfig implements AbstractData {
     mPattern = m.opt(_8, "");
     mResolution = m.opt(_9, 160);
     mSilentCorrection = m.opt(_10, false);
+    mRepeat = m.opt(_11, false);
+    mLessonId = m.opt(_12, "");
   }
 
   public static Builder newBuilder() {
@@ -153,6 +167,10 @@ public class SightConfig implements AbstractData {
       return false;
     if (!(mSilentCorrection == other.mSilentCorrection))
       return false;
+    if (!(mRepeat == other.mRepeat))
+      return false;
+    if (!(mLessonId.equals(other.mLessonId)))
+      return false;
     return true;
   }
 
@@ -172,6 +190,8 @@ public class SightConfig implements AbstractData {
       r = r * 37 + mPattern.hashCode();
       r = r * 37 + mResolution;
       r = r * 37 + (mSilentCorrection ? 1 : 0);
+      r = r * 37 + (mRepeat ? 1 : 0);
+      r = r * 37 + mLessonId.hashCode();
       m__hashcode = r;
     }
     return r;
@@ -188,6 +208,8 @@ public class SightConfig implements AbstractData {
   protected String mPattern;
   protected int mResolution;
   protected boolean mSilentCorrection;
+  protected boolean mRepeat;
+  protected String mLessonId;
   protected int m__hashcode;
 
   public static final class Builder extends SightConfig {
@@ -204,6 +226,8 @@ public class SightConfig implements AbstractData {
       mPattern = m.mPattern;
       mResolution = m.mResolution;
       mSilentCorrection = m.mSilentCorrection;
+      mRepeat = m.mRepeat;
+      mLessonId = m.mLessonId;
     }
 
     @Override
@@ -231,6 +255,8 @@ public class SightConfig implements AbstractData {
       r.mPattern = mPattern;
       r.mResolution = mResolution;
       r.mSilentCorrection = mSilentCorrection;
+      r.mRepeat = mRepeat;
+      r.mLessonId = mLessonId;
       return r;
     }
 
@@ -289,6 +315,16 @@ public class SightConfig implements AbstractData {
       return this;
     }
 
+    public Builder repeat(boolean x) {
+      mRepeat = x;
+      return this;
+    }
+
+    public Builder lessonId(String x) {
+      mLessonId = (x == null) ? "" : x;
+      return this;
+    }
+
   }
 
   public static final SightConfig DEFAULT_INSTANCE = new SightConfig();
@@ -300,6 +336,7 @@ public class SightConfig implements AbstractData {
     mKey = KeySig.DEFAULT_INSTANCE;
     mPattern = "";
     mResolution = 160;
+    mLessonId = "";
   }
 
 }

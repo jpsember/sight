@@ -320,75 +320,88 @@ public class LessonManager extends BaseObject {
   private void prepareLesson() {
     if (SMALL)
       pr(VERT_SP, "===================== preparing lesson set");
-    var rand = mLessonSelectionRand;
 
     mSession = Session.newBuilder();
 
-    log("preparing new lesson set");
-    List<String> t = arrayList();
+    if (config().repeat()) {
+      var p = sessionPath();
+      if (!p.exists())
+        badState("No session to repeat:", INDENT, Files.infoMap(p));
+      var s = Files.parseAbstractDataOpt(Session.DEFAULT_INSTANCE, p);
+      log("repeating last session");
+      mDesiredFirstLessonId = s.lastLessonId();
+      mSession = s.toBuilder();
+    } else {
 
-    Pattern p = null;
-    {
-      var s = config().pattern();
-      if (nonEmpty(s)) {
-        p = RegExp.pattern(s);
-      }
-    }
+      var rand = mLessonSelectionRand;
 
-    for (var ent : lessonMap().entrySet()) {
-      var id = ent.getKey();
-      var lesson = ent.getValue();
-      if (config().hand() != Hand.UNKNOWN) {
-        if (lesson.hand() != config().hand()) {
-          log("hand", lesson.hand(), "!=", config().hand());
-          continue;
-        }
-      }
-      if (p != null) {
-        var m = p.matcher(lesson.description());
-        if (!m.find()) {
-          log("pattern", quote(config().pattern()), "doesn't match description", quote(lesson.description()));
-          continue;
-        }
-      }
-      t.add(id);
-    }
+      log("preparing new lesson set");
+      List<String> t = arrayList();
 
-    t.sort(LESSON_COMPARATOR);
-    List<String> orderedLessonIds = t;
-    int numLess = orderedLessonIds.size();
-    if (numLess == 0) {
-      halt("no lessons found matching criteria");
-    }
-    List<String> ls = mSession.lessonIds();
-
-    var maxLessonsPerSession = Math.min(numLess, MAX_LESSONS_PER_SESSION);
-
-    for (int i = 0; i < maxLessonsPerSession; i++) {
-      if (ls.size() == maxLessonsPerSession)
-        break;
-      // Choose a lesson that has a particular position in the accuracy distribution
-
-      String id = null;
+      Pattern p = null;
       {
-        double pos = ((i + .5) / maxLessonsPerSession) * numLess;
-        int slot = (int) Math.round(pos);
-        slot = MyMath.clamp(slot, 0, numLess - 1);
-        id = orderedLessonIds.get(slot);
-        log("i:", i, "slot:", slot, "id:", id);
-        if (ls.contains(id)) {
-          log("...already in set");
-          int k = rand.nextInt(numLess);
-          while (true) {
-            k = (k + 1) % numLess;
-            id = orderedLessonIds.get(k);
-            log("....sequential scan, k:", k);
-            if (!ls.contains(id))
-              break;
+        var s = config().pattern();
+        if (nonEmpty(s)) {
+          p = RegExp.pattern(s);
+        }
+      }
+
+      for (var ent : lessonMap().entrySet()) {
+        var id = ent.getKey();
+        var lesson = ent.getValue();
+        if (config().hand() != Hand.UNKNOWN) {
+          if (lesson.hand() != config().hand()) {
+            log("hand", lesson.hand(), "!=", config().hand());
+            continue;
           }
         }
-        log("...adding:", id);
-        ls.add(id);
+        if (p != null) {
+          var m = p.matcher(lesson.description());
+          if (!m.find()) {
+            log("pattern", quote(config().pattern()), "doesn't match description",
+                quote(lesson.description()));
+            continue;
+          }
+        }
+        t.add(id);
+      }
+
+      t.sort(LESSON_COMPARATOR);
+      List<String> orderedLessonIds = t;
+      int numLess = orderedLessonIds.size();
+      if (numLess == 0) {
+        halt("no lessons found matching criteria");
+      }
+      List<String> ls = mSession.lessonIds();
+
+      var maxLessonsPerSession = Math.min(numLess, MAX_LESSONS_PER_SESSION);
+
+      for (int i = 0; i < maxLessonsPerSession; i++) {
+        if (ls.size() == maxLessonsPerSession)
+          break;
+        // Choose a lesson that has a particular position in the accuracy distribution
+
+        String id = null;
+        {
+          double pos = ((i + .5) / maxLessonsPerSession) * numLess;
+          int slot = (int) Math.round(pos);
+          slot = MyMath.clamp(slot, 0, numLess - 1);
+          id = orderedLessonIds.get(slot);
+          log("i:", i, "slot:", slot, "id:", id);
+          if (ls.contains(id)) {
+            log("...already in set");
+            int k = rand.nextInt(numLess);
+            while (true) {
+              k = (k + 1) % numLess;
+              id = orderedLessonIds.get(k);
+              log("....sequential scan, k:", k);
+              if (!ls.contains(id))
+                break;
+            }
+          }
+          log("...adding:", id);
+          ls.add(id);
+        }
       }
     }
 
@@ -398,7 +411,7 @@ public class LessonManager extends BaseObject {
 
     // Preload lessons into image cache
     imageCache().clear();
-    for (var id : ls) {
+    for (var id : lessonIds()) {
       var lesson = lessonMap().get(id);
       var rn = chordLibrary().get(lesson);
       imageCache().get(rn.imageFile());
@@ -420,6 +433,15 @@ public class LessonManager extends BaseObject {
           break;
         log("...first element is same as last lesson id:", session().lastLessonId());
       }
+    }
+
+    var id = mDesiredFirstLessonId;
+    if (nonEmpty(id)) {
+      var slot = lessonIds().indexOf(id);
+      checkState(slot >= 0, "can't find lesson:", id);
+      lessonIds().remove(slot);
+      lessonIds().add(0, id);
+      mDesiredFirstLessonId = null;
     }
   }
 
@@ -452,4 +474,5 @@ public class LessonManager extends BaseObject {
   private float mAccuracyAtLessonStart;
   private float mAccuracyAtLessonEnd;
   private Session.Builder mSession;
+  private String mDesiredFirstLessonId;
 }

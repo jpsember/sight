@@ -16,4 +16,10 @@ fields {
   int resolution = 160;
 
   bool silent_correction;
+
+  // If true, and .session.json exists, repeats lesson
+  bool repeat;
+  // If not null, starts with this lesson id
+  string lesson_id;
+
 }
