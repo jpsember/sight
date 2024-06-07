@@ -173,7 +173,7 @@ public class Sight extends App {
       if (elapsed > 2000) {
         var b = createWork();
         b.icons()[b.cursor()] = ICON_POINTER;
-        setStatus(LessonStatus.ACTIVE);
+        b.status(LessonStatus.ACTIVE);
         writeWork();
         refreshView("changed icon back to pointer");
       }
@@ -193,8 +193,8 @@ public class Sight extends App {
         var doneSession = lessonManager().advance();
         if (doneSession) {
           var acc = lessonManager().accuracyAtLessonStartAndEnd();
-          /* var b = */ createWork();
-          setStatus(LessonStatus.DONE_SESSION);
+          var b = createWork();
+          b.status(LessonStatus.DONE_SESSION);
           writeWork();
           var endAcc = Math.round(acc[1] * 100);
           var diff = Math.round((acc[1] - acc[0]) * 100);
@@ -288,7 +288,7 @@ public class Sight extends App {
 
   private void prepareLesson() {
     var b = createWork();
-    setStatus(LessonStatus.ACTIVE);
+    b.status(LessonStatus.ACTIVE);
     b.cursor(0);
     b.questionCount(0).correctCount(0);
     canvas().clearMessage();
@@ -303,12 +303,6 @@ public class Sight extends App {
     b.icons(ic);
 
     writeWork();
-  }
-
-  private void setStatus(LessonStatus status) {
-    var b = mTempLessonState;
-    log("...setting:", status);
-    b.status(status);
   }
 
   private void processPlayerChord(Chord ch) {
@@ -345,14 +339,14 @@ public class Sight extends App {
         b.icons()[b.cursor()] = ICON_POINTER;
       } else {
         if (b.correctCount() == b.questionCount())
-          setStatus( LessonStatus.DONE);
+          b.status(LessonStatus.DONE);
         else {
-          setStatus(LessonStatus.RETRY);
+          b.status(LessonStatus.RETRY);
           canvas().setMessage(Color.RED, "Try Again");
         }
       }
     } else {
-      setStatus(LessonStatus.SHOWING_ERROR);
+      b.status(LessonStatus.SHOWING_ERROR);
       b.timeMs(System.currentTimeMillis());
     }
     writeWork();
