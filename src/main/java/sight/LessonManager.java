@@ -70,7 +70,9 @@ public class LessonManager extends BaseObject {
   public String choose() {
     log("choose lesson");
     checkState(prepared());
-    checkState(mSession != null, "no call to prepareLesson()");
+    if (mSession == null)
+      prepareLesson();
+
     if (mPassCursor == 0) {
       log("pass cursor is zero, choosing new permutation");
       preparePass();
@@ -303,7 +305,7 @@ public class LessonManager extends BaseObject {
     mFolderMod = false;
   }
 
-  public void prepareLesson() {
+ private void prepareLesson() {
     if (SMALL)
       pr(VERT_SP, "===================== preparing lesson set");
     var rand = mLessonSelectionRand;

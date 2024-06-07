@@ -110,6 +110,7 @@ public class Sight extends App {
     mTaskManager = new BgndTaskManager();
     var m = MidiManager.SHARED_INSTANCE;
     m.start(config());
+
     mTaskManager.addTask(() -> swingBgndTask());
     mTaskManager.start();
   }
