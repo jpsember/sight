@@ -80,7 +80,7 @@ public class Sight extends App {
 
     SystemUtil.prepareForConsoleOrGUI(false);
 
-    lessonManager().prepare();
+    lessonManager().init();
 
     // Continue starting app within the Swing thread
     //

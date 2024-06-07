@@ -23,10 +23,11 @@ import sight.gen.LessonFolder;
 import sight.gen.LessonStat;
 import sight.gen.LessonState;
 import sight.gen.RenderedNotes;
+import sight.gen.Session;
 
 public class LessonManager extends BaseObject {
 
-  public void prepare() {
+  public void init() {
     //alertVerbose();
     if (prepared())
       return;
@@ -46,12 +47,12 @@ public class LessonManager extends BaseObject {
 
   public boolean advance() {
     mPassCursor++;
-    if (mPassCursor == mCurrentPassList.size()) {
+    if (mPassCursor == lessonIds().size()) {
       mPassCursor = 0;
       mPassNumber++;
       if (mPassNumber == REPS_PER_LESSON) {
         mAccuracyAtLessonEnd = calcLessonAccuracy();
-        mLessonSet = null;
+        mSession = null;
         mPassNumber = 0;
         return true;
       }
@@ -69,26 +70,26 @@ public class LessonManager extends BaseObject {
   public String choose() {
     log("choose lesson");
     checkState(prepared());
-    if (mLessonSet == null)
-      prepareLessonSet();
-    var key = mCurrentPassList.get(mPassCursor);
+    checkState(mSession != null, "no call to prepareLesson()");
+    if (mPassCursor == 0) {
+      log("pass cursor is zero, choosing new permutation");
+      preparePass();
+    }
+
+    var key = lessonIds().get(mPassCursor);
     if (SMALL)
       pr(VERT_SP, "choose lesson; pass:", mPassNumber, "cursor:", mPassCursor);
     log("pass:", mPassNumber, "cursor:", mPassCursor, "id:", key);
-    mLastLessonId = key;
+    session().lastLessonId(key);
     return key;
   }
 
   public void recordResult(LessonState lessonState) {
     log("recordResult for LessonState:", INDENT, lessonState);
-//    if (lessonState.isRetry() && !lessonState.hadError()) {
-//      log("...no error, but was retry; not updating pct");
-//      return;
-//    }
 
     var id = lessonState.lessonId();
     var stat = lessonStat(id).toBuilder();
-    
+
     var pctRight = calcPercentRight(lessonState);
 
     double currAcc = pctRight / 100.0;
@@ -298,122 +299,132 @@ public class LessonManager extends BaseObject {
 
     var f = folderFile();
     Files.S.writePretty(f, mFolder);
-    log("...flushed lesson folder" /*, INDENT, mFolder*/);
+    log("...flushed lesson folder" /* , INDENT, mFolder */);
     mFolderMod = false;
   }
 
-  private void prepareLessonSet() {
+  public void prepareLesson() {
     if (SMALL)
       pr(VERT_SP, "===================== preparing lesson set");
     var rand = mLessonSelectionRand;
 
-    if (mLessonSet == null) {
-      log("preparing new lesson set");
-      List<String> t = arrayList();
+    mSession = Session.newBuilder();
 
-      Pattern p = null;
-      {
-        var s = config().pattern();
-        if (nonEmpty(s)) {
-          p = RegExp.pattern(s);
-        }
-      }
+    log("preparing new lesson set");
+    List<String> t = arrayList();
 
-      for (var ent : lessonMap().entrySet()) {
-        var id = ent.getKey();
-        var lesson = ent.getValue();
-        if (config().hand() != Hand.UNKNOWN) {
-          if (lesson.hand() != config().hand()) {
-            log("hand", lesson.hand(), "!=", config().hand());
-            continue;
-          }
-        }
-        if (p != null) {
-          var m = p.matcher(lesson.description());
-          if (!m.find()) {
-            log("pattern", quote(config().pattern()), "doesn't match description",
-                quote(lesson.description()));
-            continue;
-          }
-        }
-        t.add(id);
-      }
-
-      //  t.addAll(lessonMap().keySet());
-      t.sort(LESSON_COMPARATOR);
-      List<String> orderedLessonIds = t;
-      int numLess = orderedLessonIds.size();
-      if (numLess == 0) {
-        halt("no lessons found matching criteria");
-      }
-      List<String> ls = arrayList();
-      mLessonSet = ls;
-
-      var maxLessonsPerSession = Math.min(numLess, MAX_LESSONS_PER_SESSION);
-
-      for (int i = 0; i < maxLessonsPerSession; i++) {
-        if (ls.size() == maxLessonsPerSession)
-          break;
-        // Choose a lesson that has a particular position in the accuracy distribution
-
-        String id = null;
-        {
-          double pos = ((i + .5) / maxLessonsPerSession) * numLess;
-          int slot = (int) Math.round(pos);
-          slot = MyMath.clamp(slot, 0, numLess - 1);
-          id = orderedLessonIds.get(slot);
-          log("i:", i, "slot:", slot, "id:", id);
-          if (ls.contains(id)) {
-            log("...already in set");
-            int k = rand.nextInt(numLess);
-            while (true) {
-              k = (k + 1) % numLess;
-              id = orderedLessonIds.get(k);
-              log("....sequential scan, k:", k);
-              if (!ls.contains(id))
-                break;
-            }
-          }
-          log("...adding:", id);
-          ls.add(id);
-        }
-      }
-      mPassNumber = 0;
-      mLastLessonId = "";
-      mPassCursor = 0;
-      mAccuracyAtLessonStart = calcLessonAccuracy();
-
-      // Preload lessons into image cache
-      imageCache().clear();
-      for (var id : mLessonSet) {
-        var lesson = lessonMap().get(id);
-        var rn = chordLibrary().get(lesson);
-        imageCache().get(rn.imageFile());
+    Pattern p = null;
+    {
+      var s = config().pattern();
+      if (nonEmpty(s)) {
+        p = RegExp.pattern(s);
       }
     }
 
-    if (mPassCursor == 0) {
-      log("pass cursor is zero, choosing new permutation");
-      List<String> q = arrayList();
-      mCurrentPassList = q;
-      q.addAll(mLessonSet);
+    for (var ent : lessonMap().entrySet()) {
+      var id = ent.getKey();
+      var lesson = ent.getValue();
+      if (config().hand() != Hand.UNKNOWN) {
+        if (lesson.hand() != config().hand()) {
+          log("hand", lesson.hand(), "!=", config().hand());
+          continue;
+        }
+      }
+      if (p != null) {
+        var m = p.matcher(lesson.description());
+        if (!m.find()) {
+          log("pattern", quote(config().pattern()), "doesn't match description", quote(lesson.description()));
+          continue;
+        }
+      }
+      t.add(id);
+    }
+
+    t.sort(LESSON_COMPARATOR);
+    List<String> orderedLessonIds = t;
+    int numLess = orderedLessonIds.size();
+    if (numLess == 0) {
+      halt("no lessons found matching criteria");
+    }
+    List<String> ls = mSession.lessonIds();
+
+    var maxLessonsPerSession = Math.min(numLess, MAX_LESSONS_PER_SESSION);
+
+    for (int i = 0; i < maxLessonsPerSession; i++) {
+      if (ls.size() == maxLessonsPerSession)
+        break;
+      // Choose a lesson that has a particular position in the accuracy distribution
+
+      String id = null;
+      {
+        double pos = ((i + .5) / maxLessonsPerSession) * numLess;
+        int slot = (int) Math.round(pos);
+        slot = MyMath.clamp(slot, 0, numLess - 1);
+        id = orderedLessonIds.get(slot);
+        log("i:", i, "slot:", slot, "id:", id);
+        if (ls.contains(id)) {
+          log("...already in set");
+          int k = rand.nextInt(numLess);
+          while (true) {
+            k = (k + 1) % numLess;
+            id = orderedLessonIds.get(k);
+            log("....sequential scan, k:", k);
+            if (!ls.contains(id))
+              break;
+          }
+        }
+        log("...adding:", id);
+        ls.add(id);
+      }
+    }
+
+    mPassNumber = 0;
+    mPassCursor = 0;
+    mAccuracyAtLessonStart = calcLessonAccuracy();
+
+    // Preload lessons into image cache
+    imageCache().clear();
+    for (var id : ls) {
+      var lesson = lessonMap().get(id);
+      var rn = chordLibrary().get(lesson);
+      imageCache().get(rn.imageFile());
+    }
+
+  }
+
+  private void preparePass() {
+    checkState(mPassCursor == 0);
+
+    var rand = mLessonSelectionRand;
+
+    var lessonIds = lessonIds();
+    if (lessonIds().size() > 1) {
       while (true) {
-        MyMath.permute(q, rand);
-        log("permutation:", q);
-        if (!first(q).equals(mLastLessonId))
+        MyMath.permute(lessonIds, rand);
+        log("permutation:", lessonIds);
+        if (!first(lessonIds).equals(session().lastLessonId()))
           break;
-        log("...first element is same as last lesson id:", mLastLessonId);
+        log("...first element is same as last lesson id:", session().lastLessonId());
       }
     }
   }
 
   private float calcLessonAccuracy() {
     float accSum = 0;
-    for (var id : mLessonSet) {
+    var lessonIds = lessonIds();
+    for (var id : lessonIds) {
       var stat = lessonStat(id);
       accSum += stat.accuracy();
     }
-    return accSum / mLessonSet.size();
+    return accSum / lessonIds.size();
+  }
+
+  private Session.Builder session() {
+    return mSession;
+  }
+
+  private List<String> lessonIds() {
+    return session().lessonIds();
   }
 
   private boolean mFolderMod;
@@ -422,11 +433,9 @@ public class LessonManager extends BaseObject {
   private LessonCollection mLessonCollection;
   private LessonFolder.Builder mFolder;
   private Map<String, Lesson> mLessonMap;
-  private List<String> mLessonSet;
-  private List<String> mCurrentPassList;
   private int mPassNumber;
   private int mPassCursor;
-  private String mLastLessonId;
   private float mAccuracyAtLessonStart;
   private float mAccuracyAtLessonEnd;
+  private Session.Builder mSession;
 }
