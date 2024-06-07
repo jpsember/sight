@@ -83,7 +83,19 @@ public class LessonManager extends BaseObject {
       pr(VERT_SP, "choose lesson; pass:", mPassNumber, "cursor:", mPassCursor);
     log("pass:", mPassNumber, "cursor:", mPassCursor, "id:", key);
     session().lastLessonId(key);
+
+    // Write the session to the filesystem 
+    {
+      var s = session();
+      Files.S.writePretty(sessionPath(), s);
+      pr("pass:", mPassNumber, "cursor:", mPassCursor, "id:", key);
+    }
+
     return key;
+  }
+
+  private File sessionPath() {
+    return new File(".session.json");
   }
 
   public void recordResult(LessonState lessonState) {
@@ -305,7 +317,7 @@ public class LessonManager extends BaseObject {
     mFolderMod = false;
   }
 
- private void prepareLesson() {
+  private void prepareLesson() {
     if (SMALL)
       pr(VERT_SP, "===================== preparing lesson set");
     var rand = mLessonSelectionRand;

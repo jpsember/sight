@@ -39,3 +39,6 @@ project_config
 sight_config.json
 lesson_folder.json
 
+
+.session.json
+
