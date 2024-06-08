@@ -88,7 +88,6 @@ public class LessonManager extends BaseObject {
     {
       var s = session();
       Files.S.writePretty(sessionPath(), s);
-      pr("pass:", mPassNumber, "cursor:", mPassCursor, "id:", key);
     }
 
     return key;
