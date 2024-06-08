@@ -37,12 +37,12 @@ public class MidiManager extends BaseObject {
   private void attemptConnectToMidiDevice() {
     if (mMidiConnected)
       return;
-   
+
     var currentTime = System.currentTimeMillis();
     if (currentTime - mLastConnectAttemptTime < DateTimeTools.SECONDS(2))
       return;
     mLastConnectAttemptTime = currentTime;
-    
+
     log("attemptConnectToMidiDevice");
 
     try {
@@ -112,6 +112,10 @@ public class MidiManager extends BaseObject {
       }
     }
     return out;
+  }
+
+  public boolean midiAvailable() {
+    return mMidiConnected;
   }
 
   private void findInputAndOutputDevices() throws MidiUnavailableException {

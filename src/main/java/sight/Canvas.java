@@ -63,6 +63,17 @@ public class Canvas extends JPanel {
       g.drawString(mMessage, 0, mMessageY + mFontMetrics.getAscent());
     }
 
+    {
+      String msg = null;
+      if (!MidiManager.SHARED_INSTANCE.midiAvailable())
+        msg = "No MIDI device found";
+      if (!nullOrEmpty(msg)) {
+        g.setColor(mMessageColor);
+        g.setFont(font(g));
+        g.drawString(msg, 0, mInfoY + mFontMetrics.getAscent());
+      }
+    }
+
     if (DRAW_BOXES) {
       drawBox(g, Color.red, mClefX, mMessageY, mContentWidth, mMessageHeight);
       drawBox(g, Color.green, mClefX, mPad1Y, mContentWidth, mPadHeight);
@@ -137,10 +148,11 @@ public class Canvas extends JPanel {
     mStandardSize = mTwoStaves ? atlasStaffRect.height / 3 : atlasStaffRect.height;
 
     mMessageHeight = stdScale(0.4);
+    mInfoHeight = stdScale(0.3);
 
     mPadHeight = stdScale(0.90);
     var staffHeight = atlasStaffRect.height;
-    var promptHeight = stdScale(0.4);
+    var promptHeight = stdScale(1.6);
 
     startAllocPix();
     mMessageY = allocPix(mMessageHeight);
@@ -148,6 +160,7 @@ public class Canvas extends JPanel {
     mCanvasStaffY = allocPix(staffHeight);
     mPad2Y = allocPix(mPadHeight);
     mPromptY = allocPix(promptHeight);
+    mInfoY = allocPix(mInfoHeight);
     mContentHeight = allocPix(0);
 
     startAllocPix();
@@ -246,7 +259,7 @@ public class Canvas extends JPanel {
   private int mStandardSize;
   // The next y coordinate to return from call to allocHeight()
   private int mNextCoordinate;
-  private int mMessageY, mCanvasStaffY, mPromptY, mContentHeight, mPad1Y, mPad2Y;
+  private int mMessageY, mCanvasStaffY, mPromptY, mContentHeight, mPad1Y, mPad2Y, mInfoY;
 
   private FontMetrics mFontMetrics;
   private Font mFont;
@@ -257,6 +270,7 @@ public class Canvas extends JPanel {
   private int mChordWidth;
   private int mClefX, mKeySigX, mChordsX, mContentWidth;
   private int mMessageHeight;
+  private int mInfoHeight;
   private int mPadHeight;
   private BufferedImage mAtlasImage;
   private String mAtlasLessonId;

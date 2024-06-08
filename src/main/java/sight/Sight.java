@@ -119,6 +119,7 @@ public class Sight extends App {
 
     mCurrentTime = System.currentTimeMillis();
 
+    
     var lessonState = lessonState();
 
     if (lessonState.status() == LessonStatus.NONE)
