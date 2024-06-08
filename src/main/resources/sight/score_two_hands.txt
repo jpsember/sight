@@ -18,6 +18,8 @@
     % In case there is no key signature, add space from clef
     \override Staff.Clef.space-alist.first-note = #'(extra-space . 8)
 
+    % Use a time signature that allows us to fit up to 4 whole notes in a single bar
+    \time 16/4
     \key [!key]
     [!notes_rh]
 }
@@ -34,6 +36,8 @@
     % In case there is no key signature, add space from clef
     \override Staff.Clef.space-alist.first-note = #'(extra-space . 8)
 
+    % Use a time signature that allows us to fit up to 4 whole notes in a single bar
+    \time 16/4
     \key [!key]
     [!notes_lh]
 }

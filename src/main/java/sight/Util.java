@@ -18,6 +18,8 @@ import sight.gen.SightConfig;
 
 public final class Util {
 
+  public static final boolean ISSUE_40 = false && alert("ISSUE_40 in effect");
+
   public static final boolean ISSUE_39 = false && alert("ISSUE_39 in effect");
 
   public static final boolean ISSUE_28 = false && alert("ISSUE_28 in effect");

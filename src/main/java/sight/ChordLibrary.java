@@ -146,6 +146,19 @@ public class ChordLibrary extends BaseObject {
         pr("output file:", Files.infoMap(tempOutputFile));
         badState("trouble compiling");
       }
+
+      if (ISSUE_40) {
+        int k = 0;
+        File inspectFile = null;
+        while (true) {
+          inspectFile = new File(mWorkDirectory, "issue40_" + k + ".png");
+          if (!inspectFile.exists())
+            break;
+          k++;
+        }
+        files().copyFile(tempOutputFile, inspectFile);
+      }
+
       files().moveFile(tempOutputFile, targetFile);
     }
 
