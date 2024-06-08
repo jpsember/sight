@@ -229,7 +229,7 @@ public class Sight extends App {
 
     // If messages have changed since being rendered, refresh
     {
-      var newSig = Msg.changeCounter.get();
+      var newSig = Msg.getChangeCounter();
       if (newSig != mMessagesSignature) {
         log("newSig:", newSig, "old:", mMessagesSignature);
         mMessagesSignature = newSig;
@@ -280,12 +280,6 @@ public class Sight extends App {
     JPanel parentPanel = new JPanel(new BorderLayout());
     parentPanel.add(canvas());
     contentPane().add(parentPanel);
-
-    if (false && !ISSUE_24) {
-      // WTF, apparently this is necessary to get repainting to occur; see
-      // https://groups.google.com/g/comp.lang.java.gui/c/vCbwLOX9Vow?pli=1
-      contentPane().revalidate();
-    }
   }
 
   private Canvas canvas() {

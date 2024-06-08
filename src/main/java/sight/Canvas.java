@@ -113,40 +113,13 @@ public class Canvas extends JPanel {
     i24("canvas.paintComponent done");
   }
 
-  private static int hexToInt(String hex) {
-    int val = 0;
-    for (int i = 0; i < hex.length(); i++) {
-      var c = hex.charAt(i);
-      int v = 0;
-      if (c >= 'a')
-        v = c - 'a' + 10;
-      else if (c >= 'A')
-        v = c - 'A' + 10;
-      else
-        v = c - '0';
-      if (v < 0 || v >= 16)
-        badArg("hexToInt:", hex);
-      val = (val << 4) | v;
-    }
-    return val;
-  }
-
   private void renderMsg(Graphics2D g, int index, int y) {
-
-    var m = Msg.get(index);
-    if (m != null) {
-      var c = Color.blue;
-      var s = m.toString();
-      if (s.startsWith("$")) {
-        var col = s.substring(1, 1 + 6);
-        c = new Color(hexToInt(col.substring(0, 2)), hexToInt(col.substring(2, 4)),
-            hexToInt(col.substring(4)));
-        s = s.substring(7).trim();
-      }
-      g.setColor(c);
-      g.setFont(font(g));
-      g.drawString(s, 0, y + mFontMetrics.getAscent());
-    }
+    var p = Msg.get(index);
+    if (p == null)
+      return;
+    g.setColor(p.color);
+    g.setFont(font(g));
+    g.drawString(p.message, 0, y + mFontMetrics.getAscent());
   }
 
   /**

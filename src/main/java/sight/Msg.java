@@ -1,7 +1,9 @@
 package sight;
 
 import static js.base.Tools.*;
+import static sight.Util.*;
 
+import java.awt.Color;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -9,39 +11,50 @@ import js.base.BasePrinter;
 
 public class Msg {
 
-  public static Map<Integer, String> map = concurrentHashMap();
+  private static Map<Integer, String> map = concurrentHashMap();
 
   public static void remove(int index) {
     set(index);
   }
 
   public static void set(int index, Object... msg) {
-    boolean change = false;
     if (msg.length == 0) {
       if (map.remove(index) != null) {
-        pr("Msg.clear", index);
-        change = true;
+        changeCounter.incrementAndGet();
       }
     } else {
       var s = BasePrinter.toString(msg);
       var old = map.put(index, s);
       if (!s.equals(old)) {
-        pr("Msg.set", index, s);
-        change = true;
+        changeCounter.incrementAndGet();
       }
     }
-    if (change) {
-      changeCounter.incrementAndGet();
-      pr("incremented change");
+  }
+
+  public static int getChangeCounter() {
+    return changeCounter.get();
+  }
+
+  private static AtomicInteger changeCounter = new AtomicInteger();
+
+  public static Msg get(int index) {
+    var s = map.get(index);
+    if (s == null)
+      return null;
+    var c = Color.blue;
+    if (s.startsWith("$")) {
+      c = new Color(hexToInt(s.substring(1, 3)), hexToInt(s.substring(3, 5)), hexToInt(s.substring(5, 7)));
+      s = s.substring(7).trim();
     }
+    return new Msg(c, s);
   }
 
-  public static AtomicInteger changeCounter = new AtomicInteger();
+  final String message;
+  final Color color;
 
-  public static String get(int index) {
-    return map.get(index);
+  private Msg(Color c, String m) {
+    message = m;
+    color = c;
   }
 
-  private Msg() {
-  }
 }

@@ -18,9 +18,9 @@ import sight.gen.SightConfig;
 
 public final class Util {
 
-  public static final boolean ISSUE_28 = true && alert("ISSUE_28 in effect");
+  public static final boolean ISSUE_28 = false && alert("ISSUE_28 in effect");
 
-  public static final boolean ISSUE_24 = true && alert("ISSUE_24 in effect");
+  public static final boolean ISSUE_24 = false && alert("ISSUE_24 in effect");
 
   public static final boolean SMALL = false && alert("small lessons for dev");
 
@@ -299,6 +299,23 @@ public final class Util {
   }
 
   public static final int MSG_MAIN = 0, MSG_INFO = 1, MSG_TOTAL = 2;
-  
-   
+
+  public static int hexToInt(String hex) {
+    int val = 0;
+    for (int i = 0; i < hex.length(); i++) {
+      var c = hex.charAt(i);
+      int v = 0;
+      if (c >= 'a')
+        v = c - 'a' + 10;
+      else if (c >= 'A')
+        v = c - 'A' + 10;
+      else
+        v = c - '0';
+      if (v < 0 || v >= 16)
+        badArg("hexToInt:", hex);
+      val = (val << 4) | v;
+    }
+    return val;
+  }
+
 }
