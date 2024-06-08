@@ -14,6 +14,7 @@ import javax.sound.midi.ShortMessage;
 import javax.sound.midi.Transmitter;
 
 import js.base.BaseObject;
+import js.base.DateTimeTools;
 import sight.gen.Chord;
 import uk.co.xfactorylibrarians.coremidi4j.CoreMidiDeviceProvider;
 
@@ -31,13 +32,18 @@ public class MidiManager extends BaseObject {
     attemptConnectToMidiDevice();
   }
 
-  private void attemptConnectToMidiDevice() {
+  private long mLastConnectAttemptTime;
 
+  private void attemptConnectToMidiDevice() {
     if (mMidiConnected)
       return;
+   
+    var currentTime = System.currentTimeMillis();
+    if (currentTime - mLastConnectAttemptTime < DateTimeTools.SECONDS(2))
+      return;
+    mLastConnectAttemptTime = currentTime;
+    
     log("attemptConnectToMidiDevice");
-
-    todo("add delay to avoid calling attemptConnectToMidi too often");
 
     try {
       if (verbose()) {
