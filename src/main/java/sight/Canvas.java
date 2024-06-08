@@ -56,24 +56,8 @@ public class Canvas extends JPanel {
 
     g.transform(mContentTransform.toAffineTransform());
 
-    {
-      var m = Msg.get(MSG_MAIN);
-      if (m != null) {
-        g.setColor(m.color());
-        g.setFont(font(g));
-        g.drawString(m.toString(), 0, mMessageY + mFontMetrics.getAscent());
-      }
-    }
-
-    {
-      var m = Msg.get(MSG_INFO);
-      if (m != null) {
-        g.setColor(m.color());
-        g.setFont(font(g));
-        g.drawString(m.toString(), 0, mInfoY + mFontMetrics.getAscent());
-      }
-
-    }
+    renderMsg(g, MSG_MAIN, mMessageY);
+    renderMsg(g, MSG_INFO, mInfoY);
 
     if (DRAW_BOXES) {
       drawBox(g, Color.red, mClefX, mMessageY, mContentWidth, mMessageHeight);
@@ -129,21 +113,40 @@ public class Canvas extends JPanel {
     i24("canvas.paintComponent done");
   }
 
-//  @Deprecated
-//  public void clearMessage() {
-//    //  mMessage = null;
-//  }
-
-  @Deprecated
-  public void setInfoMessage(Color color, Object... message) {
-    Msg.set(MSG_INFO, color, message);
+  private static int hexToInt(String hex) {
+    int val = 0;
+    for (int i = 0; i < hex.length(); i++) {
+      var c = hex.charAt(i);
+      int v = 0;
+      if (c >= 'a')
+        v = c - 'a' + 10;
+      else if (c >= 'A')
+        v = c - 'A' + 10;
+      else
+        v = c - '0';
+      if (v < 0 || v >= 16)
+        badArg("hexToInt:", hex);
+      val = (val << 4) | v;
+    }
+    return val;
   }
 
-  @Deprecated
-  public void setMessage(Color color, Object... message) {
-    Msg.set(MSG_MAIN,color,message);
-//    mMessageColor = color;
-//    mMessage = BasePrinter.toString(message);
+  private void renderMsg(Graphics2D g, int index, int y) {
+
+    var m = Msg.get(index);
+    if (m != null) {
+      var c = Color.blue;
+      var s = m.toString();
+      if (s.startsWith("$")) {
+        var col = s.substring(1, 1 + 6);
+        c = new Color(hexToInt(col.substring(0, 2)), hexToInt(col.substring(2, 4)),
+            hexToInt(col.substring(4)));
+        s = s.substring(7).trim();
+      }
+      g.setColor(c);
+      g.setFont(font(g));
+      g.drawString(m.toString(), 0, y + mFontMetrics.getAscent());
+    }
   }
 
   /**
@@ -284,8 +287,8 @@ public class Canvas extends JPanel {
   private BufferedImage mAtlasImage;
   private String mAtlasLessonId;
 
-//  private Msg mMainMessage;
-//  private Msg mInfoMessage;
+  //  private Msg mMainMessage;
+  //  private Msg mInfoMessage;
   //  
   //  private String mMessage;
   //  private Color mMessageColor;

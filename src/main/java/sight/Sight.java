@@ -4,7 +4,6 @@ import static js.base.Tools.*;
 import static sight.Util.*;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
@@ -198,8 +197,8 @@ public class Sight extends App {
           writeWork();
           var endAcc = Math.round(acc[1] * 100);
           var diff = Math.round((acc[1] - acc[0]) * 100);
-          canvas().setMessage(new Color(0, 128, 0), "Done session! Accuracy:",
-              diff >= 0 ? "+" + diff : "-" + diff, "=", endAcc + "%");
+          Msg.set(MSG_MAIN, "$008000", "Done session! Accuracy:", diff >= 0 ? "+" + diff : "-" + diff, "=",
+              endAcc + "%");
         } else {
           prepareLesson();
         }
@@ -223,23 +222,16 @@ public class Sight extends App {
       if (!MidiManager.SHARED_INSTANCE.midiAvailable())
         msg = "No MIDI device found";
       if (msg != null)
-        Msg.set(MSG_INFO, Color.RED, msg);
+        Msg.set(MSG_INFO, "$ff0000", msg);
       else
-        Msg.set(MSG_INFO, null);
+        Msg.remove(MSG_INFO);
     }
 
     // If messages have changed since being rendered, refresh
     {
-      //      var sb = new StringBuilder();
-      //      for (var ent : Msg.map.entrySet()) {
-      //      sb.append(ent.getKey());
-      //      sb.append(":");
-      //      sb.append(ent.getValue().key());
-      //      }
-      //      var sig = sb.toString();
       var newSig = Msg.changeCounter.get();
-      log("newSig:",newSig,"old:",mMessagesSignature);
       if (newSig != mMessagesSignature) {
+        log("newSig:", newSig, "old:", mMessagesSignature);
         mMessagesSignature = newSig;
         refreshView("message(s) changed");
       }
@@ -320,7 +312,7 @@ public class Sight extends App {
     b.status(LessonStatus.ACTIVE);
     b.cursor(0);
     b.questionCount(0).correctCount(0);
-    Msg.set(MSG_MAIN, null);
+    Msg.remove(MSG_MAIN);
 
     var key = lessonManager().choose();
     lessonHistory.add(key);
@@ -371,7 +363,7 @@ public class Sight extends App {
           b.status(LessonStatus.DONE);
         else {
           b.status(LessonStatus.RETRY);
-          canvas().setMessage(Color.RED, "Try Again");
+          Msg.set(MSG_MAIN, "$ff0000", "Try Again");
         }
       }
     } else {
