@@ -18,6 +18,8 @@ import sight.gen.SightConfig;
 
 public final class Util {
 
+  public static final boolean ISSUE_39 = false && alert("ISSUE_39 in effect");
+
   public static final boolean ISSUE_28 = false && alert("ISSUE_28 in effect");
 
   public static final boolean ISSUE_24 = false && alert("ISSUE_24 in effect");
@@ -41,6 +43,12 @@ public final class Util {
 
   public static final int MAX_LESSONS_PER_SESSION = SMALL ? 3 : 8;
   public static final int REPS_PER_LESSON = SMALL ? 2 : 3;
+
+  public static void i39(Object... msg) {
+    if (!ISSUE_39)
+      return;
+    pr(insertStringToFront("<issue 39>", msg));
+  }
 
   /**
    * Get an input stream to a resource

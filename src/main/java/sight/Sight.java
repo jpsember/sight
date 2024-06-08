@@ -121,7 +121,7 @@ public class Sight extends App {
     var lessonState = lessonState();
 
     if (lessonState.status() == LessonStatus.NONE)
-      prepareLesson();
+      prepareLesson(null);
 
     // Watch for changes to frame location
     {
@@ -180,7 +180,7 @@ public class Sight extends App {
 
     case DONE_SESSION: {
       if (elapsed >= config().donePauseTimeMs() * 3) {
-        prepareLesson();
+        prepareLesson(null);
         refreshView("DONE_SESSION expired");
       }
     }
@@ -200,7 +200,7 @@ public class Sight extends App {
           Msg.set(MSG_MAIN, "$008000", "Done session! Accuracy:", diff >= 0 ? "+" + diff : "-" + diff, "=",
               endAcc + "%");
         } else {
-          prepareLesson();
+          prepareLesson(null);
         }
         refreshView("DONE expired");
       }
@@ -209,7 +209,7 @@ public class Sight extends App {
     case RETRY:
       if (elapsed >= config().donePauseTimeMs()) {
         lessonManager().recordResult(lessonState);
-        prepareLesson();
+        prepareLesson(lessonState.lessonId());
         refreshView("RETRY expired");
       }
       break;
@@ -301,14 +301,18 @@ public class Sight extends App {
   // Lesson logic
   // ------------------------------------------------------------------
 
-  private void prepareLesson() {
+  private void prepareLesson(String keyIfRepeat) {
     var b = createWork();
     b.status(LessonStatus.ACTIVE);
     b.cursor(0);
     b.questionCount(0).correctCount(0);
     Msg.remove(MSG_MAIN);
 
-    var key = lessonManager().choose();
+    String key;
+    if (nonEmpty(keyIfRepeat))
+      key = keyIfRepeat;
+    else
+      key = lessonManager().choose();
     lessonHistory.add(key);
     b.lessonId(key);
 

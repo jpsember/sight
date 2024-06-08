@@ -113,6 +113,7 @@ public class LessonManager extends BaseObject {
     stat.accuracy((float) updAcc);
     log("recorded result for", id, "% right:", pctRight, INDENT, stat);
     mFolder.stats().put(id, stat);
+    i39(VERT_SP, "updating stats for lesson id:", id, INDENT, stat);
     setModified("recorded result for lesson");
     flushFolder();
   }
@@ -446,13 +447,17 @@ public class LessonManager extends BaseObject {
   }
 
   private float calcLessonAccuracy() {
+    i39("calcLessonAccuracy; ids:", lessonIds());
     float accSum = 0;
     var lessonIds = lessonIds();
     for (var id : lessonIds) {
       var stat = lessonStat(id);
       accSum += stat.accuracy();
+      i39("...stats for:", id, INDENT, stat);
     }
-    return accSum / lessonIds.size();
+    float acc = accSum / lessonIds.size();
+    i39("...calc'd accuracy:", acc);
+    return acc;
   }
 
   private Session.Builder session() {
