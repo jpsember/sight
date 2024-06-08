@@ -102,6 +102,8 @@ public class MidiManager extends BaseObject {
     if (mStarted) {
       if (mMidiConnected) {
         try {
+          // If device was turned off, the receiver won't know about it; so very device is still open
+          checkState(mInputDevice.isOpen());
           out = mOurReceiver.currentChord();
         } catch (Throwable t) {
           pr("*** failed to get current chord:", t);

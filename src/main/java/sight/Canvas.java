@@ -145,7 +145,7 @@ public class Canvas extends JPanel {
       }
       g.setColor(c);
       g.setFont(font(g));
-      g.drawString(m.toString(), 0, y + mFontMetrics.getAscent());
+      g.drawString(s, 0, y + mFontMetrics.getAscent());
     }
   }
 
