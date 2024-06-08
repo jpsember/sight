@@ -109,7 +109,7 @@ public class Sight extends App {
 
     mTaskManager = new BgndTaskManager();
     var m = MidiManager.SHARED_INSTANCE;
-    m.start(config());
+    m.start( );
 
     mTaskManager.addTask(() -> swingBgndTask());
     mTaskManager.start();
@@ -359,7 +359,7 @@ public class Sight extends App {
     pr("creating chords");
     SystemUtil.prepareForConsoleOrGUI(true);
     var m = MidiManager.SHARED_INSTANCE;
-    m.start(config());
+    m.start( );
 
     List<Chord> score = arrayList();
 
@@ -405,7 +405,7 @@ public class Sight extends App {
     pr("experiment for sending midi to device");
     SystemUtil.prepareForConsoleOrGUI(true);
     var m = MidiManager.SHARED_INSTANCE;
-    m.start(config());
+    m.start( );
 
     while (true) {
       sleepMs(50);

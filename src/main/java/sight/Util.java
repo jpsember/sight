@@ -18,6 +18,8 @@ import sight.gen.SightConfig;
 
 public final class Util {
 
+  public static final boolean ISSUE_28 = true && alert("ISSUE_28 in effect");
+
   public static final boolean ISSUE_24 = false && alert("ISSUE_24 in effect");
 
   public static final boolean SMALL = false && alert("small lessons for dev");
@@ -69,13 +71,15 @@ public final class Util {
 
   public static void close(AutoCloseable... closeables) {
     todo("?replace the Files method with this (autocloseable instead of closeable)");
-    try {
-      for (var c : closeables) {
-        if (c != null)
+    for (var c : closeables) {
+      if (c != null) {
+        try {
           c.close();
+
+        } catch (Exception e) {
+          alert("trouble closing: " + c, e);
+        }
       }
-    } catch (Exception e) {
-      throw Files.asFileException(e);
     }
   }
 

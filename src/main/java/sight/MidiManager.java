@@ -15,16 +15,30 @@ import javax.sound.midi.Transmitter;
 
 import js.base.BaseObject;
 import sight.gen.Chord;
-import sight.gen.SightConfig;
 import uk.co.xfactorylibrarians.coremidi4j.CoreMidiDeviceProvider;
 
 public class MidiManager extends BaseObject {
 
   public static final MidiManager SHARED_INSTANCE = new MidiManager();
 
-  public synchronized void start(SightConfig config) {
+  public synchronized void start() {
+    if (ISSUE_28)
+      setVerbose();
     if (mStarted)
       return;
+    mStarted = true;
+
+    attemptConnectToMidiDevice();
+  }
+
+  private void attemptConnectToMidiDevice() {
+
+    if (mMidiConnected)
+      return;
+    log("attemptConnectToMidiDevice");
+
+    todo("add delay to avoid calling attemptConnectToMidi too often");
+
     try {
       if (verbose()) {
         log("Working MIDI Devices:");
@@ -39,7 +53,7 @@ public class MidiManager extends BaseObject {
         log("CoreMIDI4J native library is not available.");
       }
 
-      mOurReceiver = new MidiReceiver(config);
+      mOurReceiver = new MidiReceiver(config());
 
       findInputAndOutputDevices();
       mInputDevice.open();
@@ -50,24 +64,48 @@ public class MidiManager extends BaseObject {
       // Bind the transmitter to the receiver so the receiver gets input from the transmitter
       mTransmitter.setReceiver(mOurReceiver);
       mInstrumentReceiver = mOutputDevice.getReceiver();
-
-      mStarted = true;
+      mMidiConnected = true;
+      log("...connected");
     } catch (Throwable t) {
-      throw asRuntimeException(t);
+      todo("display message about no midi found");
+      disconnectMidi();
+      //throw asRuntimeException(t);
     }
+  }
+
+  private void disconnectMidi() {
+    log("disconnectMidi");
+    // Close things down in the opposite order that they were opened
+    close(mInstrumentReceiver, mTransmitter, mOutputDevice, mInputDevice, mOurReceiver);
+    mInstrumentReceiver = null;
+    mTransmitter = null;
+    mOutputDevice = null;
+    mInputDevice = null;
+    mOurReceiver = null;
+    mMidiConnected = false;
   }
 
   public synchronized void stop() {
     if (!mStarted)
       return;
-    // Close things down in the opposite order that they were opened
-    close(mInstrumentReceiver, mTransmitter, mOutputDevice, mInputDevice, mOurReceiver);
+    disconnectMidi();
   }
 
   public synchronized Chord currentChord() {
-    if (!mStarted)
-      return Chord.DEFAULT_INSTANCE;
-    return mOurReceiver.currentChord();
+    var out = Chord.DEFAULT_INSTANCE;
+    if (mStarted) {
+      if (mMidiConnected) {
+        try {
+          out = mOurReceiver.currentChord();
+        } catch (Throwable t) {
+          pr("*** failed to get current chord:", t);
+          disconnectMidi();
+        }
+      } else {
+        attemptConnectToMidiDevice();
+      }
+    }
+    return out;
   }
 
   private void findInputAndOutputDevices() throws MidiUnavailableException {
@@ -199,4 +237,5 @@ public class MidiManager extends BaseObject {
     r.send(m2, deviceTimestamp + (delayMs + durationMs) * MS_TO_MICROSEC);
   }
 
+  private boolean mMidiConnected;
 }
