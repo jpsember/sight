@@ -14,7 +14,6 @@ import java.util.List;
 
 import javax.swing.JPanel;
 
-import js.base.BasePrinter;
 import js.file.Files;
 import js.geometry.IRect;
 import js.geometry.Matrix;
@@ -57,21 +56,23 @@ public class Canvas extends JPanel {
 
     g.transform(mContentTransform.toAffineTransform());
 
-    if (!nullOrEmpty(mMessage)) {
-      g.setColor(mMessageColor);
-      g.setFont(font(g));
-      g.drawString(mMessage, 0, mMessageY + mFontMetrics.getAscent());
+    {
+      var m = Msg.get(MSG_MAIN);
+      if (m != null) {
+        g.setColor(m.color());
+        g.setFont(font(g));
+        g.drawString(m.toString(), 0, mMessageY + mFontMetrics.getAscent());
+      }
     }
 
     {
-      String msg = null;
-      if (!MidiManager.SHARED_INSTANCE.midiAvailable())
-        msg = "No MIDI device found";
-      if (!nullOrEmpty(msg)) {
-        g.setColor(mMessageColor);
+      var m = Msg.get(MSG_INFO);
+      if (m != null) {
+        g.setColor(m.color());
         g.setFont(font(g));
-        g.drawString(msg, 0, mInfoY + mFontMetrics.getAscent());
+        g.drawString(m.toString(), 0, mInfoY + mFontMetrics.getAscent());
       }
+
     }
 
     if (DRAW_BOXES) {
@@ -128,13 +129,21 @@ public class Canvas extends JPanel {
     i24("canvas.paintComponent done");
   }
 
-  public void clearMessage() {
-    mMessage = null;
+//  @Deprecated
+//  public void clearMessage() {
+//    //  mMessage = null;
+//  }
+
+  @Deprecated
+  public void setInfoMessage(Color color, Object... message) {
+    Msg.set(MSG_INFO, color, message);
   }
 
+  @Deprecated
   public void setMessage(Color color, Object... message) {
-    mMessageColor = color;
-    mMessage = BasePrinter.toString(message);
+    Msg.set(MSG_MAIN,color,message);
+//    mMessageColor = color;
+//    mMessage = BasePrinter.toString(message);
   }
 
   /**
@@ -274,8 +283,16 @@ public class Canvas extends JPanel {
   private int mPadHeight;
   private BufferedImage mAtlasImage;
   private String mAtlasLessonId;
-  private String mMessage;
-  private Color mMessageColor;
+
+//  private Msg mMainMessage;
+//  private Msg mInfoMessage;
+  //  
+  //  private String mMessage;
+  //  private Color mMessageColor;
+  //  
+  //  private String mInfoMessage;
+  //  private Color mInfoMessageColor;
+
   private Matrix mContentTransform;
   private boolean mTwoStaves;
 }

@@ -109,7 +109,7 @@ public class Sight extends App {
 
     mTaskManager = new BgndTaskManager();
     var m = MidiManager.SHARED_INSTANCE;
-    m.start( );
+    m.start();
 
     mTaskManager.addTask(() -> swingBgndTask());
     mTaskManager.start();
@@ -119,7 +119,6 @@ public class Sight extends App {
 
     mCurrentTime = System.currentTimeMillis();
 
-    
     var lessonState = lessonState();
 
     if (lessonState.status() == LessonStatus.NONE)
@@ -218,8 +217,37 @@ public class Sight extends App {
     }
 
     mCurrentTime = 0;
+
+    {
+      String msg = null;
+      if (!MidiManager.SHARED_INSTANCE.midiAvailable())
+        msg = "No MIDI device found";
+      if (msg != null)
+        Msg.set(MSG_INFO, Color.RED, msg);
+      else
+        Msg.set(MSG_INFO, null);
+    }
+
+    // If messages have changed since being rendered, refresh
+    {
+      //      var sb = new StringBuilder();
+      //      for (var ent : Msg.map.entrySet()) {
+      //      sb.append(ent.getKey());
+      //      sb.append(":");
+      //      sb.append(ent.getValue().key());
+      //      }
+      //      var sig = sb.toString();
+      var newSig = Msg.changeCounter.get();
+      log("newSig:",newSig,"old:",mMessagesSignature);
+      if (newSig != mMessagesSignature) {
+        mMessagesSignature = newSig;
+        refreshView("message(s) changed");
+      }
+    }
+
   }
 
+  private int mMessagesSignature;
   private BgndTaskManager mTaskManager;
 
   private GuiState mGuiState;
@@ -292,7 +320,7 @@ public class Sight extends App {
     b.status(LessonStatus.ACTIVE);
     b.cursor(0);
     b.questionCount(0).correctCount(0);
-    canvas().clearMessage();
+    Msg.set(MSG_MAIN, null);
 
     var key = lessonManager().choose();
     lessonHistory.add(key);
@@ -360,7 +388,7 @@ public class Sight extends App {
     pr("creating chords");
     SystemUtil.prepareForConsoleOrGUI(true);
     var m = MidiManager.SHARED_INSTANCE;
-    m.start( );
+    m.start();
 
     List<Chord> score = arrayList();
 
@@ -406,7 +434,7 @@ public class Sight extends App {
     pr("experiment for sending midi to device");
     SystemUtil.prepareForConsoleOrGUI(true);
     var m = MidiManager.SHARED_INSTANCE;
-    m.start( );
+    m.start();
 
     while (true) {
       sleepMs(50);

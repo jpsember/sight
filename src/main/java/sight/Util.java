@@ -20,7 +20,7 @@ public final class Util {
 
   public static final boolean ISSUE_28 = true && alert("ISSUE_28 in effect");
 
-  public static final boolean ISSUE_24 = false && alert("ISSUE_24 in effect");
+  public static final boolean ISSUE_24 = true && alert("ISSUE_24 in effect");
 
   public static final boolean SMALL = false && alert("small lessons for dev");
 
@@ -291,4 +291,14 @@ public final class Util {
     return (s.correctCount() * 100) / s.questionCount();
   }
 
+  public static String constructInfoMessage() {
+    String msg = "";
+    if (!MidiManager.SHARED_INSTANCE.midiAvailable())
+      msg = "No MIDI device found";
+    return msg;
+  }
+
+  public static final int MSG_MAIN = 0, MSG_INFO = 1, MSG_TOTAL = 2;
+  
+   
 }
