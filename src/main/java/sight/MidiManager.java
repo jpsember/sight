@@ -73,9 +73,7 @@ public class MidiManager extends BaseObject {
       mMidiConnected = true;
       log("...connected");
     } catch (Throwable t) {
-      todo("display message about no midi found");
       disconnectMidi();
-      //throw asRuntimeException(t);
     }
   }
 
