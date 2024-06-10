@@ -137,7 +137,20 @@ public class LessonManager extends BaseObject {
 
   private Map<String, RenderedNotes> constructSets() {
     var f = new File("lessons.json");
-    mLessonCollection = Files.parseAbstractDataOpt(LessonCollection.DEFAULT_INSTANCE, f);
+    var collection = Files.parseAbstractDataOpt(LessonCollection.DEFAULT_INSTANCE, f);
+
+    if (ISSUE_43) {
+      // Remove any lessons that aren't in a particular key
+      var b = LessonCollection.newBuilder();
+      for (var x : collection.lessons()) {
+        if (x.keySig().equals(KeySig.D_FLAT)) {
+          b.lessons().add(x);
+        }
+      }
+      collection = b.build();
+    }
+    mLessonCollection = collection;
+
     checkArgument(mLessonCollection.lessons().size() != 0, "no chord sets found in lesson collection:", f,
         INDENT, mLessonCollection);
 

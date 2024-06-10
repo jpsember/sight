@@ -260,15 +260,6 @@ public class Canvas extends JPanel {
   private BufferedImage mAtlasImage;
   private String mAtlasLessonId;
 
-  //  private Msg mMainMessage;
-  //  private Msg mInfoMessage;
-  //  
-  //  private String mMessage;
-  //  private Color mMessageColor;
-  //  
-  //  private String mInfoMessage;
-  //  private Color mInfoMessageColor;
-
   private Matrix mContentTransform;
   private boolean mTwoStaves;
 }

@@ -147,7 +147,7 @@ public class ChordLibrary extends BaseObject {
         badState("trouble compiling");
       }
 
-      if (ISSUE_40) {
+      if (ISSUE_43 || ISSUE_40) {
         int k = 0;
         File inspectFile = null;
         while (true) {
@@ -159,6 +159,9 @@ public class ChordLibrary extends BaseObject {
         files().copyFile(tempOutputFile, inspectFile);
       }
 
+      if (ISSUE_43)
+        die("quitting per issue 43");
+      
       files().moveFile(tempOutputFile, targetFile);
     }
 
@@ -237,6 +240,10 @@ public class ChordLibrary extends BaseObject {
       return "e \\major";
     case C:
       return "c \\major";
+    case D_FLAT:
+      return "des \\major";
+    case A:
+      return "a \\major";
     }
   }
 

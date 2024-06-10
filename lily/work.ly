@@ -16,8 +16,8 @@
     % In case there is no key signature, add space from clef
     \override Staff.Clef.space-alist.first-note = #'(extra-space . 8)
 
-    \key e \major
-     <b d' a' >2.  <g cis' fis' >4.  <fis a >2  <cis' >2
+    \key des \major
+     <c' f' bes'>2
 }
 
 
@@ -32,8 +32,10 @@
     % In case there is no key signature, add space from clef
     \override Staff.Clef.space-alist.first-note = #'(extra-space . 8)
 
-    \key e \major
-     <cis f >2.  <a, fis >4  <d, a, >2  <cis >2
+   \key des \major
+     <des ges bes>2
+     <c f a>2
+     <cis fis ais>2
 }
 
 
