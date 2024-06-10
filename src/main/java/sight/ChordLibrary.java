@@ -95,8 +95,8 @@ public class ChordLibrary extends BaseObject {
 
       var m = map();
       m.put("key", toLilyPond(rs.keySig()));
-      m.put("notes_rh", encodeLily(chordsRH, rnd2));
-      m.put("notes_lh", encodeLily(chordsLH, new Random(newSeed)));
+      m.put("notes_rh", encodeLily(rs.keySig(), chordsRH, rnd2));
+      m.put("notes_lh", encodeLily(rs.keySig(), chordsLH, new Random(newSeed)));
 
       MacroParser parser = new MacroParser();
       parser.withTemplate(template).withMapper(m);
@@ -112,7 +112,7 @@ public class ChordLibrary extends BaseObject {
 
       var m = map();
       m.put("key", toLilyPond(rs.keySig()));
-      m.put("notes", encodeLily(chords, rnd2));
+      m.put("notes", encodeLily(rs.keySig(), chords, rnd2));
       m.put("clef", hand == Hand.LEFT ? "bass" : "treble");
 
       MacroParser parser = new MacroParser();
@@ -161,7 +161,7 @@ public class ChordLibrary extends BaseObject {
 
       if (ISSUE_43)
         die("quitting per issue 43");
-      
+
       files().moveFile(tempOutputFile, targetFile);
     }
 
@@ -275,7 +275,7 @@ public class ChordLibrary extends BaseObject {
       "2. 2. 8 4.", //
   };
 
-  private String encodeLily(List<Chord> chords, Random rand) {
+  private String encodeLily(KeySig targetKeySig, List<Chord> chords, Random rand) {
 
     checkArgument(chords.size() == NOTES_PER_LESSON, "expected", NOTES_PER_LESSON, "chords, got:",
         chords.size());
@@ -291,7 +291,7 @@ public class ChordLibrary extends BaseObject {
       i++;
       sb.append(" <");
       for (var kn : c.keyNumbers()) {
-        sb.append(keyNumberToLilyNote(kn));
+        sb.append(keyNumberToLilyNote(targetKeySig, kn));
         sb.append(' ');
       }
 
@@ -302,31 +302,55 @@ public class ChordLibrary extends BaseObject {
     return sb.toString();
   }
 
-  private static String[] sKeyNumToLilyNote;
+  private static String[][] sKeyNumToLilyNotes;
   private static String[] sLilyOctaveSuffix = { ",,,", ",,", ",", "", "'", "''", "'''", "''''", "'''''", };
   private static String[] sLilyNoteName = { "c", "cis", "d", "dis", "e", "f", "fis", "g", "gis", "a", "ais",
       "b" };
+  private static String[] sLilyNoteNameFlat = { "c", "des", "d", "ees", "e", "f", "ges", "g", "aes", "a",
+      "bes", "b" };
 
-  private static String keyNumberToLilyNote(int keyNumber) {
+  private static String keyNumberToLilyNote(KeySig targetKeySig, int keyNumber) {
     todo("I need to do something different here depending upon the target key signature.");
-    
-    if (sKeyNumToLilyNote == null) {
-      var x = new String[MAX_KEY_NUMBER];
-      sKeyNumToLilyNote = x;
-      int oct = 0;
-      int noteOff = 12 - 3;
 
-      for (int i = 0; i < MAX_KEY_NUMBER; i++) {
-        var s = sLilyNoteName[noteOff] + sLilyOctaveSuffix[oct];
-        x[i] = s;
-        if (++noteOff == 12) {
-          noteOff = 0;
-          oct++;
+    if (sKeyNumToLilyNotes == null) {
+      sKeyNumToLilyNotes = new String[2][];
+
+      for (int pass = 0; pass < 2; pass++) {
+        var x = new String[MAX_KEY_NUMBER];
+        sKeyNumToLilyNotes[pass] = x;
+        int oct = 0;
+        int noteOff = 12 - 3;
+
+        var nm = (pass == 0) ? sLilyNoteName : sLilyNoteNameFlat;
+
+        for (int i = 0; i < MAX_KEY_NUMBER; i++) {
+          var s = nm[noteOff] + sLilyOctaveSuffix[oct];
+          x[i] = s;
+          if (++noteOff == 12) {
+            noteOff = 0;
+            oct++;
+          }
+
         }
-
       }
     }
-    return sKeyNumToLilyNote[keyNumber];
+
+    todo("choose appropriate sharp or flat variant");
+
+    int set;
+    switch (targetKeySig) {
+    case C:
+    case A:
+    case E:
+      set = 0;
+      break;
+    case D_FLAT:
+      set = 1;
+      break;
+    default:
+      throw badState("unsupported key signature:", targetKeySig);
+    }
+    return sKeyNumToLilyNotes[set][keyNumber];
   }
 
   private Random mOurRand;
