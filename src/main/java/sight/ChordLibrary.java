@@ -308,6 +308,8 @@ public class ChordLibrary extends BaseObject {
       "b" };
 
   private static String keyNumberToLilyNote(int keyNumber) {
+    todo("I need to do something different here depending upon the target key signature.");
+    
     if (sKeyNumToLilyNote == null) {
       var x = new String[MAX_KEY_NUMBER];
       sKeyNumToLilyNote = x;
