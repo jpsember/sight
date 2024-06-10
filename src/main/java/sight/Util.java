@@ -18,7 +18,7 @@ import sight.gen.SightConfig;
 
 public final class Util {
 
-  public static final boolean ISSUE_43 = true && alert("ISSUE_43 in effect (d flat troubles)");
+  public static final boolean ISSUE_43 = false && alert("ISSUE_43 in effect (d flat troubles)");
 
   public static final boolean ISSUE_40 = false && alert("ISSUE_40 in effect");
 

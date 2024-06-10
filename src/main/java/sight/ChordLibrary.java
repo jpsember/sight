@@ -302,7 +302,7 @@ public class ChordLibrary extends BaseObject {
     return sb.toString();
   }
 
-  private static String[][] sKeyNumToLilyNotes;
+  private static String[][] sKeyNumToLilyNoteTables;
   private static String[] sLilyOctaveSuffix = { ",,,", ",,", ",", "", "'", "''", "'''", "''''", "'''''", };
   private static String[] sLilyNoteName = { "c", "cis", "d", "dis", "e", "f", "fis", "g", "gis", "a", "ais",
       "b" };
@@ -310,14 +310,15 @@ public class ChordLibrary extends BaseObject {
       "bes", "b" };
 
   private static String keyNumberToLilyNote(KeySig targetKeySig, int keyNumber) {
-    todo("I need to do something different here depending upon the target key signature.");
 
-    if (sKeyNumToLilyNotes == null) {
-      sKeyNumToLilyNotes = new String[2][];
+    // We choose a particular table, one for keys with sharps, and one for flats
+
+    if (sKeyNumToLilyNoteTables == null) {
+      sKeyNumToLilyNoteTables = new String[2][];
 
       for (int pass = 0; pass < 2; pass++) {
         var x = new String[MAX_KEY_NUMBER];
-        sKeyNumToLilyNotes[pass] = x;
+        sKeyNumToLilyNoteTables[pass] = x;
         int oct = 0;
         int noteOff = 12 - 3;
 
@@ -330,12 +331,9 @@ public class ChordLibrary extends BaseObject {
             noteOff = 0;
             oct++;
           }
-
         }
       }
     }
-
-    todo("choose appropriate sharp or flat variant");
 
     int set;
     switch (targetKeySig) {
@@ -350,7 +348,7 @@ public class ChordLibrary extends BaseObject {
     default:
       throw badState("unsupported key signature:", targetKeySig);
     }
-    return sKeyNumToLilyNotes[set][keyNumber];
+    return sKeyNumToLilyNoteTables[set][keyNumber];
   }
 
   private Random mOurRand;
