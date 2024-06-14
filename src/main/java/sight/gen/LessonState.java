@@ -35,6 +35,10 @@ public class LessonState implements AbstractData {
     return mTimeMs;
   }
 
+  public String editChordExpr() {
+    return mEditChordExpr;
+  }
+
   @Override
   public Builder toBuilder() {
     return new Builder(this);
@@ -47,6 +51,7 @@ public class LessonState implements AbstractData {
   protected static final String _4 = "question_count";
   protected static final String _5 = "correct_count";
   protected static final String _6 = "time_ms";
+  protected static final String _7 = "edit_chord_expr";
 
   @Override
   public String toString() {
@@ -63,6 +68,7 @@ public class LessonState implements AbstractData {
     m.putUnsafe(_4, mQuestionCount);
     m.putUnsafe(_5, mCorrectCount);
     m.putUnsafe(_6, mTimeMs);
+    m.putUnsafe(_7, mEditChordExpr);
     return m;
   }
 
@@ -93,6 +99,7 @@ public class LessonState implements AbstractData {
     mQuestionCount = m.opt(_4, 0);
     mCorrectCount = m.opt(_5, 0);
     mTimeMs = m.opt(_6, 0L);
+    mEditChordExpr = m.opt(_7, "");
   }
 
   public static Builder newBuilder() {
@@ -122,6 +129,8 @@ public class LessonState implements AbstractData {
       return false;
     if (!(mTimeMs == other.mTimeMs))
       return false;
+    if (!(mEditChordExpr.equals(other.mEditChordExpr)))
+      return false;
     return true;
   }
 
@@ -137,6 +146,7 @@ public class LessonState implements AbstractData {
       r = r * 37 + mQuestionCount;
       r = r * 37 + mCorrectCount;
       r = r * 37 + (int)mTimeMs;
+      r = r * 37 + mEditChordExpr.hashCode();
       m__hashcode = r;
     }
     return r;
@@ -149,6 +159,7 @@ public class LessonState implements AbstractData {
   protected int mQuestionCount;
   protected int mCorrectCount;
   protected long mTimeMs;
+  protected String mEditChordExpr;
   protected int m__hashcode;
 
   public static final class Builder extends LessonState {
@@ -161,6 +172,7 @@ public class LessonState implements AbstractData {
       mQuestionCount = m.mQuestionCount;
       mCorrectCount = m.mCorrectCount;
       mTimeMs = m.mTimeMs;
+      mEditChordExpr = m.mEditChordExpr;
     }
 
     @Override
@@ -184,6 +196,7 @@ public class LessonState implements AbstractData {
       r.mQuestionCount = mQuestionCount;
       r.mCorrectCount = mCorrectCount;
       r.mTimeMs = mTimeMs;
+      r.mEditChordExpr = mEditChordExpr;
       return r;
     }
 
@@ -222,6 +235,11 @@ public class LessonState implements AbstractData {
       return this;
     }
 
+    public Builder editChordExpr(String x) {
+      mEditChordExpr = (x == null) ? "" : x;
+      return this;
+    }
+
   }
 
   public static final LessonState DEFAULT_INSTANCE = new LessonState();
@@ -230,6 +248,7 @@ public class LessonState implements AbstractData {
     mStatus = LessonStatus.DEFAULT_INSTANCE;
     mLessonId = "";
     mIcons = DataUtil.EMPTY_INT_ARRAY;
+    mEditChordExpr = "";
   }
 
 }

@@ -11,4 +11,7 @@ fields {
 
   // Timestamp the state last changed
   long time_ms;
+
+  // (edit chords mode only:) current chord being constructed
+  string edit_chord_expr;
 }

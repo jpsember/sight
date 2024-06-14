@@ -14,11 +14,15 @@ import java.util.List;
 
 import javax.swing.JPanel;
 
+import js.data.DataUtil;
 import js.file.Files;
 import js.geometry.IRect;
 import js.geometry.Matrix;
 import js.graphics.ImgEffects;
 import js.graphics.ImgUtil;
+import sight.gen.Hand;
+import sight.gen.Lesson;
+import sight.gen.LessonStatus;
 import sight.gen.RenderedNotes;
 
 public class Canvas extends JPanel {
@@ -40,12 +44,38 @@ public class Canvas extends JPanel {
     var s = lessonState();
     pr("Canvas paint, lesson state:", INDENT, s);
 
-    
-    todo("For edit mode, lesson state should increment each time it has changed, and instead of calling lessonManager() renderedNotes, use supplied one in lesson");
-    var id = s.lessonId();
+    String id = "";
+    RenderedNotes notes = null;
+
+    //todo("For edit mode, lesson state should increment each time it has changed, and instead of calling lessonManager() renderedNotes, use supplied one in lesson");
+    if (s.status() == LessonStatus.EDIT) {
+      if (nonEmpty(s.editChordExpr())) {
+        id = s.editChordExpr();
+        Lesson.Builder b = Lesson.newBuilder();
+        b.description("edit:" + id);
+        // b.id(calcHashFor(b.description()));
+
+        //        b.description(b.id());
+        checkState(config().hand() == Hand.BOTH, "expected BOTH");
+        b.hand(id.contains(":") ? config().hand() : Hand.LEFT);
+        b.keySig(config().key());
+        b.notes(id);
+        b.id(DataUtil.hex32(calcHashFor(b)));
+        var st = b.build();
+        pr("...calling chordLibrary for RenderedNotes, lesson:", INDENT, st);
+        notes = chordLibrary().get(st);
+      }
+      //      chordLibrary().get(z)
+    } else {
+      id = s.lessonId();
+      if (nonEmpty(id)) {
+        notes = lessonManager().renderedNotes(id);
+      }
+
+    }
     if (id.isEmpty())
       return;
-    var notes = lessonManager().renderedNotes(id);
+
     // Update the atlas image if the lesson id has changed
     if (!id.equals(mAtlasLessonId)) {
       mAtlasLessonId = id;
@@ -102,10 +132,12 @@ public class Canvas extends JPanel {
 
         // Render icon in prompt region, if appropriate
 
-        var icNum = s.icons()[i] - 1;
-        if (icNum >= 0) {
-          var ic = icon(icNum);
-          g.drawImage(ic, cx - ic.getWidth() / 2, mPromptY, null);
+        if (!config().createChords()) {
+          var icNum = s.icons()[i] - 1;
+          if (icNum >= 0) {
+            var ic = icon(icNum);
+            g.drawImage(ic, cx - ic.getWidth() / 2, mPromptY, null);
+          }
         }
 
         cx += mChordWidth;

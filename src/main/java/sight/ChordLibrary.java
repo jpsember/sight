@@ -276,9 +276,9 @@ public class ChordLibrary extends BaseObject {
   };
 
   private String encodeLily(KeySig targetKeySig, List<Chord> chords, Random rand) {
-
-    checkArgument(chords.size() == NOTES_PER_LESSON, "expected", NOTES_PER_LESSON, "chords, got:",
-        chords.size());
+    if (!config().createChords())
+      checkArgument(chords.size() == NOTES_PER_LESSON, "expected", NOTES_PER_LESSON, "chords, got:",
+          chords.size());
     var index = rand.nextInt(sDurations.length);
 
     var durationExpr = sDurations[index];

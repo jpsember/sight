@@ -225,7 +225,7 @@ public class Sight extends App implements KeyListener {
 
     while (!mKeyEventQueue.isEmpty()) {
       var x = mKeyEventQueue.remove();
-      pr("proc key:",x);
+      pr("proc key:", x);
       if (x.getModifiersEx() == 0 && x.getKeyChar() == 'q') {
         pr("...'q' pressed, quitting");
         System.exit(0);
@@ -489,7 +489,19 @@ public class Sight extends App implements KeyListener {
       mEditList.add(ch);
     }
 
-    pr(compileChords(mEditList));
+    var cch = compileChords(mEditList);
+    pr(cch);
+    {
+      var x = cch.trim();
+      if (!x.isEmpty()) {
+        int y = x.lastIndexOf(' ');
+        x = x.substring(y + 1);
+      }
+      var b = createWork();
+      b.editChordExpr(x);
+      writeWork();
+      pr("attempting to display:", x);
+    }
   }
 
   private static String compileChords(List<Chord> chords) {
