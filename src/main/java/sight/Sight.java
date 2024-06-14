@@ -287,8 +287,6 @@ public class Sight extends App {
     return mCanvas;
   }
 
-  private List<String> lessonHistory = arrayList();
-
   /**
    * Get app frame's content pane
    */
@@ -312,7 +310,6 @@ public class Sight extends App {
       key = keyIfRepeat;
     else
       key = lessonManager().choose();
-    lessonHistory.add(key);
     b.lessonId(key);
 
     var notes = lessonManager().renderedNotes(key);
