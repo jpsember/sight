@@ -1,5 +1,4 @@
-
-- fields {
+fields {
   *string lesson_ids;
   string last_lesson_id;
 }
