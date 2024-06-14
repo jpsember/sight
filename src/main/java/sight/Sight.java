@@ -4,9 +4,13 @@ import static js.base.Tools.*;
 import static sight.Util.*;
 
 import java.awt.BorderLayout;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.io.File;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -25,7 +29,7 @@ import sight.gen.GuiState;
 import sight.gen.Hand;
 import sight.gen.SightConfig;
 
-public class Sight extends App {
+public class Sight extends App implements KeyListener {
 
   public static void main(String[] args) {
     Sight app = new Sight();
@@ -195,8 +199,7 @@ public class Sight extends App {
       }
     }
       break;
-      
-      
+
     case RETRY:
       if (elapsed >= config().retryLessonDurationMs()) {
         lessonManager().recordResult(lessonState);
@@ -206,6 +209,14 @@ public class Sight extends App {
       break;
     }
 
+    while (!mKeyEventQueue.isEmpty()) {
+      var x = mKeyEventQueue.remove();
+      if (x.getModifiersEx() == 0 && x.getKeyChar() == 'q') {
+        pr("...'q' pressed, quitting");
+        System.exit(0);
+      }
+      pr("...unhandled key press:", x);
+    }
   }
 
   /**
@@ -298,6 +309,7 @@ public class Sight extends App {
   private void createFrame() {
     mFrame = new FrameWrapper();
     mFrame.frame().setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    mFrame.frame().addKeyListener(this);
 
     // We embed a JPanel that serves as a container for other components, 
     // the main one being the editor window, but others that may include
@@ -492,5 +504,23 @@ public class Sight extends App {
   }
 
   private LessonState.Builder mTempLessonState;
+  private Queue<KeyEvent> mKeyEventQueue = new LinkedList<>();
+
+  // ------------------------------------------------------------------
+  // JFrame KeyListener interface
+  // ------------------------------------------------------------------
+
+  @Override
+  public void keyTyped(KeyEvent e) {
+  }
+
+  @Override
+  public void keyPressed(KeyEvent e) {
+    mKeyEventQueue.add(e);
+  }
+
+  @Override
+  public void keyReleased(KeyEvent e) {
+  }
 
 }
