@@ -1,3 +1,5 @@
+// For persisting lesson statistics to file system
+
 fields {
   map string LessonStat stats;
 }

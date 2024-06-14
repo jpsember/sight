@@ -1,3 +1,5 @@
+// Statistics for a lesson
+
 fields {
   float accuracy;  // exponential average of accuracy
 }

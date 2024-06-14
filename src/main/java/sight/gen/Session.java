@@ -6,6 +6,7 @@ import js.data.DataUtil;
 import js.json.JSList;
 import js.json.JSMap;
 
+@Deprecated
 public class Session implements AbstractData {
 
   public List<String> lessonIds() {
