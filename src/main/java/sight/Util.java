@@ -20,8 +20,6 @@ public final class Util {
 
   public static final boolean ISSUE_43 = false && alert("ISSUE_43 in effect (d flat troubles)");
 
-  public static final boolean ISSUE_40 = false && alert("ISSUE_40 in effect");
-
   public static final boolean ISSUE_39 = false && alert("ISSUE_39 in effect");
 
   public static final boolean ISSUE_28 = false && alert("ISSUE_28 in effect");

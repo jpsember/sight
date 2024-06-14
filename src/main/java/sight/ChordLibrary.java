@@ -147,7 +147,7 @@ public class ChordLibrary extends BaseObject {
         badState("trouble compiling");
       }
 
-      if (ISSUE_43 || ISSUE_40) {
+      if (ISSUE_43) {
         int k = 0;
         File inspectFile = null;
         while (true) {
