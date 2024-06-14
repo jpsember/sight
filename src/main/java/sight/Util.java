@@ -84,7 +84,6 @@ public final class Util {
       if (c != null) {
         try {
           c.close();
-
         } catch (Exception e) {
           alert("trouble closing: " + c, e);
         }
@@ -105,10 +104,6 @@ public final class Util {
     if (msg == null)
       msg = "#UNKNOWN:" + statusByteValue;
     return msg;
-  }
-
-  public static int[] intArray(int... values) {
-    return values;
   }
 
   private static Map<Integer, String> sStatusByteNames;
@@ -180,7 +175,6 @@ public final class Util {
     if (avgNote >= MIDDLE_C)
       return Hand.RIGHT;
     return Hand.LEFT;
-
   }
 
   public static int calcHashFor(Lesson rs) {
@@ -239,28 +233,6 @@ public final class Util {
     return ch;
   }
 
-  public static final String filenameSafe(String s) {
-    var legal = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    var sb = new StringBuilder();
-    var prevLegal = false;
-    for (int i = 0; i < s.length(); i++) {
-      char c = s.charAt(i);
-      if (legal.indexOf(c) < 0) {
-        if (prevLegal) {
-          sb.append('_');
-          prevLegal = false;
-        }
-      } else {
-        prevLegal = true;
-        sb.append(c);
-      }
-    }
-    var r = sb.toString();
-    if (r.isEmpty())
-      r = "_SAFE_";
-    return r;
-  }
-
   public static void quitIfDeathChord(Chord ch) {
     if (DEATH_CHORD.equals(ch)) {
       pr("...DEATH CHORD pressed, quitting");
@@ -282,13 +254,6 @@ public final class Util {
     checkArgument(s.questionCount() != 0);
     checkArgument(s.correctCount() <= s.questionCount());
     return (s.correctCount() * 100) / s.questionCount();
-  }
-
-  public static String constructInfoMessage() {
-    String msg = "";
-    if (!MidiManager.SHARED_INSTANCE.midiAvailable())
-      msg = "No MIDI device found";
-    return msg;
   }
 
   public static final int MSG_MAIN = 0, MSG_INFO = 1, MSG_TOTAL = 2;
