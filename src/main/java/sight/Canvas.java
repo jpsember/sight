@@ -38,6 +38,10 @@ public class Canvas extends JPanel {
     g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 
     var s = lessonState();
+    pr("Canvas paint, lesson state:", INDENT, s);
+
+    
+    todo("For edit mode, lesson state should increment each time it has changed, and instead of calling lessonManager() renderedNotes, use supplied one in lesson");
     var id = s.lessonId();
     if (id.isEmpty())
       return;

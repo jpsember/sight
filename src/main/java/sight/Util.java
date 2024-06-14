@@ -10,6 +10,7 @@ import java.util.Map;
 
 import js.base.DateTimeTools;
 import js.file.Files;
+import js.geometry.MyMath;
 import sight.gen.Chord;
 import sight.gen.Hand;
 import sight.gen.Lesson;
@@ -274,6 +275,21 @@ public final class Util {
       val = (val << 4) | v;
     }
     return val;
+  }
+
+  public static int noteOfChord(Chord ch, int position) {
+    int s = ch.keyNumbers().length;
+    checkArgument(s != 0);
+    var truePos = MyMath.myMod(position, s);
+    return ch.keyNumbers()[truePos];
+  }
+
+  public static int firstNote(Chord ch) {
+    return noteOfChord(ch, 0);
+  }
+
+  public static int lastNote(Chord ch) {
+    return noteOfChord(ch, -1);
   }
 
 }
