@@ -70,23 +70,24 @@ public class Sight extends App implements KeyListener {
     });
   }
 
+  private boolean editMode() {
+    return config().createChords();
+  }
+
   private void auxPerform() {
 
-    if (config().createChords()) {
+    if (false && editMode()) {
       createChords();
       return;
     }
 
     SystemUtil.prepareForConsoleOrGUI(false);
 
-    lessonManager().init();
-
     // Continue starting app within the Swing thread
     //
     SwingUtilities.invokeLater(() -> {
       continueStartupWithinSwingThread();
     });
-
   }
 
   /**
@@ -110,6 +111,9 @@ public class Sight extends App implements KeyListener {
     var m = MidiManager.SHARED_INSTANCE;
     m.start();
 
+    if (!editMode())
+      lessonManager().init();
+
     mTaskManager.addTask(() -> swingBgndTask());
     mTaskManager.start();
   }
@@ -123,8 +127,14 @@ public class Sight extends App implements KeyListener {
     updateGUIState();
 
     var lessonState = lessonState();
-    if (lessonState.status() == LessonStatus.NONE)
-      prepareLesson(null);
+    if (lessonState.status() == LessonStatus.NONE) {
+      if (editMode()) {
+        var b = createWork();
+        b.status(LessonStatus.EDIT);
+        writeWork();
+      } else
+        prepareLesson(null);
+    }
 
     // Look for changes in the current chord
     {
@@ -133,8 +143,16 @@ public class Sight extends App implements KeyListener {
         mPrevChord = ch;
         if (!ch.equals(Chord.DEFAULT_INSTANCE)) {
           quitIfDeathChord(ch);
-          if (lessonState.status() == LessonStatus.ACTIVE)
+          switch (lessonState.status()) {
+          default:
+            break;
+          case ACTIVE:
             processPlayerChord(ch);
+            break;
+          case EDIT:
+            processEditChord(ch);
+            break;
+          }
         }
       }
     }
@@ -145,6 +163,10 @@ public class Sight extends App implements KeyListener {
 
     refreshIfMessagesChanged();
     mCurrentFrameTime = 0;
+  }
+
+  private void processEditChord(Chord ch) {
+    pr("processEditChord:", ch);
   }
 
   private void processLessonState() {
