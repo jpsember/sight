@@ -114,37 +114,17 @@ public class Sight extends App {
     mTaskManager.start();
   }
 
+  /**
+   * Application main loop, executes within Swing thread every ~15 ms (~ 60 fps)
+   */
   private void swingBgndTask() {
+    mCurrentFrameTime = System.currentTimeMillis();
 
-    mCurrentTime = System.currentTimeMillis();
+    updateGUIState();
 
     var lessonState = lessonState();
-
     if (lessonState.status() == LessonStatus.NONE)
       prepareLesson(null);
-
-    // Watch for changes to frame location
-    {
-      var b = new IRect(mFrame.frame().getBounds());
-      var s = guiState();
-      if (!b.equals(s.frameBounds())) {
-        mGuiState = s.toBuilder().frameBounds(b).build();
-        mGuiStateModTime = mCurrentTime;
-      }
-    }
-
-    {
-      var s = guiState();
-      if (s.equals(mLastWrittenGuiState)) {
-        mGuiStateModTime = mCurrentTime;
-      } else {
-        if (mCurrentTime - mGuiStateModTime > 1000) {
-          Files.S.writePretty(guiStateFile(), s);
-          mLastWrittenGuiState = s;
-          mGuiStateModTime = mCurrentTime;
-        }
-      }
-    }
 
     // Look for changes in the current chord
     {
@@ -153,14 +133,23 @@ public class Sight extends App {
         mPrevChord = ch;
         if (!ch.equals(Chord.DEFAULT_INSTANCE)) {
           quitIfDeathChord(ch);
-
           if (lessonState.status() == LessonStatus.ACTIVE)
             processPlayerChord(ch);
         }
       }
     }
 
-    long elapsed = mCurrentTime - lessonState.timeMs();
+    processLessonState();
+
+    updateInfoMessage();
+
+    refreshIfMessagesChanged();
+    mCurrentFrameTime = 0;
+  }
+
+  private void processLessonState() {
+    var lessonState = lessonState();
+    long elapsed = currentTime() - lessonState.timeMs();
 
     // Switch state if appropriate
     //
@@ -179,7 +168,7 @@ public class Sight extends App {
       break;
 
     case DONE_SESSION: {
-      if (elapsed >= config().donePauseTimeMs() * 3) {
+      if (elapsed >= config().doneSessionDurationMs()) {
         prepareLesson(null);
         refreshView("DONE_SESSION expired");
       }
@@ -187,7 +176,7 @@ public class Sight extends App {
       break;
 
     case DONE: {
-      if (elapsed >= config().donePauseTimeMs() / 3) {
+      if (elapsed >= config().doneLessonDurationMs()) {
         lessonManager().recordResult(lessonState);
         var doneSession = lessonManager().advance();
         if (doneSession) {
@@ -206,8 +195,10 @@ public class Sight extends App {
       }
     }
       break;
+      
+      
     case RETRY:
-      if (elapsed >= config().donePauseTimeMs()) {
+      if (elapsed >= config().retryLessonDurationMs()) {
         lessonManager().recordResult(lessonState);
         prepareLesson(lessonState.lessonId());
         refreshView("RETRY expired");
@@ -215,31 +206,67 @@ public class Sight extends App {
       break;
     }
 
-    mCurrentTime = 0;
+  }
 
-    {
-      String msg = null;
-      if (!MidiManager.SHARED_INSTANCE.midiAvailable())
-        msg = "No MIDI device found";
-      if (msg != null)
-        Msg.set(MSG_INFO, "$ff0000", msg);
-      else
-        Msg.remove(MSG_INFO);
+  /**
+   * If messages have changed since the last frame, refresh the canvas
+   */
+  private void refreshIfMessagesChanged() {
+    var newSig = Msg.getChangeCounter();
+    if (newSig != mMessagesSignature) {
+      log("newSig:", newSig, "old:", mMessagesSignature);
+      mMessagesSignature = newSig;
+      refreshView("message(s) changed");
     }
-
-    // If messages have changed since being rendered, refresh
-    {
-      var newSig = Msg.getChangeCounter();
-      if (newSig != mMessagesSignature) {
-        log("newSig:", newSig, "old:", mMessagesSignature);
-        mMessagesSignature = newSig;
-        refreshView("message(s) changed");
-      }
-    }
-
   }
 
   private int mMessagesSignature;
+
+  private void updateInfoMessage() {
+    String msg = null;
+    if (!MidiManager.SHARED_INSTANCE.midiAvailable())
+      msg = "No MIDI device found";
+    if (msg != null)
+      Msg.set(MSG_INFO, "$ff0000", msg);
+    else
+      Msg.remove(MSG_INFO);
+  }
+
+  /**
+   * Record changes to frame rectangle (and any other GUI elements to be
+   * persisted), and periodically save changes to filesystem
+   */
+  private void updateGUIState() {
+    {
+      var b = new IRect(mFrame.frame().getBounds());
+      var s = guiState();
+      if (!b.equals(s.frameBounds())) {
+        mGuiState = s.toBuilder().frameBounds(b).build();
+        mGuiStateModTime = currentTime();
+      }
+    }
+
+    {
+      var s = guiState();
+      if (s.equals(mLastWrittenGuiState)) {
+        mGuiStateModTime = currentTime();
+      } else {
+        if (currentTime() - mGuiStateModTime > 1000) {
+          Files.S.writePretty(guiStateFile(), s);
+          mLastWrittenGuiState = s;
+          mGuiStateModTime = currentTime();
+        }
+      }
+    }
+  }
+
+  private long currentTime() {
+    var x = mCurrentFrameTime;
+    checkState(x != 0);
+    return x;
+  }
+
+  private long mCurrentFrameTime;
   private BgndTaskManager mTaskManager;
 
   private GuiState mGuiState;
@@ -444,7 +471,7 @@ public class Sight extends App {
    * Construct a builder from a copy of the lesson state
    */
   private LessonState.Builder createWork() {
-    checkState(mCurrentTime != 0);
+    currentTime();
     var b = lessonState().build().toBuilder();
     mTempLessonState = b;
     var ic = b.icons();
@@ -458,13 +485,12 @@ public class Sight extends App {
   private void writeWork() {
     var b = mTempLessonState;
     if (b.status() != lessonState().status())
-      b.timeMs(mCurrentTime);
+      b.timeMs(currentTime());
     setLessonState(b);
     refreshView("replaced drill state");
     mTempLessonState = null;
   }
 
   private LessonState.Builder mTempLessonState;
-  private long mCurrentTime;
 
 }

@@ -5,8 +5,16 @@ import js.json.JSMap;
 
 public class SightConfig implements AbstractData {
 
-  public int donePauseTimeMs() {
-    return mDonePauseTimeMs;
+  public int retryLessonDurationMs() {
+    return mRetryLessonDurationMs;
+  }
+
+  public int doneLessonDurationMs() {
+    return mDoneLessonDurationMs;
+  }
+
+  public int doneSessionDurationMs() {
+    return mDoneSessionDurationMs;
   }
 
   public int quiescentChordMs() {
@@ -62,19 +70,21 @@ public class SightConfig implements AbstractData {
     return new Builder(this);
   }
 
-  protected static final String _0 = "done_pause_time_ms";
-  protected static final String _1 = "quiescent_chord_ms";
-  protected static final String _2 = "view_recent_edits";
-  protected static final String _3 = "create_chords";
-  protected static final String _4 = "hand";
-  protected static final String _5 = "key";
-  protected static final String _6 = "inspect_boxes";
-  protected static final String _7 = "seed";
-  protected static final String _8 = "pattern";
-  protected static final String _9 = "resolution";
-  protected static final String _10 = "silent_correction";
-  protected static final String _11 = "repeat";
-  protected static final String _12 = "lesson_id";
+  protected static final String _0 = "retry_lesson_duration_ms";
+  protected static final String _1 = "done_lesson_duration_ms";
+  protected static final String _2 = "done_session_duration_ms";
+  protected static final String _3 = "quiescent_chord_ms";
+  protected static final String _4 = "view_recent_edits";
+  protected static final String _5 = "create_chords";
+  protected static final String _6 = "hand";
+  protected static final String _7 = "key";
+  protected static final String _8 = "inspect_boxes";
+  protected static final String _9 = "seed";
+  protected static final String _10 = "pattern";
+  protected static final String _11 = "resolution";
+  protected static final String _12 = "silent_correction";
+  protected static final String _13 = "repeat";
+  protected static final String _14 = "lesson_id";
 
   @Override
   public String toString() {
@@ -84,19 +94,21 @@ public class SightConfig implements AbstractData {
   @Override
   public JSMap toJson() {
     JSMap m = new JSMap();
-    m.putUnsafe(_0, mDonePauseTimeMs);
-    m.putUnsafe(_1, mQuiescentChordMs);
-    m.putUnsafe(_2, mViewRecentEdits);
-    m.putUnsafe(_3, mCreateChords);
-    m.putUnsafe(_4, mHand.toString().toLowerCase());
-    m.putUnsafe(_5, mKey.toString().toLowerCase());
-    m.putUnsafe(_6, mInspectBoxes);
-    m.putUnsafe(_7, mSeed);
-    m.putUnsafe(_8, mPattern);
-    m.putUnsafe(_9, mResolution);
-    m.putUnsafe(_10, mSilentCorrection);
-    m.putUnsafe(_11, mRepeat);
-    m.putUnsafe(_12, mLessonId);
+    m.putUnsafe(_0, mRetryLessonDurationMs);
+    m.putUnsafe(_1, mDoneLessonDurationMs);
+    m.putUnsafe(_2, mDoneSessionDurationMs);
+    m.putUnsafe(_3, mQuiescentChordMs);
+    m.putUnsafe(_4, mViewRecentEdits);
+    m.putUnsafe(_5, mCreateChords);
+    m.putUnsafe(_6, mHand.toString().toLowerCase());
+    m.putUnsafe(_7, mKey.toString().toLowerCase());
+    m.putUnsafe(_8, mInspectBoxes);
+    m.putUnsafe(_9, mSeed);
+    m.putUnsafe(_10, mPattern);
+    m.putUnsafe(_11, mResolution);
+    m.putUnsafe(_12, mSilentCorrection);
+    m.putUnsafe(_13, mRepeat);
+    m.putUnsafe(_14, mLessonId);
     return m;
   }
 
@@ -111,25 +123,27 @@ public class SightConfig implements AbstractData {
   }
 
   private SightConfig(JSMap m) {
-    mDonePauseTimeMs = m.opt(_0, 1200);
-    mQuiescentChordMs = m.opt(_1, 250);
-    mViewRecentEdits = m.opt(_2, false);
-    mCreateChords = m.opt(_3, false);
+    mRetryLessonDurationMs = m.opt(_0, 1200);
+    mDoneLessonDurationMs = m.opt(_1, 400);
+    mDoneSessionDurationMs = m.opt(_2, 3600);
+    mQuiescentChordMs = m.opt(_3, 250);
+    mViewRecentEdits = m.opt(_4, false);
+    mCreateChords = m.opt(_5, false);
     {
-      String x = m.opt(_4, "");
+      String x = m.opt(_6, "");
       mHand = x.isEmpty() ? Hand.DEFAULT_INSTANCE : Hand.valueOf(x.toUpperCase());
     }
     {
-      String x = m.opt(_5, "");
+      String x = m.opt(_7, "");
       mKey = x.isEmpty() ? KeySig.DEFAULT_INSTANCE : KeySig.valueOf(x.toUpperCase());
     }
-    mInspectBoxes = m.opt(_6, false);
-    mSeed = m.opt(_7, 0);
-    mPattern = m.opt(_8, "");
-    mResolution = m.opt(_9, 160);
-    mSilentCorrection = m.opt(_10, false);
-    mRepeat = m.opt(_11, false);
-    mLessonId = m.opt(_12, "");
+    mInspectBoxes = m.opt(_8, false);
+    mSeed = m.opt(_9, 0);
+    mPattern = m.opt(_10, "");
+    mResolution = m.opt(_11, 160);
+    mSilentCorrection = m.opt(_12, false);
+    mRepeat = m.opt(_13, false);
+    mLessonId = m.opt(_14, "");
   }
 
   public static Builder newBuilder() {
@@ -145,7 +159,11 @@ public class SightConfig implements AbstractData {
     SightConfig other = (SightConfig) object;
     if (other.hashCode() != hashCode())
       return false;
-    if (!(mDonePauseTimeMs == other.mDonePauseTimeMs))
+    if (!(mRetryLessonDurationMs == other.mRetryLessonDurationMs))
+      return false;
+    if (!(mDoneLessonDurationMs == other.mDoneLessonDurationMs))
+      return false;
+    if (!(mDoneSessionDurationMs == other.mDoneSessionDurationMs))
       return false;
     if (!(mQuiescentChordMs == other.mQuiescentChordMs))
       return false;
@@ -179,7 +197,9 @@ public class SightConfig implements AbstractData {
     int r = m__hashcode;
     if (r == 0) {
       r = 1;
-      r = r * 37 + mDonePauseTimeMs;
+      r = r * 37 + mRetryLessonDurationMs;
+      r = r * 37 + mDoneLessonDurationMs;
+      r = r * 37 + mDoneSessionDurationMs;
       r = r * 37 + mQuiescentChordMs;
       r = r * 37 + (mViewRecentEdits ? 1 : 0);
       r = r * 37 + (mCreateChords ? 1 : 0);
@@ -197,7 +217,9 @@ public class SightConfig implements AbstractData {
     return r;
   }
 
-  protected int mDonePauseTimeMs;
+  protected int mRetryLessonDurationMs;
+  protected int mDoneLessonDurationMs;
+  protected int mDoneSessionDurationMs;
   protected int mQuiescentChordMs;
   protected boolean mViewRecentEdits;
   protected boolean mCreateChords;
@@ -215,7 +237,9 @@ public class SightConfig implements AbstractData {
   public static final class Builder extends SightConfig {
 
     private Builder(SightConfig m) {
-      mDonePauseTimeMs = m.mDonePauseTimeMs;
+      mRetryLessonDurationMs = m.mRetryLessonDurationMs;
+      mDoneLessonDurationMs = m.mDoneLessonDurationMs;
+      mDoneSessionDurationMs = m.mDoneSessionDurationMs;
       mQuiescentChordMs = m.mQuiescentChordMs;
       mViewRecentEdits = m.mViewRecentEdits;
       mCreateChords = m.mCreateChords;
@@ -244,7 +268,9 @@ public class SightConfig implements AbstractData {
     @Override
     public SightConfig build() {
       SightConfig r = new SightConfig();
-      r.mDonePauseTimeMs = mDonePauseTimeMs;
+      r.mRetryLessonDurationMs = mRetryLessonDurationMs;
+      r.mDoneLessonDurationMs = mDoneLessonDurationMs;
+      r.mDoneSessionDurationMs = mDoneSessionDurationMs;
       r.mQuiescentChordMs = mQuiescentChordMs;
       r.mViewRecentEdits = mViewRecentEdits;
       r.mCreateChords = mCreateChords;
@@ -260,8 +286,18 @@ public class SightConfig implements AbstractData {
       return r;
     }
 
-    public Builder donePauseTimeMs(int x) {
-      mDonePauseTimeMs = x;
+    public Builder retryLessonDurationMs(int x) {
+      mRetryLessonDurationMs = x;
+      return this;
+    }
+
+    public Builder doneLessonDurationMs(int x) {
+      mDoneLessonDurationMs = x;
+      return this;
+    }
+
+    public Builder doneSessionDurationMs(int x) {
+      mDoneSessionDurationMs = x;
       return this;
     }
 
@@ -330,7 +366,9 @@ public class SightConfig implements AbstractData {
   public static final SightConfig DEFAULT_INSTANCE = new SightConfig();
 
   private SightConfig() {
-    mDonePauseTimeMs = 1200;
+    mRetryLessonDurationMs = 1200;
+    mDoneLessonDurationMs = 400;
+    mDoneSessionDurationMs = 3600;
     mQuiescentChordMs = 250;
     mHand = Hand.DEFAULT_INSTANCE;
     mKey = KeySig.DEFAULT_INSTANCE;
