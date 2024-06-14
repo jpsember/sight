@@ -261,7 +261,6 @@ public class Sight extends App {
   private Chord mPrevChord = Chord.DEFAULT_INSTANCE;
 
   private void refreshView(String reason) {
-    i24("refreshView:", reason);
     canvas().repaint();
   }
 
@@ -326,7 +325,6 @@ public class Sight extends App {
 
   private void processPlayerChord(Chord ch) {
     //alertVerbose();
-    i24("processPlayerChord:", ch);
     var b = createWork();
     var notes = lessonManager().renderedNotes(b.lessonId());
     var exp = notes.renderedChords().get(b.cursor());
@@ -339,7 +337,6 @@ public class Sight extends App {
     }
     boolean correct = expChord.equals(ch);
     if (!correct) {
-      i24("Expected:", expChord, "Played:", ch);
       if (!config().silentCorrection())
         MidiManager.SHARED_INSTANCE.playCorrection(expChord, 600);
     }

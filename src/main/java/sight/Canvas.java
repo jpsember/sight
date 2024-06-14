@@ -26,8 +26,6 @@ public class Canvas extends JPanel {
   private static final boolean DRAW_BOXES = false && alert("drawing boxes");
 
   public void paintComponent(Graphics graphics) {
-    i24("canvas.paintComponent");
-
     var g = (Graphics2D) graphics;
 
     {
@@ -47,7 +45,6 @@ public class Canvas extends JPanel {
     // Update the atlas image if the lesson id has changed
     if (!id.equals(mAtlasLessonId)) {
       mAtlasLessonId = id;
-      i24("reading atlas image:", notes.imageFile());
       mAtlasImage = imageCache().get(notes.imageFile());
     }
 
@@ -110,7 +107,6 @@ public class Canvas extends JPanel {
         cx += mChordWidth;
       }
     }
-    i24("canvas.paintComponent done");
   }
 
   private void renderMsg(Graphics2D g, int index, int y) {
@@ -214,12 +210,10 @@ public class Canvas extends JPanel {
 
   private Font font(Graphics2D g) {
     if (mFont == null) {
-      i24("constructing font");
       checkState(mMessageHeight != 0);
       // I think constructing the font was taking a lot of time.
       mFont = new Font(Font.SANS_SERIF, Font.BOLD, mMessageHeight);
       mFontMetrics = g.getFontMetrics(mFont);
-      i24("done constructing font");
     }
     return mFont;
   }

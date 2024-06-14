@@ -26,8 +26,6 @@ public final class Util {
 
   public static final boolean ISSUE_28 = false && alert("ISSUE_28 in effect");
 
-  public static final boolean ISSUE_24 = false && alert("ISSUE_24 in effect");
-
   public static final boolean SMALL = false && alert("small lessons for dev");
 
   // We need to convert from MIDI pitches to the index of the key on an 88-key piano.
@@ -47,6 +45,9 @@ public final class Util {
 
   public static final int MAX_LESSONS_PER_SESSION = SMALL ? 3 : 8;
   public static final int REPS_PER_LESSON = SMALL ? 2 : 3;
+
+  public static void loadUtil() {
+  }
 
   public static void i39(Object... msg) {
     if (!ISSUE_39)
@@ -262,22 +263,6 @@ public final class Util {
     if (r.isEmpty())
       r = "_SAFE_";
     return r;
-  }
-
-  private static long prevTs;
-
-  public static void i24(Object... msg) {
-    if (!ISSUE_24)
-      return;
-    synchronized (Util.class) {
-      var ts = System.currentTimeMillis();
-      if (prevTs == 0)
-        prevTs = ts;
-      var elapsed = ts - prevTs;
-      prevTs = ts;
-      var texpr = String.format("t:%6d", elapsed);
-      pr(insertStringToFront("=== (" + texpr + ")", msg));
-    }
   }
 
   public static void quitIfDeathChord(Chord ch) {
