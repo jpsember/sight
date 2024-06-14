@@ -22,8 +22,6 @@ public final class Util {
 
   public static final boolean ISSUE_39 = false && alert("ISSUE_39 in effect");
 
-  public static final boolean ISSUE_28 = false && alert("ISSUE_28 in effect");
-
   public static final boolean SMALL = false && alert("small lessons for dev");
 
   // We need to convert from MIDI pitches to the index of the key on an 88-key piano.

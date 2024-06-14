@@ -23,8 +23,6 @@ public class MidiManager extends BaseObject {
   public static final MidiManager SHARED_INSTANCE = new MidiManager();
 
   public synchronized void start() {
-    if (ISSUE_28)
-      setVerbose();
     if (mStarted)
       return;
     mStarted = true;
