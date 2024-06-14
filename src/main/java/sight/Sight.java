@@ -72,10 +72,6 @@ public class Sight extends App implements KeyListener {
 
   private void auxPerform() {
 
-    if (false && alert("play exp")) {
-      playExp();
-      return;
-    }
     if (config().createChords()) {
       createChords();
       return;
@@ -449,28 +445,6 @@ public class Sight extends App implements KeyListener {
           }
           pr(sb.toString());
         }
-      }
-    }
-  }
-
-  private void playExp() {
-    pr("experiment for sending midi to device");
-    SystemUtil.prepareForConsoleOrGUI(true);
-    var m = MidiManager.SHARED_INSTANCE;
-    m.start();
-
-    while (true) {
-      sleepMs(50);
-
-      // Look for changes in the current chord
-
-      var ch = m.currentChord();
-      if (ch != mPrevChord) {
-        mPrevChord = ch;
-        if (ch.equals(Chord.DEFAULT_INSTANCE))
-          continue;
-        quitIfDeathChord(ch);
-        m.playCorrection(ch, 700);
       }
     }
   }
