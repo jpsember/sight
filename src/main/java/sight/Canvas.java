@@ -21,7 +21,6 @@ import js.geometry.Matrix;
 import js.graphics.ImgEffects;
 import js.graphics.ImgUtil;
 import js.json.JSMap;
-import sight.gen.Hand;
 import sight.gen.Lesson;
 import sight.gen.LessonStatus;
 import sight.gen.RenderedNotes;
@@ -31,7 +30,7 @@ public class Canvas extends JPanel {
   private static final boolean DRAW_BOXES = false && alert("drawing boxes");
 
   private static RenderedNotes NO_NOTES = RenderedNotes.DEFAULT_INSTANCE
-      .parse(new JSMap("{       \"clef_rect\" : [ 81,44,34,36 ],\n" + "      \"description\" : \"\",\n"
+      .parse(new JSMap("{    \"hand\":\"both\",   \"clef_rect\" : [ 81,44,34,36 ],\n" + "      \"description\" : \"\",\n"
           + "      \"keysig_rect\" : [ 120,38,56,62 ],\n" + "  \"rendered_chords\" : [],\n"
           + "       \"staff_rect\" : [ 334,44,8,47 ]\n" + "}"));
 
@@ -52,18 +51,10 @@ public class Canvas extends JPanel {
     String id = "";
     RenderedNotes notes = NO_NOTES;
 
-    //todo("For edit mode, lesson state should increment each time it has changed, and instead of calling lessonManager() renderedNotes, use supplied one in lesson");
     if (s.status() == LessonStatus.EDIT) {
       if (nonEmpty(s.editChordExpr())) {
         id = s.editChordExpr();
         Lesson.Builder b = Lesson.newBuilder();
-        if (config().hand() == Hand.BOTH) {
-          b.hand(id.contains(":") ? Hand.BOTH : Hand.LEFT);
-        } else {
-          checkState(!id.contains(":"));
-          b.hand(config().hand());
-        }
-
         b.keySig(config().key());
         b.notes(id);
         b.id(DataUtil.hex32(calcHashFor(b)));

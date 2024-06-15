@@ -289,13 +289,16 @@ public class ChordLibrary extends BaseObject {
     var i = INIT_INDEX;
     for (var c : chords) {
       i++;
-      sb.append(" <");
-      for (var kn : c.keyNumbers()) {
-        sb.append(keyNumberToLilyNote(targetKeySig, kn));
-        sb.append(' ');
+      if (c.keyNumbers().length == 0) {
+        sb.append('r');
+      } else {
+        sb.append(" <");
+        for (var kn : c.keyNumbers()) {
+          sb.append(keyNumberToLilyNote(targetKeySig, kn));
+          sb.append(' ');
+        }
+        sb.append(">");
       }
-
-      sb.append(">");
       sb.append(durationArray.get(i));
       sb.append(' ');
     }

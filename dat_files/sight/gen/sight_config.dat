@@ -6,7 +6,6 @@ fields {
   int quiescent_chord_ms = 250;
   bool view_recent_edits;
   bool create_chords;
-  enum Hand hand;
   enum KeySig key;
   bool inspect_boxes;
   int seed;

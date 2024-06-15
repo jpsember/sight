@@ -143,7 +143,31 @@ public final class Util {
     return sChordLibrary;
   }
 
+  public static final String REST_STR = "-";
+
+  public static boolean isRest(Chord c) {
+    return c.keyNumbers().length == 0;
+  }
+
+  public static Chord orRest(Chord c) {
+    var b = c.keyNumbers();
+    if (b.length == 0)
+      return c;
+    var first = b[0];
+    int count = 0;
+    for (var v : b) {
+      if (v - first > 7)
+        break;
+      count++;
+    }
+    if (count >= 4)
+      return Chord.DEFAULT_INSTANCE;
+    return c;
+  }
+
   public static String encodeChord(Chord c) {
+    if (c.keyNumbers().length == 0)
+      return REST_STR;
     var sb = new StringBuilder();
     for (var kn : c.keyNumbers()) {
       if (sb.length() != 0)

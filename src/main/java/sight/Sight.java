@@ -27,7 +27,6 @@ import sight.gen.Chord;
 import sight.gen.LessonState;
 import sight.gen.LessonStatus;
 import sight.gen.GuiState;
-import sight.gen.Hand;
 import sight.gen.Lesson;
 import sight.gen.SightConfig;
 
@@ -499,18 +498,20 @@ public class Sight extends App implements KeyListener {
   // ------------------------------------------------------------------
 
   private void processEditChord(Chord ch) {
+    ch = orRest(ch);
+
     Msg.remove(MSG_INFO);
-    if (config().hand() != Hand.BOTH) {
-      mEditList.add(ch);
-    } else {
+    {
       int expHand = (mEditList.size() % 2);
       if (expHand == 0) {
         mEditList.add(ch);
       } else {
         var prev = last(mEditList);
-        if (lastNote(prev) >= firstNote(ch)) {
-          setEditErr("Chord is not above left hand");
-          return;
+        if (!isRest(ch) && !isRest(prev)) {
+          if (lastNote(prev) >= firstNote(ch)) {
+            setEditErr("Chord is not above left hand");
+            return;
+          }
         }
         mEditList.add(ch);
       }
@@ -529,22 +530,8 @@ public class Sight extends App implements KeyListener {
   private void updateEditPrompt() {
     if (!editMode())
       return;
-
     var p = "";
-    int expHand;
-    switch (config().hand()) {
-    case BOTH:
-      expHand = (mEditList.size() % 2);
-      break;
-    case LEFT:
-      expHand = 0;
-      break;
-    case RIGHT:
-      expHand = 1;
-      break;
-    default:
-      return;
-    }
+    int expHand = (mEditList.size() % 2);
     if (expHand == 0)
       p = "Play left hand";
     else
@@ -557,7 +544,6 @@ public class Sight extends App implements KeyListener {
 
     {
       var b = Lesson.newBuilder();
-      b.hand(config().hand());
       b.keySig(config().key());
       b.notes(cch);
       var m = b.build();
@@ -584,7 +570,7 @@ public class Sight extends App implements KeyListener {
     for (var c : chords) {
       slot++;
       if (sb.length() != 0) {
-        if (config().hand() == Hand.BOTH && slot % 2 == 1)
+        if (slot % 2 == 1)
           sb.append(":");
         else
           sb.append("    ");

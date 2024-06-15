@@ -16,6 +16,8 @@ public class ChordParser extends BaseObject {
     if (verbose())
       log("parse:", quote(chordsExpr));
 
+    if (chordsExpr.trim().equals("-"))
+      chordsExpr = "-:-";
     var twoHands = chordsExpr.contains(":");
 
     var words = chordsExpr.split(" +");
@@ -45,7 +47,6 @@ public class ChordParser extends BaseObject {
   }
 
   private List<Chord> parseHand(String chordsExpr) {
-
     mText = chordsExpr;
     mCursor = 0;
     skipWs();
@@ -57,6 +58,13 @@ public class ChordParser extends BaseObject {
 
       var nb = Chord.newBuilder();
       var keynum = IntArray.newBuilder();
+
+      if (readIf('-')) {
+        if (keynum.size() != 0)
+          badArg("trouble parsing:", INDENT, quote(chordsExpr));
+        chordList.add(nb.build());
+        break;
+      }
 
       if (!peekIsDigit()) {
         badArg("trouble parsing:", INDENT, quote(chordsExpr));

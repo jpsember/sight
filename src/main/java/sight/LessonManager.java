@@ -154,9 +154,7 @@ public class LessonManager extends BaseObject {
     checkArgument(mLessonCollection.lessons().size() != 0, "no chord sets found in lesson collection:", f,
         INDENT, mLessonCollection);
 
-    var hand = config().hand();
-    if (hand == Hand.UNKNOWN)
-      hand = Hand.BOTH;
+    var hand = Hand.BOTH;
 
     Map<String, RenderedNotes> result = hashMap();
 
@@ -362,12 +360,6 @@ public class LessonManager extends BaseObject {
       for (var ent : lessonMap().entrySet()) {
         var id = ent.getKey();
         var lesson = ent.getValue();
-        if (config().hand() != Hand.UNKNOWN) {
-          if (lesson.hand() != config().hand()) {
-            log("hand", lesson.hand(), "!=", config().hand());
-            continue;
-          }
-        }
         if (p != null) {
           var m = p.matcher(lesson.description());
           if (!m.find()) {

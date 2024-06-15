@@ -29,10 +29,6 @@ public class SightConfig implements AbstractData {
     return mCreateChords;
   }
 
-  public Hand hand() {
-    return mHand;
-  }
-
   public KeySig key() {
     return mKey;
   }
@@ -76,15 +72,14 @@ public class SightConfig implements AbstractData {
   protected static final String _3 = "quiescent_chord_ms";
   protected static final String _4 = "view_recent_edits";
   protected static final String _5 = "create_chords";
-  protected static final String _6 = "hand";
-  protected static final String _7 = "key";
-  protected static final String _8 = "inspect_boxes";
-  protected static final String _9 = "seed";
-  protected static final String _10 = "pattern";
-  protected static final String _11 = "resolution";
-  protected static final String _12 = "silent_correction";
-  protected static final String _13 = "repeat";
-  protected static final String _14 = "lesson_id";
+  protected static final String _6 = "key";
+  protected static final String _7 = "inspect_boxes";
+  protected static final String _8 = "seed";
+  protected static final String _9 = "pattern";
+  protected static final String _10 = "resolution";
+  protected static final String _11 = "silent_correction";
+  protected static final String _12 = "repeat";
+  protected static final String _13 = "lesson_id";
 
   @Override
   public String toString() {
@@ -100,15 +95,14 @@ public class SightConfig implements AbstractData {
     m.putUnsafe(_3, mQuiescentChordMs);
     m.putUnsafe(_4, mViewRecentEdits);
     m.putUnsafe(_5, mCreateChords);
-    m.putUnsafe(_6, mHand.toString().toLowerCase());
-    m.putUnsafe(_7, mKey.toString().toLowerCase());
-    m.putUnsafe(_8, mInspectBoxes);
-    m.putUnsafe(_9, mSeed);
-    m.putUnsafe(_10, mPattern);
-    m.putUnsafe(_11, mResolution);
-    m.putUnsafe(_12, mSilentCorrection);
-    m.putUnsafe(_13, mRepeat);
-    m.putUnsafe(_14, mLessonId);
+    m.putUnsafe(_6, mKey.toString().toLowerCase());
+    m.putUnsafe(_7, mInspectBoxes);
+    m.putUnsafe(_8, mSeed);
+    m.putUnsafe(_9, mPattern);
+    m.putUnsafe(_10, mResolution);
+    m.putUnsafe(_11, mSilentCorrection);
+    m.putUnsafe(_12, mRepeat);
+    m.putUnsafe(_13, mLessonId);
     return m;
   }
 
@@ -131,19 +125,15 @@ public class SightConfig implements AbstractData {
     mCreateChords = m.opt(_5, false);
     {
       String x = m.opt(_6, "");
-      mHand = x.isEmpty() ? Hand.DEFAULT_INSTANCE : Hand.valueOf(x.toUpperCase());
-    }
-    {
-      String x = m.opt(_7, "");
       mKey = x.isEmpty() ? KeySig.DEFAULT_INSTANCE : KeySig.valueOf(x.toUpperCase());
     }
-    mInspectBoxes = m.opt(_8, false);
-    mSeed = m.opt(_9, 0);
-    mPattern = m.opt(_10, "");
-    mResolution = m.opt(_11, 160);
-    mSilentCorrection = m.opt(_12, false);
-    mRepeat = m.opt(_13, false);
-    mLessonId = m.opt(_14, "");
+    mInspectBoxes = m.opt(_7, false);
+    mSeed = m.opt(_8, 0);
+    mPattern = m.opt(_9, "");
+    mResolution = m.opt(_10, 160);
+    mSilentCorrection = m.opt(_11, false);
+    mRepeat = m.opt(_12, false);
+    mLessonId = m.opt(_13, "");
   }
 
   public static Builder newBuilder() {
@@ -170,8 +160,6 @@ public class SightConfig implements AbstractData {
     if (!(mViewRecentEdits == other.mViewRecentEdits))
       return false;
     if (!(mCreateChords == other.mCreateChords))
-      return false;
-    if (!(mHand.equals(other.mHand)))
       return false;
     if (!(mKey.equals(other.mKey)))
       return false;
@@ -203,7 +191,6 @@ public class SightConfig implements AbstractData {
       r = r * 37 + mQuiescentChordMs;
       r = r * 37 + (mViewRecentEdits ? 1 : 0);
       r = r * 37 + (mCreateChords ? 1 : 0);
-      r = r * 37 + mHand.ordinal();
       r = r * 37 + mKey.ordinal();
       r = r * 37 + (mInspectBoxes ? 1 : 0);
       r = r * 37 + mSeed;
@@ -223,7 +210,6 @@ public class SightConfig implements AbstractData {
   protected int mQuiescentChordMs;
   protected boolean mViewRecentEdits;
   protected boolean mCreateChords;
-  protected Hand mHand;
   protected KeySig mKey;
   protected boolean mInspectBoxes;
   protected int mSeed;
@@ -243,7 +229,6 @@ public class SightConfig implements AbstractData {
       mQuiescentChordMs = m.mQuiescentChordMs;
       mViewRecentEdits = m.mViewRecentEdits;
       mCreateChords = m.mCreateChords;
-      mHand = m.mHand;
       mKey = m.mKey;
       mInspectBoxes = m.mInspectBoxes;
       mSeed = m.mSeed;
@@ -274,7 +259,6 @@ public class SightConfig implements AbstractData {
       r.mQuiescentChordMs = mQuiescentChordMs;
       r.mViewRecentEdits = mViewRecentEdits;
       r.mCreateChords = mCreateChords;
-      r.mHand = mHand;
       r.mKey = mKey;
       r.mInspectBoxes = mInspectBoxes;
       r.mSeed = mSeed;
@@ -313,11 +297,6 @@ public class SightConfig implements AbstractData {
 
     public Builder createChords(boolean x) {
       mCreateChords = x;
-      return this;
-    }
-
-    public Builder hand(Hand x) {
-      mHand = (x == null) ? Hand.DEFAULT_INSTANCE : x;
       return this;
     }
 
@@ -370,7 +349,6 @@ public class SightConfig implements AbstractData {
     mDoneLessonDurationMs = 400;
     mDoneSessionDurationMs = 3600;
     mQuiescentChordMs = 250;
-    mHand = Hand.DEFAULT_INSTANCE;
     mKey = KeySig.DEFAULT_INSTANCE;
     mPattern = "";
     mResolution = 160;
