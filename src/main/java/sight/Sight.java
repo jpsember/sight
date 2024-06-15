@@ -583,52 +583,6 @@ public class Sight extends App implements KeyListener {
     return sb.toString();
   }
 
-  private void createChords() {
-    pr("creating chords");
-    SystemUtil.prepareForConsoleOrGUI(true);
-    var m = MidiManager.SHARED_INSTANCE;
-    m.start();
-
-    List<Chord> score = arrayList();
-
-    while (true) {
-      sleepMs(50);
-      // Look for changes in the current chord
-
-      var ch = MidiManager.SHARED_INSTANCE.currentChord();
-      if (ch != mPrevChord) {
-        mPrevChord = ch;
-        if (ch.equals(Chord.DEFAULT_INSTANCE))
-          continue;
-        quitIfDeathChord(ch);
-
-        if (ch.equals(CHORD_RESET_SCORE)) {
-          score.clear();
-        } else if (ch.equals(CHORD_REMOVE_LAST)) {
-          if (!score.isEmpty())
-            pop(score);
-        } else
-          score.add(ch);
-
-        {
-          var sb = new StringBuilder();
-          int slot = INIT_INDEX;
-          for (var c : score) {
-            slot++;
-            if (sb.length() != 0) {
-              if (config().hand() == Hand.BOTH && slot % 2 == 1)
-                sb.append(":");
-              else
-                sb.append("    ");
-            }
-            sb.append(encodeChord(c));
-          }
-          pr(sb.toString());
-        }
-      }
-    }
-  }
-
   private void deleteEditChord() {
     if (!mEditList.isEmpty()) {
       pop(mEditList);
