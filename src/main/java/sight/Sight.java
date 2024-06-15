@@ -19,6 +19,7 @@ import javax.swing.SwingUtilities;
 
 import js.app.App;
 import js.app.AppOper;
+import js.base.BasePrinter;
 import js.file.Files;
 import js.geometry.IRect;
 import js.system.SystemUtil;
@@ -116,6 +117,8 @@ public class Sight extends App implements KeyListener {
 
     mTaskManager.addTask(() -> swingBgndTask());
     mTaskManager.start();
+
+    updateEditPrompt();
   }
 
   /**
@@ -226,7 +229,6 @@ public class Sight extends App implements KeyListener {
     while (!mKeyEventQueue.isEmpty()) {
       var x = mKeyEventQueue.remove();
       boolean handled = false;
-      pr("proc key:", x);
       if (x.getModifiersEx() == 0) {
         handled = true;
         switch (x.getKeyCode()) {
@@ -266,12 +268,16 @@ public class Sight extends App implements KeyListener {
   private int mMessagesSignature;
 
   private void updateInfoMessage() {
-    String msg = null;
+    var ourMsg = "No MIDI device found";
     if (!MidiManager.SHARED_INSTANCE.midiAvailable())
-      msg = "No MIDI device found";
-    if (msg != null)
-      Msg.set(MSG_INFO, "$ff0000", msg);
+      Msg.set(MSG_INFO, "$ff0000", ourMsg);
     else
+      clearInfoMsgIf(ourMsg);
+  }
+
+  private void clearInfoMsgIf(String msg) {
+    var x = Msg.get(MSG_INFO);
+    if (x != null && x.message.equals(msg))
       Msg.remove(MSG_INFO);
   }
 
@@ -492,7 +498,7 @@ public class Sight extends App implements KeyListener {
   // ------------------------------------------------------------------
 
   private void processEditChord(Chord ch) {
-    pr("processEditChord:", ch);
+    Msg.remove(MSG_INFO);
     if (config().hand() != Hand.BOTH) {
       mEditList.add(ch);
     } else {
@@ -502,13 +508,47 @@ public class Sight extends App implements KeyListener {
       } else {
         var prev = last(mEditList);
         if (lastNote(prev) >= firstNote(ch)) {
-          pr("chord not above LH:", INDENT, prev, CR, ch);
+          setEditErr("Chord is not above left hand");
           return;
         }
         mEditList.add(ch);
       }
     }
     updateChordExpr();
+    updateEditPrompt();
+  }
+
+  private void setEditErr(Object... msg) {
+    if (!editMode())
+      return;
+    var s = BasePrinter.toString(msg);
+    Msg.set(MSG_INFO, "$ff0000", s);
+  }
+
+  private void updateEditPrompt() {
+    if (!editMode())
+      return;
+
+    var p = "";
+    int expHand;
+    switch (config().hand()) {
+    case BOTH:
+      expHand = (mEditList.size() % 2);
+      break;
+    case LEFT:
+      expHand = 0;
+      break;
+    case RIGHT:
+      expHand = 1;
+      break;
+    default:
+      return;
+    }
+    if (expHand == 0)
+      p = "Play left hand";
+    else
+      p = "Play right hand";
+    Msg.set(MSG_MAIN, p);
   }
 
   private void updateChordExpr() {

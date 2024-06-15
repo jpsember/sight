@@ -20,6 +20,7 @@ import js.geometry.IRect;
 import js.geometry.Matrix;
 import js.graphics.ImgEffects;
 import js.graphics.ImgUtil;
+import js.json.JSMap;
 import sight.gen.Hand;
 import sight.gen.Lesson;
 import sight.gen.LessonStatus;
@@ -28,6 +29,11 @@ import sight.gen.RenderedNotes;
 public class Canvas extends JPanel {
 
   private static final boolean DRAW_BOXES = false && alert("drawing boxes");
+
+  private static RenderedNotes NO_NOTES = RenderedNotes.DEFAULT_INSTANCE
+      .parse(new JSMap("{       \"clef_rect\" : [ 81,44,34,36 ],\n" + "      \"description\" : \"\",\n"
+          + "      \"keysig_rect\" : [ 120,38,56,62 ],\n" + "  \"rendered_chords\" : [],\n"
+          + "       \"staff_rect\" : [ 334,44,8,47 ]\n" + "}"));
 
   public void paintComponent(Graphics graphics) {
     var g = (Graphics2D) graphics;
@@ -42,10 +48,9 @@ public class Canvas extends JPanel {
     g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 
     var s = lessonState();
-    pr("Canvas paint, lesson state:", INDENT, s);
 
     String id = "";
-    RenderedNotes notes = null;
+    RenderedNotes notes = NO_NOTES;
 
     //todo("For edit mode, lesson state should increment each time it has changed, and instead of calling lessonManager() renderedNotes, use supplied one in lesson");
     if (s.status() == LessonStatus.EDIT) {
@@ -59,31 +64,24 @@ public class Canvas extends JPanel {
           b.hand(config().hand());
         }
 
-        // b.description("edit:" + id);
-        //  checkState(config().hand() == Hand.BOTH, "expected BOTH");
-        //  b.hand(id.contains(":") ? config().hand() : Hand.LEFT);
         b.keySig(config().key());
         b.notes(id);
         b.id(DataUtil.hex32(calcHashFor(b)));
         var st = b.build();
-        pr("...calling chordLibrary for RenderedNotes, lesson:", INDENT, st);
         notes = chordLibrary().get(st);
       }
-      //      chordLibrary().get(z)
     } else {
       id = s.lessonId();
       if (nonEmpty(id)) {
         notes = lessonManager().renderedNotes(id);
       }
     }
-    pr("id:",id,"atlasLessonId:",mAtlasLessonId);
-    if (id.isEmpty())
-      return;
-
-    // Update the atlas image if the lesson id has changed
-    if (!id.equals(mAtlasLessonId)) {
-      mAtlasLessonId = id;
-      mAtlasImage = imageCache().get(notes.imageFile());
+    if (!id.isEmpty()) {
+      // Update the atlas image if the lesson id has changed
+      if (!id.equals(mAtlasLessonId)) {
+        mAtlasLessonId = id;
+        mAtlasImage = imageCache().get(notes.imageFile());
+      }
     }
 
     calcTransform(notes);
@@ -93,6 +91,9 @@ public class Canvas extends JPanel {
 
     renderMsg(g, MSG_MAIN, mMessageY);
     renderMsg(g, MSG_INFO, mInfoY);
+
+    if (id.isEmpty())
+      return;
 
     if (DRAW_BOXES) {
       drawBox(g, Color.red, mClefX, mMessageY, mContentWidth, mMessageHeight);
