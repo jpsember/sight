@@ -52,12 +52,16 @@ public class Canvas extends JPanel {
       if (nonEmpty(s.editChordExpr())) {
         id = s.editChordExpr();
         Lesson.Builder b = Lesson.newBuilder();
-        b.description("edit:" + id);
-        // b.id(calcHashFor(b.description()));
+        if (config().hand() == Hand.BOTH) {
+          b.hand(id.contains(":") ? Hand.BOTH : Hand.LEFT);
+        } else {
+          checkState(!id.contains(":"));
+          b.hand(config().hand());
+        }
 
-        //        b.description(b.id());
-        checkState(config().hand() == Hand.BOTH, "expected BOTH");
-        b.hand(id.contains(":") ? config().hand() : Hand.LEFT);
+        // b.description("edit:" + id);
+        //  checkState(config().hand() == Hand.BOTH, "expected BOTH");
+        //  b.hand(id.contains(":") ? config().hand() : Hand.LEFT);
         b.keySig(config().key());
         b.notes(id);
         b.id(DataUtil.hex32(calcHashFor(b)));
@@ -71,8 +75,8 @@ public class Canvas extends JPanel {
       if (nonEmpty(id)) {
         notes = lessonManager().renderedNotes(id);
       }
-
     }
+    pr("id:",id,"atlasLessonId:",mAtlasLessonId);
     if (id.isEmpty())
       return;
 

@@ -225,12 +225,29 @@ public class Sight extends App implements KeyListener {
 
     while (!mKeyEventQueue.isEmpty()) {
       var x = mKeyEventQueue.remove();
+      boolean handled = false;
       pr("proc key:", x);
-      if (x.getModifiersEx() == 0 && x.getKeyChar() == 'q') {
-        pr("...'q' pressed, quitting");
-        System.exit(0);
+      if (x.getModifiersEx() == 0) {
+        handled = true;
+        switch (x.getKeyCode()) {
+        case KeyEvent.VK_Q:
+          pr("...'q' pressed, quitting");
+          System.exit(0);
+          break;
+        case KeyEvent.VK_BACK_SPACE:
+        case KeyEvent.VK_DELETE: {
+          if (config().createChords()) {
+            deleteEditChord();
+          }
+        }
+          break;
+        default:
+          handled = false;
+          break;
+        }
       }
-      pr("...unhandled key press:", x);
+      if (!handled)
+        pr("...unhandled key press:", x);
     }
   }
 
@@ -476,19 +493,25 @@ public class Sight extends App implements KeyListener {
 
   private void processEditChord(Chord ch) {
     pr("processEditChord:", ch);
-
-    int expHand = (mEditList.size() % 2);
-    if (expHand == 0) {
+    if (config().hand() != Hand.BOTH) {
       mEditList.add(ch);
     } else {
-      var prev = last(mEditList);
-      if (lastNote(prev) >= firstNote(ch)) {
-        pr("chord not above LH:", INDENT, prev, CR, ch);
-        return;
+      int expHand = (mEditList.size() % 2);
+      if (expHand == 0) {
+        mEditList.add(ch);
+      } else {
+        var prev = last(mEditList);
+        if (lastNote(prev) >= firstNote(ch)) {
+          pr("chord not above LH:", INDENT, prev, CR, ch);
+          return;
+        }
+        mEditList.add(ch);
       }
-      mEditList.add(ch);
     }
+    updateChordExpr();
+  }
 
+  private void updateChordExpr() {
     var cch = compileChords(mEditList);
     pr(cch);
     {
@@ -563,6 +586,13 @@ public class Sight extends App implements KeyListener {
           pr(sb.toString());
         }
       }
+    }
+  }
+
+  private void deleteEditChord() {
+    if (!mEditList.isEmpty()) {
+      pop(mEditList);
+      updateChordExpr();
     }
   }
 
