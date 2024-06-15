@@ -28,6 +28,7 @@ import sight.gen.LessonState;
 import sight.gen.LessonStatus;
 import sight.gen.GuiState;
 import sight.gen.Hand;
+import sight.gen.Lesson;
 import sight.gen.SightConfig;
 
 public class Sight extends App implements KeyListener {
@@ -553,7 +554,18 @@ public class Sight extends App implements KeyListener {
 
   private void updateChordExpr() {
     var cch = compileChords(mEditList);
-    pr(cch);
+
+    {
+      var b = Lesson.newBuilder();
+      b.hand(config().hand());
+      b.keySig(config().key());
+      b.notes(cch);
+      var m = b.build();
+      var f = new File("_SKIP_edit_lesson.json");
+      Files.S.writePretty(f, m);
+      pr(m.notes());
+    }
+
     {
       var x = cch.trim();
       if (!x.isEmpty()) {
@@ -563,7 +575,6 @@ public class Sight extends App implements KeyListener {
       var b = createWork();
       b.editChordExpr(x);
       writeWork();
-      pr("attempting to display:", x);
     }
   }
 
