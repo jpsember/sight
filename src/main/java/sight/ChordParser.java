@@ -8,15 +8,19 @@ import js.base.BaseObject;
 import js.base.BasePrinter;
 import js.data.IntArray;
 import sight.gen.Chord;
+import sight.gen.Hand;
+
 import static sight.Util.*;
 
 public class ChordParser extends BaseObject {
 
   public void parse(String chordsExpr) {
+    chordsExpr = chordsExpr.trim();
+
     if (verbose())
       log("parse:", quote(chordsExpr));
 
-    if (chordsExpr.trim().equals("-"))
+    if (chordsExpr.equals("-"))
       chordsExpr = "-:-";
     var twoHands = chordsExpr.contains(":");
 
@@ -38,12 +42,24 @@ public class ChordParser extends BaseObject {
       }
       firstHand = String.join(" ", s1);
       secondHand = String.join(" ", s2);
-    }
 
-    mLeft = parseHand(firstHand);
-    if (twoHands)
+      mLeft = parseHand(firstHand);
       mRight = parseHand(secondHand);
+    } else {
 
+      var mystery = parseHand(firstHand);
+      List<Chord> rests = arrayList();
+      for (int i = 0; i < mystery.size(); i++)
+        rests.add(REST_CHORD);
+      mLeft = rests;
+      mRight = rests;
+
+      var h = inferHandFromNotes(mystery);
+      if (h == Hand.LEFT)
+        mLeft = mystery;
+      else
+        mRight = mystery;
+    }
   }
 
   private List<Chord> parseHand(String chordsExpr) {
@@ -221,10 +237,6 @@ public class ChordParser extends BaseObject {
     ensure(mCursor + chars <= mText.length(), "attempt to advance cursor past end of string");
     mCursor += chars;
     skipWs();
-  }
-
-  public boolean twoHands() {
-    return mRight != null;
   }
 
   private String mText;

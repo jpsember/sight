@@ -16,7 +16,6 @@ import js.geometry.MyMath;
 import js.graphics.ImgUtil;
 import js.parsing.MacroParser;
 import sight.gen.Chord;
-import sight.gen.Hand;
 import sight.gen.KeySig;
 import sight.gen.RenderedChord;
 import sight.gen.RenderedNotes;
@@ -61,14 +60,6 @@ public class ChordLibrary extends BaseObject {
     var nparser = new ChordParser();
     nparser.parse(rs.notes());
 
-    var hand = rs.hand();
-    if (hand == Hand.UNKNOWN) {
-      if (nparser.twoHands())
-        hand = Hand.BOTH;
-      else
-        hand = inferHandFromNotes(nparser.chords());
-    }
-
     if (rs.keySig() == KeySig.UNDEFINED)
       badArg("no key signature defined");
 
@@ -84,7 +75,7 @@ public class ChordLibrary extends BaseObject {
     // We need to use the same random number sequence for both left and right hands
     rnd2 = new Random(newSeed);
 
-    if (nparser.twoHands()) {
+    {
 
       chordsRH = nparser.chordsRH();
       chordsLH = nparser.chordsLH();
@@ -97,23 +88,6 @@ public class ChordLibrary extends BaseObject {
       m.put("key", toLilyPond(rs.keySig()));
       m.put("notes_rh", encodeLily(rs.keySig(), chordsRH, rnd2));
       m.put("notes_lh", encodeLily(rs.keySig(), chordsLH, new Random(newSeed)));
-
-      MacroParser parser = new MacroParser();
-      parser.withTemplate(template).withMapper(m);
-      script = parser.content();
-
-    } else {
-
-      var chords = nparser.chords();
-      chordsLH = chords;
-      chordsRH = chords;
-
-      var template = frag("score_template.txt");
-
-      var m = map();
-      m.put("key", toLilyPond(rs.keySig()));
-      m.put("notes", encodeLily(rs.keySig(), chords, rnd2));
-      m.put("clef", hand == Hand.LEFT ? "bass" : "treble");
 
       MacroParser parser = new MacroParser();
       parser.withTemplate(template).withMapper(m);
@@ -215,9 +189,7 @@ public class ChordLibrary extends BaseObject {
         Chord ca;
         Chord cb = null;
         ca = chordsLH.get(j);
-        if (nparser.twoHands()) {
-          cb = chordsRH.get(j);
-        }
+        cb = chordsRH.get(j);
 
         var i = j + hdrRects;
         var renc = RenderedChord.newBuilder();

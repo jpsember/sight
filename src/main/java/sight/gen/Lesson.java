@@ -13,10 +13,6 @@ public class Lesson implements AbstractData {
     return mDescription;
   }
 
-  public Hand hand() {
-    return mHand;
-  }
-
   public KeySig keySig() {
     return mKeySig;
   }
@@ -32,9 +28,8 @@ public class Lesson implements AbstractData {
 
   protected static final String _0 = "id";
   protected static final String _1 = "description";
-  protected static final String _2 = "hand";
-  protected static final String _3 = "key_sig";
-  protected static final String _4 = "notes";
+  protected static final String _2 = "key_sig";
+  protected static final String _3 = "notes";
 
   @Override
   public String toString() {
@@ -46,9 +41,8 @@ public class Lesson implements AbstractData {
     JSMap m = new JSMap();
     m.putUnsafe(_0, mId);
     m.putUnsafe(_1, mDescription);
-    m.putUnsafe(_2, mHand.toString().toLowerCase());
-    m.putUnsafe(_3, mKeySig.toString().toLowerCase());
-    m.putUnsafe(_4, mNotes);
+    m.putUnsafe(_2, mKeySig.toString().toLowerCase());
+    m.putUnsafe(_3, mNotes);
     return m;
   }
 
@@ -67,13 +61,9 @@ public class Lesson implements AbstractData {
     mDescription = m.opt(_1, "");
     {
       String x = m.opt(_2, "");
-      mHand = x.isEmpty() ? Hand.DEFAULT_INSTANCE : Hand.valueOf(x.toUpperCase());
-    }
-    {
-      String x = m.opt(_3, "");
       mKeySig = x.isEmpty() ? KeySig.DEFAULT_INSTANCE : KeySig.valueOf(x.toUpperCase());
     }
-    mNotes = m.opt(_4, "");
+    mNotes = m.opt(_3, "");
   }
 
   public static Builder newBuilder() {
@@ -93,8 +83,6 @@ public class Lesson implements AbstractData {
       return false;
     if (!(mDescription.equals(other.mDescription)))
       return false;
-    if (!(mHand.equals(other.mHand)))
-      return false;
     if (!(mKeySig.equals(other.mKeySig)))
       return false;
     if (!(mNotes.equals(other.mNotes)))
@@ -109,7 +97,6 @@ public class Lesson implements AbstractData {
       r = 1;
       r = r * 37 + mId.hashCode();
       r = r * 37 + mDescription.hashCode();
-      r = r * 37 + mHand.ordinal();
       r = r * 37 + mKeySig.ordinal();
       r = r * 37 + mNotes.hashCode();
       m__hashcode = r;
@@ -119,7 +106,6 @@ public class Lesson implements AbstractData {
 
   protected String mId;
   protected String mDescription;
-  protected Hand mHand;
   protected KeySig mKeySig;
   protected String mNotes;
   protected int m__hashcode;
@@ -129,7 +115,6 @@ public class Lesson implements AbstractData {
     private Builder(Lesson m) {
       mId = m.mId;
       mDescription = m.mDescription;
-      mHand = m.mHand;
       mKeySig = m.mKeySig;
       mNotes = m.mNotes;
     }
@@ -150,7 +135,6 @@ public class Lesson implements AbstractData {
       Lesson r = new Lesson();
       r.mId = mId;
       r.mDescription = mDescription;
-      r.mHand = mHand;
       r.mKeySig = mKeySig;
       r.mNotes = mNotes;
       return r;
@@ -163,11 +147,6 @@ public class Lesson implements AbstractData {
 
     public Builder description(String x) {
       mDescription = (x == null) ? "" : x;
-      return this;
-    }
-
-    public Builder hand(Hand x) {
-      mHand = (x == null) ? Hand.DEFAULT_INSTANCE : x;
       return this;
     }
 
@@ -188,7 +167,6 @@ public class Lesson implements AbstractData {
   private Lesson() {
     mId = "";
     mDescription = "";
-    mHand = Hand.DEFAULT_INSTANCE;
     mKeySig = KeySig.DEFAULT_INSTANCE;
     mNotes = "";
   }

@@ -39,6 +39,7 @@ public final class Util {
   public static final Chord CHORD_CHEAT = chordWith(CASIO_KEY_LAST - 0);
   public static final Chord CHORD_RESET_SCORE = chordWith(CASIO_KEY_LAST - 2);
   public static final Chord CHORD_REMOVE_LAST = chordWith(CASIO_KEY_LAST - 4);
+  public static final Chord REST_CHORD = Chord.DEFAULT_INSTANCE;
 
   public static final int MAX_LESSONS_PER_SESSION = SMALL ? 3 : 8;
   public static final int REPS_PER_LESSON = SMALL ? 2 : 3;
@@ -205,7 +206,6 @@ public final class Util {
   public static int calcHashFor(Lesson rs) {
     int x = 0;
     x = hc(x, rs.keySig().toString());
-    x = hc(x, rs.hand().toString());
     x = hc(x, rs.notes());
     return x;
   }

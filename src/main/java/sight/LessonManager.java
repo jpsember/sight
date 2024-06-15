@@ -15,7 +15,6 @@ import js.data.DataUtil;
 import js.file.Files;
 import js.geometry.MyMath;
 import js.parsing.RegExp;
-import sight.gen.Hand;
 import sight.gen.KeySig;
 import sight.gen.Lesson;
 import sight.gen.LessonCollection;
@@ -28,7 +27,6 @@ import sight.gen.Session;
 public class LessonManager extends BaseObject {
 
   public void init() {
-    //alertVerbose();
     if (prepared())
       return;
 
@@ -154,32 +152,12 @@ public class LessonManager extends BaseObject {
     checkArgument(mLessonCollection.lessons().size() != 0, "no chord sets found in lesson collection:", f,
         INDENT, mLessonCollection);
 
-    var hand = Hand.BOTH;
-
     Map<String, RenderedNotes> result = hashMap();
 
     mLessonMap = hashMap();
     var renderMap = mLessonMap;
 
     for (var x : mLessonCollection.lessons()) {
-
-      if (x.hand() == Hand.UNKNOWN) {
-        var nparser = new ChordParser();
-        nparser.parse(x.notes());
-        var b = x.toBuilder();
-        if (nparser.twoHands())
-          b.hand(Hand.BOTH);
-        else {
-          b.hand(inferHandFromNotes(nparser.chords()));
-        }
-        x = b.build();
-      }
-
-      if (!(hand == Hand.BOTH || hand == x.hand())) {
-        log("...lesson hand", x.hand(), "not desired", hand);
-        continue;
-      }
-
       if (config().key() != KeySig.UNDEFINED && config().key() != x.keySig()) {
         log("...lesson key", x.keySig(), "not desired", config().key());
         continue;
