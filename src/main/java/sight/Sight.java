@@ -410,9 +410,9 @@ public class Sight extends App implements KeyListener {
       ch = expChord;
     }
     boolean correct = expChord.equals(ch);
+      pr(VERT_SP,"got:",ch);
     if (!correct) {
-      pr(VERT_SP, "Expected:", INDENT, expChord);
-      pr("but got:", INDENT, ch);
+   pr(  "expected:", CR, expChord);
       if (!config().silentCorrection())
         MidiManager.SHARED_INSTANCE.playCorrection(expChord, 600);
     }
