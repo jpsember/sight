@@ -249,7 +249,7 @@ public class Sight extends App implements KeyListener {
         }
       }
       if (!handled)
-        pr("...unhandled key press:", x);
+        log("...unhandled key press:", x);
     }
   }
 
@@ -411,6 +411,8 @@ public class Sight extends App implements KeyListener {
     }
     boolean correct = expChord.equals(ch);
     if (!correct) {
+      pr(VERT_SP, "Expected:", INDENT, expChord);
+      pr("but got:", INDENT, ch);
       if (!config().silentCorrection())
         MidiManager.SHARED_INSTANCE.playCorrection(expChord, 600);
     }
