@@ -20,7 +20,6 @@ import static sight.Util.*;
  */
 class MidiReceiver extends BaseObject implements Receiver {
 
-
   public MidiReceiver(SightConfig config) {
     mConfig = config;
     log("constructed");
@@ -58,6 +57,7 @@ class MidiReceiver extends BaseObject implements Receiver {
         return;
       }
       int pitch = pitchToKeyNumber(by[1]);
+      i12("key DOWN:", -pitch);
 
       mDownSet.add(pitch);
       switch (mState) {
@@ -76,6 +76,7 @@ class MidiReceiver extends BaseObject implements Receiver {
       if (channel != 0)
         return;
       int pitch = pitchToKeyNumber(by[1]);
+      i12("key UP  :", pitch);
 
       mDownSet.remove(pitch);
       switch (mState) {
@@ -106,8 +107,11 @@ class MidiReceiver extends BaseObject implements Receiver {
     if (mState == STATE_SOMEDOWN) {
       checkState(mActionTime != 0);
       long currTime = System.currentTimeMillis();
-      if (currTime - mActionTime >= mConfig.quiescentChordMs()) {
+      long timeSinceAction = currTime - mActionTime;
+      i12("SOMEDOWN, time since action:", timeSinceAction);
+      if (timeSinceAction >= mConfig.quiescentChordMs()) {
         constructChordFromChordKeys();
+        i12("constructed current chord:", mCurrentChord);
         setState(STATE_WAITUP, "delay elapsed since action time");
       }
     }
@@ -124,6 +128,7 @@ class MidiReceiver extends BaseObject implements Receiver {
   private static final int STATE_ALLUP = 0, STATE_SOMEDOWN = 1, STATE_WAITUP = 2;
 
   private void setState(int newState, String cause) {
+    i12("state changing from", stateName(mState), "==>", stateName(newState), "; cause:", cause);
     log("state changing from", stateName(mState), "==>", stateName(newState), "; cause:", cause);
     mState = newState;
   }

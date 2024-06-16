@@ -410,12 +410,13 @@ public class Sight extends App implements KeyListener {
       ch = expChord;
     }
     boolean correct = expChord.equals(ch);
-      pr(VERT_SP,"got:",ch);
+    pr(VERT_SP, "got:", ch);
     if (!correct) {
-   pr(  "expected:", CR, expChord);
+      pr("expected:", CR, expChord);
       if (!config().silentCorrection())
         MidiManager.SHARED_INSTANCE.playCorrection(expChord, 600);
     }
+    pr(VERT_SP);
 
     int newIcon = correct ? ICON_RIGHT : ICON_WRONG;
     b.icons()[b.cursor()] = newIcon;

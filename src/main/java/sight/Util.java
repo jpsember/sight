@@ -19,6 +19,13 @@ import sight.gen.SightConfig;
 
 public final class Util {
 
+  public static final boolean ISSUE_12 = true && alert("ISSUE_12 is in effect");
+
+  public static void i12(Object... msg) {
+    if (ISSUE_12)
+      pr(insertStringToFront("{{Issue 12}}:", msg));
+  }
+
   public static final boolean ISSUE_43 = false && alert("ISSUE_43 in effect (d flat troubles)");
 
   public static final boolean ISSUE_39 = false && alert("ISSUE_39 in effect");
@@ -45,6 +52,7 @@ public final class Util {
   public static final int REPS_PER_LESSON = SMALL ? 2 : 3;
 
   public static void loadUtil() {
+    i12("this is issue 12", 12);
   }
 
   public static void i39(Object... msg) {
