@@ -10,7 +10,7 @@ public class SightTest extends MyTestCase {
 
   @Test
   public void notes1() {
-    q("68.71.75.80 47.50.54.59");
+    q("68.71:75.80 47.50:54.59");
   }
 
   private void q(String ourNotesExpr) {
@@ -18,7 +18,7 @@ public class SightTest extends MyTestCase {
     parser.setVerbose(verbose());
     parser.parse(ourNotesExpr);
     var jsonList = list();
-    for (var cd : parser.chords()) {
+    for (var cd : parser.chordsLH()) {
       var kn = list();
       for (var knum : cd.keyNumbers())
         kn.add(knum);

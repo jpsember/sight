@@ -80,7 +80,8 @@ public class ChordLibrary extends BaseObject {
       chordsRH = nparser.chordsRH();
       chordsLH = nparser.chordsLH();
 
-      checkState(chordsRH.size() == chordsLH.size(), "mismatched left/right chord counts");
+      checkState(chordsRH.size() == chordsLH.size(), "mismatched left/right chord counts", INDENT, chordsRH,
+          CR, chordsLH,CR, rs);
 
       var template = frag("score_two_hands.txt");
 

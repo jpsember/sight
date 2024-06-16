@@ -79,7 +79,7 @@ public class ChordParser extends BaseObject {
         if (keynum.size() != 0)
           badArg("trouble parsing:", INDENT, quote(chordsExpr));
         chordList.add(nb.build());
-        break;
+        continue;
       }
 
       if (!peekIsDigit()) {
@@ -100,18 +100,11 @@ public class ChordParser extends BaseObject {
   }
 
   public List<Chord> chordsLH() {
-    checkState(twoHands());
     return mLeft;
   }
 
   public List<Chord> chordsRH() {
-    checkState(twoHands());
     return mRight;
-  }
-
-  public List<Chord> chords() {
-    checkState(!twoHands());
-    return mLeft;
   }
 
   private boolean done() {
