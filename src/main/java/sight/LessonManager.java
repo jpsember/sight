@@ -163,7 +163,7 @@ public class LessonManager extends BaseObject {
         continue;
       }
 
-      log(VERT_SP, "generating lessons from chord set:", x.id(), x.notes());
+      log(VERT_SP, "generating lessons from chord set:", x.id(), "key:",x.keySig(),"notes:", x.notes());
 
       var y = generateLessonsFromChordSet(x);
 

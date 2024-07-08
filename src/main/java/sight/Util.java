@@ -19,7 +19,7 @@ import sight.gen.SightConfig;
 
 public final class Util {
 
-  public static final boolean ISSUE_12 = true && alert("ISSUE_12 is in effect");
+  public static final boolean ISSUE_12 = false && alert("ISSUE_12 is in effect");
 
   public static void i12(Object... msg) {
     if (ISSUE_12)
