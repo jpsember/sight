@@ -31,6 +31,10 @@ public class LessonState implements AbstractData {
     return mCorrectCount;
   }
 
+  public int attemptCount() {
+    return mAttemptCount;
+  }
+
   public long timeMs() {
     return mTimeMs;
   }
@@ -50,8 +54,9 @@ public class LessonState implements AbstractData {
   protected static final String _3 = "cursor";
   protected static final String _4 = "question_count";
   protected static final String _5 = "correct_count";
-  protected static final String _6 = "time_ms";
-  protected static final String _7 = "edit_chord_expr";
+  protected static final String _6 = "attempt_count";
+  protected static final String _7 = "time_ms";
+  protected static final String _8 = "edit_chord_expr";
 
   @Override
   public String toString() {
@@ -67,8 +72,9 @@ public class LessonState implements AbstractData {
     m.putUnsafe(_3, mCursor);
     m.putUnsafe(_4, mQuestionCount);
     m.putUnsafe(_5, mCorrectCount);
-    m.putUnsafe(_6, mTimeMs);
-    m.putUnsafe(_7, mEditChordExpr);
+    m.putUnsafe(_6, mAttemptCount);
+    m.putUnsafe(_7, mTimeMs);
+    m.putUnsafe(_8, mEditChordExpr);
     return m;
   }
 
@@ -98,8 +104,9 @@ public class LessonState implements AbstractData {
     mCursor = m.opt(_3, 0);
     mQuestionCount = m.opt(_4, 0);
     mCorrectCount = m.opt(_5, 0);
-    mTimeMs = m.opt(_6, 0L);
-    mEditChordExpr = m.opt(_7, "");
+    mAttemptCount = m.opt(_6, 0);
+    mTimeMs = m.opt(_7, 0L);
+    mEditChordExpr = m.opt(_8, "");
   }
 
   public static Builder newBuilder() {
@@ -127,6 +134,8 @@ public class LessonState implements AbstractData {
       return false;
     if (!(mCorrectCount == other.mCorrectCount))
       return false;
+    if (!(mAttemptCount == other.mAttemptCount))
+      return false;
     if (!(mTimeMs == other.mTimeMs))
       return false;
     if (!(mEditChordExpr.equals(other.mEditChordExpr)))
@@ -145,6 +154,7 @@ public class LessonState implements AbstractData {
       r = r * 37 + mCursor;
       r = r * 37 + mQuestionCount;
       r = r * 37 + mCorrectCount;
+      r = r * 37 + mAttemptCount;
       r = r * 37 + (int)mTimeMs;
       r = r * 37 + mEditChordExpr.hashCode();
       m__hashcode = r;
@@ -158,6 +168,7 @@ public class LessonState implements AbstractData {
   protected int mCursor;
   protected int mQuestionCount;
   protected int mCorrectCount;
+  protected int mAttemptCount;
   protected long mTimeMs;
   protected String mEditChordExpr;
   protected int m__hashcode;
@@ -171,6 +182,7 @@ public class LessonState implements AbstractData {
       mCursor = m.mCursor;
       mQuestionCount = m.mQuestionCount;
       mCorrectCount = m.mCorrectCount;
+      mAttemptCount = m.mAttemptCount;
       mTimeMs = m.mTimeMs;
       mEditChordExpr = m.mEditChordExpr;
     }
@@ -195,6 +207,7 @@ public class LessonState implements AbstractData {
       r.mCursor = mCursor;
       r.mQuestionCount = mQuestionCount;
       r.mCorrectCount = mCorrectCount;
+      r.mAttemptCount = mAttemptCount;
       r.mTimeMs = mTimeMs;
       r.mEditChordExpr = mEditChordExpr;
       return r;
@@ -227,6 +240,11 @@ public class LessonState implements AbstractData {
 
     public Builder correctCount(int x) {
       mCorrectCount = x;
+      return this;
+    }
+
+    public Builder attemptCount(int x) {
+      mAttemptCount = x;
       return this;
     }
 

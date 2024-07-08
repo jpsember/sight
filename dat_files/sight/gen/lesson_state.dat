@@ -8,6 +8,7 @@ fields {
 
   int question_count; // # of chords asked to play
   int correct_count;  // # of those questions answered correctly
+  int attempt_count;  // # of attempts made at current lesson
 
   // Timestamp the state last changed
   long time_ms;

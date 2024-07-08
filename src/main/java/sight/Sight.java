@@ -431,9 +431,11 @@ public class Sight extends App implements KeyListener {
       if (b.cursor() != notes.renderedChords().size()) {
         b.icons()[b.cursor()] = ICON_POINTER;
       } else {
-        if (b.correctCount() == b.questionCount())
+        b.attemptCount(b.attemptCount() + 1);
+        if (b.correctCount() == b.questionCount() || b.attemptCount() >= 2) {
           b.status(LessonStatus.DONE);
-        else {
+          b.attemptCount(0);
+        } else {
           b.status(LessonStatus.RETRY);
           Msg.set(MSG_MAIN, "$ff0000", "Try Again");
         }
