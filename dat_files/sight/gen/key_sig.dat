@@ -1,3 +1,15 @@
 enum {
-  undefined, c, d, e, f, g, a, b, e_flat, b_flat,
+  undefined,
+  c,
+  d_flat,
+  d,
+  e_flat,
+  e,
+  f,
+  g_flat,
+  g,
+  a_flat,
+  a,
+  b_flat,
+  b,
 }

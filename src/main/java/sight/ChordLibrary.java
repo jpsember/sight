@@ -81,7 +81,7 @@ public class ChordLibrary extends BaseObject {
       chordsLH = nparser.chordsLH();
 
       checkState(chordsRH.size() == chordsLH.size(), "mismatched left/right chord counts", INDENT, chordsRH,
-          CR, chordsLH,CR, rs);
+          CR, chordsLH, CR, rs);
 
       var template = frag("score_two_hands.txt");
 
@@ -211,10 +211,26 @@ public class ChordLibrary extends BaseObject {
       throw notFinished("key sig not supported:", keySig);
     case E:
       return "e \\major";
+    case F:
+      return "f \\major";
+    case D:
+      return "d \\major";
+    case B:
+      return "b \\major";
+    case B_FLAT:
+      return "bes \\major";
+    case A_FLAT:
+      return "aes \\major";
+    case G_FLAT:
+      return "ges \\major";
+    case G:
+      return "g \\major";
     case C:
       return "c \\major";
     case D_FLAT:
       return "des \\major";
+    case E_FLAT:
+      return "ees \\major";
     case A:
       return "a \\major";
     }
