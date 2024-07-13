@@ -163,14 +163,18 @@ public class LessonManager extends BaseObject {
         continue;
       }
 
-      log(VERT_SP, "generating lessons from chord set:", x.id(), "key:",x.keySig(),"notes:", x.notes());
+      log(VERT_SP, "generating lessons from chord set:", x.id(), "key:", x.keySig(), "notes:", x.notes());
 
       var y = generateLessonsFromChordSet(x);
 
       for (var z : y) {
         var key = z.id();
         renderMap.put(key, z);
-        result.put(key, chordLibrary().get(z));
+        try {
+          result.put(key, chordLibrary().get(z));
+        } catch (Throwable t) {
+          badState("Failed getting chord from library:", INDENT, z, CR, t);
+        }
       }
     }
 
@@ -186,7 +190,15 @@ public class LessonManager extends BaseObject {
 
     List<Lesson> out = arrayList();
 
-    var noteStrs = arrayList(source.notes().split(" +"));
+    var notesString = source.notes().trim();
+    var noteStrs = arrayList(notesString.split(" +"));
+
+    {
+      for (var x : noteStrs) {
+        if (x.trim().isEmpty())
+          badArg("empty string in notes:", INDENT, source, CR, noteStrs);
+      }
+    }
 
     int numNotes = noteStrs.size();
 
