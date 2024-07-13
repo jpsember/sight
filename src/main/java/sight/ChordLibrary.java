@@ -334,7 +334,11 @@ public class ChordLibrary extends BaseObject {
     case E:
       set = 0;
       break;
+    case A_FLAT:
+    case B_FLAT:
     case D_FLAT:
+    case E_FLAT:
+    case G_FLAT:
       set = 1;
       break;
     default:
