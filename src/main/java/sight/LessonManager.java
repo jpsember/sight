@@ -258,9 +258,7 @@ public class LessonManager extends BaseObject {
   }
 
   private String auxRandomlyOmitNotes(String chordStr, Random rand) {
-
     checkArgument(chordStr.indexOf(':') < 0);
-
     var noteNums = split(chordStr, '.');
     List<String> out = arrayList();
     for (var x : noteNums) {
