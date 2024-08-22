@@ -10,4 +10,3 @@ I deleted all the ports by typing:
 ```
 sudo port -fp uninstall installed
 ```
-
